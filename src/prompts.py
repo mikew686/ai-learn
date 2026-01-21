@@ -27,11 +27,14 @@ language_assessment_prompt = """Analyze the following phrase and identify:
 4. The specific regional or dialectal variant name (e.g., Quebec
    French, Latin American Spanish, Canadian English, Parisian French,
    Southern US English)
-5. A translation of the phrase to neutral, standard English
+5. Translation description: Target language and variant for the
+   translation in the same format as the variant field (e.g., 'Standard
+   English', 'Neutral English', 'English equivalent')
+6. Translation: For non-English phrases, provide the English
+   equivalent. For English phrases with regional dialects, provide
+   neutral standard English.
 
 Phrase: "{phrase}"
 
 Provide a detailed assessment of the language characteristics,
-regional markers, and variant type. If the phrase is already in
-English, provide a neutral English version that removes regional
-dialect markers."""
+regional markers, and variant type."""
