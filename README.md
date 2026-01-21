@@ -1,10 +1,14 @@
-# Personal AI learning
+# ai-learn
 
 Personal AI Learning project.
 
-Notes:
-* [AI Engineering Development Patterns](eng-dev-patterns/README.md)
-* [DeepLearning.AI Dev Convention 2025 notes](deeplearning-ai-dev-2025/README.md)
+## Setup
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
 
 ---
 
