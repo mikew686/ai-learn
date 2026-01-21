@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from prompts import language_assessment_prompt
 from utils import (
     create_client,
-    format_response,
     print_indented,
     print_response_timing,
     print_token_usage,

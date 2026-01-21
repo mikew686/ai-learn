@@ -54,7 +54,7 @@ def print_indented(label: str, content: str, indent: int = 2, width: int = 120):
     indent_str = " " * indent
     # Calculate available width after indentation
     available_width = width - indent
-    
+
     # Split by existing newlines first, then wrap each section
     sections = content.split("\n")
     for section in sections:
