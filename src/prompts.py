@@ -17,3 +17,21 @@ Output Format:
 - Output only the translation(s), no explanations, metadata, or comments
 - Maintain consistent tone, slang level, and register across all translations
 - Sound authentic to a native Québécois speaker from Montréal"""
+
+
+language_assessment_prompt = """Analyze the following phrase and identify:
+1. The ISO 639-1 language code (e.g., 'en', 'fr', 'es')
+2. The ISO 3166-1 alpha-2 region code (e.g., 'CA', 'US', 'MX', 'FR')
+3. A clear English description of the language variant, including
+   dialect characteristics and linguistic features
+4. The specific regional or dialectal variant name (e.g., Quebec
+   French, Latin American Spanish, Canadian English, Parisian French,
+   Southern US English)
+5. A translation of the phrase to neutral, standard English
+
+Phrase: "{phrase}"
+
+Provide a detailed assessment of the language characteristics,
+regional markers, and variant type. If the phrase is already in
+English, provide a neutral English version that removes regional
+dialect markers."""

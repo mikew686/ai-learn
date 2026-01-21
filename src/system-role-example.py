@@ -1,8 +1,14 @@
 import argparse
 import os
+import time
 from openai import OpenAI
 from prompts import quebec_french_translate
-from utils import create_client, format_response, print_token_usage
+from utils import (
+    create_client,
+    format_response,
+    print_response_timing,
+    print_token_usage,
+)
 
 
 def run_stateless_example(client: OpenAI, model: str):
@@ -19,6 +25,7 @@ def run_stateless_example(client: OpenAI, model: str):
 
     # Call 1 - Stateless (instructions repeated in user message)
     message1 = "I'm running late to the office."
+    start1 = time.time()
     r1 = client.chat.completions.create(
         model=model,
         messages=[
@@ -28,9 +35,11 @@ def run_stateless_example(client: OpenAI, model: str):
             }
         ],
     )
+    elapsed1 = time.time() - start1
 
     # Call 2 - Stateless (instructions repeated again)
     message2 = "Let's grab a drink after work."
+    start2 = time.time()
     r2 = client.chat.completions.create(
         model=model,
         messages=[
@@ -40,17 +49,22 @@ def run_stateless_example(client: OpenAI, model: str):
             }
         ],
     )
+    elapsed2 = time.time() - start2
 
     print(f"\n{message1}")
     print(format_response(r1.choices[0].message.content))
     print_token_usage(r1)
+    print_response_timing(elapsed1)
 
     print(f"\n{message2}")
     print(format_response(r2.choices[0].message.content))
     print_token_usage(r2)
+    print_response_timing(elapsed2)
 
     total_tokens = r1.usage.total_tokens + r2.usage.total_tokens
+    total_time = elapsed1 + elapsed2
     print(f"\nTotal Tokens (Example A): {total_tokens}")
+    print_response_timing(total_time, "Total Response Time")
 
 
 def run_stateful_example(client: OpenAI, model: str):
@@ -79,17 +93,22 @@ def run_stateful_example(client: OpenAI, model: str):
     ]
 
     # Single stateful session with system + 2 user messages
+    start = time.time()
     response = client.chat.completions.create(model=model, messages=messages)
+    elapsed = time.time() - start
 
     print(f"\n{message1}")
     print(f"{message2}")
     print(format_response(response.choices[0].message.content))
     print_token_usage(response)
+    print_response_timing(elapsed)
 
     print(f"\nTotal Tokens (Example B): {response.usage.total_tokens}")
+    print_response_timing(elapsed, "Total Response Time")
 
 
-if __name__ == "__main__":
+def main():
+    """Demonstrate stateless vs stateful prompts using system roles."""
     # Environment variable detection and client configuration:
     # - If OPENROUTER_API_KEY is set, uses OpenRouter API (base_url: https://openrouter.ai/api/v1)
     # - Otherwise, uses OpenAI API directly (default behavior)
@@ -132,3 +151,7 @@ if __name__ == "__main__":
 
     run_stateless_example(client, model)
     run_stateful_example(client, model)
+
+
+if __name__ == "__main__":
+    main()
