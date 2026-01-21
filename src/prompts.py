@@ -19,22 +19,28 @@ Output Format:
 - Sound authentic to a native Québécois speaker from Montréal"""
 
 
-language_assessment_prompt = """Analyze the following phrase and identify:
-1. The ISO 639-1 language code (e.g., 'en', 'fr', 'es')
-2. The ISO 3166-1 alpha-2 region code (e.g., 'CA', 'US', 'MX', 'FR')
+language_assessment_prompt = """Analyze the following phrase and identify the language,
+regional variant, and dialect characteristics.
+
+Identify:
+1. The ISO 639-1 language code (e.g., 'en', 'fr', 'es', 'de')
+2. The ISO 3166-1 alpha-2 region code (e.g., 'CA', 'US', 'MX', 'FR', 'DE')
 3. A clear English description of the language variant, including
-   dialect characteristics and linguistic features
-4. The specific regional or dialectal variant name (e.g., Quebec
-   French, Latin American Spanish, Canadian English, Parisian French,
-   Southern US English)
-5. Translation description: Target language and variant for the
-   translation in the same format as the variant field (e.g., 'Standard
-   English', 'Neutral English', 'English equivalent')
-6. Translation: For non-English phrases, provide the English
-   equivalent. For English phrases with regional dialects, provide
-   neutral standard English.
+   dialect characteristics, linguistic features, and grammatical
+   constructions that indicate regional origin
+4. The specific regional or dialectal variant name (e.g., Eastern
+   Canadian English, Irish English, Quebec French, Latin American
+   Spanish, Parisian French, Southern US English, East German)
 
 Phrase: "{phrase}"
 
+Pay careful attention to:
+- Grammatical constructions and syntax patterns
+- Regional vocabulary and expressions
+- Preposition usage and phrasal verb patterns
+- Contractions and informal speech markers
+- Word order and sentence structure
+
 Provide a detailed assessment of the language characteristics,
-regional markers, and variant type."""
+regional markers, and variant type. Consider all regional variants
+globally, not just American English."""

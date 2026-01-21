@@ -34,19 +34,6 @@ class LanguageAssessment(BaseModel):
             "'Southern US English')"
         )
     )
-    translate_description: str = Field(
-        description=(
-            "Target language and variant for the translation (e.g., "
-            "'Standard English', 'Neutral English', 'English equivalent')"
-        )
-    )
-    translation: str = Field(
-        description=(
-            "Translation of the phrase. For non-English phrases, provide "
-            "the English equivalent. For English phrases with regional "
-            "dialects, provide neutral standard English."
-        )
-    )
 
 
 def assess_lang(phrase: str, client=None, model: str = None):
@@ -122,6 +109,8 @@ def main():
         "I'm fixin' to go to the store, y'all want anything?",
         "Ich geh' mal zum Intershop, dann kaufen wir uns was.",
         "I'll be going to the store to buy some groceries.",
+        "Stay where you're at, and I'll come where you're to.",
+        "I'm after going to the shop, so I'll be back in a minute.",
     ]
 
     print("=" * 60)
@@ -138,8 +127,6 @@ def main():
             print_indented("Region Code", assessment.region_code)
             print_indented("Variant", assessment.variant)
             print_indented("Description", assessment.description)
-            print_indented("Translate Description", assessment.translate_description)
-            print_indented("Translation", assessment.translation)
             print_token_usage(response)
             print_response_timing(elapsed_time)
         except Exception as e:
