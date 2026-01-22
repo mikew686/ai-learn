@@ -274,6 +274,223 @@ response = client.beta.chat.completions.parse(
 )
 ```
 
+### 4. Schema Composition and Structured Types
+
+Schemas can compose other schemas and use structured types (enums, arrays) to provide even more implicit guidance:
+
+#### Using Enums for Constrained Values
+
+Instead of free-form strings, use enums to constrain values and communicate valid options:
+
+```python
+from pydantic import BaseModel, Field
+from enum import Enum
+
+# Define language codes as enum instead of free-form string
+class LanguageCode(str, Enum):
+    ENGLISH = "en"
+    SPANISH = "es"
+    FRENCH = "fr"
+    GERMAN = "de"
+    ITALIAN = "it"
+    PORTUGUESE = "pt"
+    CHINESE = "zh"
+    JAPANESE = "ja"
+    KOREAN = "ko"
+    RUSSIAN = "ru"
+    ARABIC = "ar"
+    HINDI = "hi"
+
+class ConfidenceLevel(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+class TranslationResult(BaseModel):
+    source_language: str = Field(description="Source language name in plain English")
+    source_language_code: LanguageCode = Field(
+        description="Source language code (ISO 639-1)"
+    )
+    target_language: str = Field(description="Target language name in plain English")
+    target_language_code: LanguageCode = Field(
+        description="Target language code (ISO 639-1)"
+    )
+    translated_text: str = Field(description="The translated text")
+    confidence: ConfidenceLevel = Field(description="Translation confidence level")
+    cultural_notes: str = Field(
+        description="Cultural or contextual notes about the translation (always in English)"
+    )
+
+# The model infers:
+# - Language codes must be one of the enum values (en, es, fr, etc.)
+# - Confidence must be one of: low, medium, high
+# - No need to specify valid values in the prompt
+```
+
+#### Using Arrays for Lists
+
+Use typed arrays to specify list structures:
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+
+class Product(BaseModel):
+    name: str = Field(description="Product name")
+    price: float = Field(description="Price in USD")
+    tags: List[str] = Field(
+        description="List of product tags or categories"
+    )
+
+class ShoppingCart(BaseModel):
+    items: List[Product] = Field(
+        description="List of products in the shopping cart"
+    )
+    total: float = Field(description="Total price of all items")
+
+# The model infers:
+# - items is an array of Product objects
+# - Each Product has name, price, and tags
+# - tags is an array of strings
+```
+
+#### Schema Composition with Nested Models
+
+Compose complex schemas from simpler ones:
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class Address(BaseModel):
+    street: str = Field(description="Street address")
+    city: str = Field(description="City name")
+    state: str = Field(description="State or province code")
+    zip_code: str = Field(description="ZIP or postal code")
+    country: str = Field(description="Country name")
+
+class Contact(BaseModel):
+    email: str = Field(description="Email address")
+    phone: Optional[str] = Field(
+        description="Phone number in international format", 
+        default=None
+    )
+
+class Company(BaseModel):
+    name: str = Field(description="Company name")
+    address: Address = Field(description="Company address")
+    contacts: List[Contact] = Field(
+        description="List of contact methods"
+    )
+    employee_count: int = Field(
+        description="Number of employees",
+        ge=0
+    )
+
+# The model infers the entire structure:
+# - Company has an Address (with street, city, state, zip, country)
+# - Company has a list of Contact objects (each with email and optional phone)
+# - No need to explain the nested structure in the prompt
+```
+
+#### Combining Enums, Arrays, and Composition
+
+Combine all techniques for complex schemas:
+
+```python
+from pydantic import BaseModel, Field
+from enum import Enum
+from typing import List, Optional
+
+class Priority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+class Status(str, Enum):
+    TODO = "todo"
+    IN_PROGRESS = "in_progress"
+    DONE = "done"
+    BLOCKED = "blocked"
+
+class Task(BaseModel):
+    title: str = Field(description="Task title")
+    description: str = Field(description="Task description")
+    priority: Priority = Field(description="Task priority level")
+    status: Status = Field(description="Current task status")
+    tags: List[str] = Field(description="List of tags for categorization")
+    assignee: Optional[str] = Field(
+        description="Person assigned to the task, or None if unassigned",
+        default=None
+    )
+
+class Project(BaseModel):
+    name: str = Field(description="Project name")
+    tasks: List[Task] = Field(description="List of tasks in the project")
+    priority: Priority = Field(description="Overall project priority")
+
+# The model infers:
+# - priority and status must be enum values
+# - tasks is an array of Task objects
+# - Each Task has its own priority, status, tags (array), and optional assignee
+# - Complex nested structure without verbose prompt instructions
+```
+
+#### Tool Parameters with Enums and Arrays
+
+Apply the same principles to tool schemas:
+
+```python
+from enum import Enum
+
+# Define enum for tool parameters
+class TemperatureUnit(str, Enum):
+    CELSIUS = "celsius"
+    FAHRENHEIT = "fahrenheit"
+    KELVIN = "kelvin"
+
+weather_tool = {
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get current weather conditions for a location",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string",
+                    "description": "City and state, e.g. San Francisco, CA"
+                },
+                "unit": {
+                    "type": "string",
+                    "enum": ["celsius", "fahrenheit", "kelvin"],
+                    "description": "Temperature unit"
+                },
+                "forecast_days": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "List of days to include in forecast (0=today, 1=tomorrow, etc.)"
+                }
+            },
+            "required": ["location", "unit"]
+        }
+    }
+}
+
+# The model infers:
+# - unit must be one of the enum values
+# - forecast_days is an array of integers
+# - No need to specify valid values in the prompt
+```
+
+**Benefits of Schema Composition:**
+- **Type Safety**: Enums and typed arrays provide clear constraints
+- **Implicit Validation**: Model knows valid values without explicit instructions
+- **Reduced Prompt Complexity**: Structure communicates requirements
+- **Reusability**: Compose schemas from smaller, reusable components
+- **Better Inference**: Model can infer relationships and constraints from schema structure
+
 ## Best Practices
 
 ### 1. Write Clear, Descriptive Tool Descriptions
@@ -329,6 +546,27 @@ class ProductReview(BaseModel):
     verified_purchase: bool = Field(
         description="Whether the reviewer made a verified purchase (true) or not (false)"
     )
+```
+
+### 2a. Use Enums and Structured Types
+
+Prefer enums over free-form strings for constrained values, and use typed arrays for lists:
+
+```python
+from enum import Enum
+from typing import List
+
+class Status(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    PENDING = "pending"
+
+class User(BaseModel):
+    status: Status = Field(description="User account status")
+    roles: List[str] = Field(description="List of user roles")
+    
+# Model infers valid status values from enum
+# No need to specify "must be one of: active, inactive, pending" in prompt
 ```
 
 ### 3. Let Schemas Communicate Requirements
@@ -392,9 +630,31 @@ response = client.beta.chat.completions.parse(
 
 ### Translation with Language Detection
 
-Use tool schemas to guide language detection and Pydantic models to structure translation results:
+Use tool schemas to guide language detection and Pydantic models with enums to structure translation results:
 
 ```python
+from enum import Enum
+
+# Define language codes as enum for type safety and implicit constraints
+class LanguageCode(str, Enum):
+    ENGLISH = "en"
+    SPANISH = "es"
+    FRENCH = "fr"
+    GERMAN = "de"
+    ITALIAN = "it"
+    PORTUGUESE = "pt"
+    CHINESE = "zh"
+    JAPANESE = "ja"
+    KOREAN = "ko"
+    RUSSIAN = "ru"
+    ARABIC = "ar"
+    HINDI = "hi"
+
+class ConfidenceLevel(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
 # Tool for language detection
 detect_language_tool = {
     "type": "function",
@@ -405,12 +665,21 @@ detect_language_tool = {
     }
 }
 
-# Structured output for translation
+# Structured output for translation - using enums instead of free-form strings
 class TranslationResult(BaseModel):
     source_language: str = Field(description="Detected source language name")
-    source_language_code: str = Field(description="ISO 639-1 source language code")
+    source_language_code: LanguageCode = Field(
+        description="ISO 639-1 source language code"
+    )
+    target_language: str = Field(description="Target language name")
+    target_language_code: LanguageCode = Field(
+        description="ISO 639-1 target language code"
+    )
     translated_text: str = Field(description="The translated text")
-    confidence: str = Field(description="Translation confidence: low, medium, high")
+    confidence: ConfidenceLevel = Field(description="Translation confidence level")
+
+# Model infers valid language codes and confidence levels from enums
+# No need to specify valid values in the prompt
 ```
 
 ### Data Extraction with Validation
@@ -693,11 +962,13 @@ tool = {
 1. **Schemas are implicit prompts** - Tool descriptions and Field descriptions guide model behavior
 2. **Reduce prompt verbosity** - Let structured definitions communicate requirements
 3. **Write descriptive schemas** - Clear descriptions enable better inference
-4. **Combine explicit and implicit** - Use prompts for high-level guidance, schemas for details
-5. **Test your schemas** - Verify that descriptions are clear enough for correct inference
-6. **Works with Function Calling** - Tool descriptions guide when and how to use tools
-7. **Works with Structured Output** - Field descriptions specify output requirements
-8. **Token efficient** - Reduces prompt tokens while maintaining quality
+4. **Use composition and structured types** - Enums, arrays, and nested models provide implicit constraints
+5. **Combine explicit and implicit** - Use prompts for high-level guidance, schemas for details
+6. **Test your schemas** - Verify that descriptions are clear enough for correct inference
+7. **Works with Function Calling** - Tool descriptions guide when and how to use tools
+8. **Works with Structured Output** - Field descriptions specify output requirements
+9. **Token efficient** - Reduces prompt tokens while maintaining quality
+10. **Type safety through schemas** - Enums and typed arrays communicate valid values without explicit instructions
 
 ## Implementation Considerations
 

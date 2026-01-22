@@ -31,6 +31,12 @@ Identify:
 4. The specific regional or dialectal variant name (e.g., Eastern
    Canadian English, Irish English, Quebec French, Latin American
    Spanish, Parisian French, Southern US English, East German)
+5. The semantic meaning of the phrase in English (not a translation, but
+   an explanation of what the phrase means, including any implied context,
+   tone, or cultural nuances)
+6. Your confidence level in the assessment (high, medium, low)
+7. Specific linguistic features detected (idioms, slang, regionalisms, etc.)
+8. Alternative interpretations if confidence is not high
 
 Phrase: "{phrase}"
 
@@ -40,6 +46,14 @@ Pay careful attention to:
 - Preposition usage and phrasal verb patterns
 - Contractions and informal speech markers
 - Word order and sentence structure
+- Idioms, slang, and colloquialisms
+- Regional markers and cultural references
+- Semantic meaning and implied context
+
+For each linguistic feature, identify:
+- The type of feature (idiom, slang, regionalism, colloquialism, etc.)
+- The specific word or phrase that demonstrates it
+- An explanation of its regional significance
 
 Provide a detailed assessment of the language characteristics,
 regional markers, and variant type. Consider all regional variants
