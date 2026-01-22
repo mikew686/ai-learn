@@ -90,10 +90,10 @@ def main():
     # Determine default model based on API provider
     openrouter_key = os.getenv("OPENROUTER_API_KEY")
     if openrouter_key:
-        default_model = "openai/gpt-4.1-mini"
+        default_model = "openai/gpt-5.2"
         print("Using OpenRouter API\n")
     else:
-        default_model = "gpt-4.1-mini"
+        default_model = "gpt-5.2"
         print("Using OpenAI API\n")
 
     # Model selection: command line > environment variable > default

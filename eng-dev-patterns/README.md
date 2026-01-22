@@ -152,6 +152,40 @@ This document outlines key AI engineering patterns and techniques for building p
 
 ---
 
+## Schema-Driven Inference
+
+📖 [Detailed Documentation](./schema_driven_inference.md)
+
+**Description**: Using structured definitions (tool schemas, Pydantic field descriptions, JSON Schema) as implicit prompts that allow the model to infer behavior and requirements without verbose explicit instructions. Reduces prompt verbosity while maintaining high-quality, validated outputs.
+
+**Key Concepts**:
+- Tool schema descriptions guide model behavior
+- Pydantic field descriptions specify data requirements
+- Structured definitions serve as implicit prompts
+- Model infers details from schema metadata
+- Reduced prompt complexity with maintained quality
+
+**Best Practices**:
+- Write clear, descriptive tool function descriptions
+- Use detailed Pydantic Field descriptions
+- Let schemas communicate requirements implicitly
+- Keep prompts minimal when schemas provide context
+- Combine with explicit prompts only when necessary
+
+**Use Cases**:
+- Translation with language detection and cultural context
+- Data extraction with structured validation
+- API integrations with tool calling
+- Multi-step workflows combining tools and structured output
+- Reducing prompt token usage while maintaining quality
+
+**Related Patterns**:
+- **Function Calling / Tool Use**: Tool schemas provide implicit instructions
+- **Structured Output**: Pydantic field descriptions guide output generation
+- **Prompt Engineering**: Complements explicit prompting techniques
+
+---
+
 ## Chain-of-Thought / Multi-Step Reasoning
 
 **Description**: Encouraging LLMs to show explicit step-by-step reasoning processes. Improves accuracy on complex problems requiring logical reasoning.
@@ -781,6 +815,7 @@ This document outlines key AI engineering patterns and techniques for building p
 - **RAG + Function Calling**: Combine knowledge retrieval with tool use
 - **Orchestration + Caching**: Coordinate workflows with performance optimization
 - **Prompt Engineering + Structured Output**: Reliable, validated outputs
+- **Function Calling + Structured Output + Schema-Driven Inference**: Tools gather data, schemas guide output, minimal prompts
 - **Multi-Agent + Memory**: Collaborative systems with context retention
 
 ### Best Practices Across All Techniques
