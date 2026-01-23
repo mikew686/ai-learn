@@ -40,44 +40,6 @@ This document outlines key AI engineering patterns and techniques for building p
 
 ---
 
-## RAG (Retrieval-Augmented Generation)
-
-**Description**: Augmenting LLM inputs with relevant context retrieved from external knowledge bases or vector databases. Combines the power of semantic search with generative capabilities.
-
-**Key Components**:
-- Vector embeddings of documents
-- Vector database for storage and retrieval
-- Retrieval mechanism (semantic search)
-- Context injection into prompts
-
-**Popular Solutions**:
-- **AWS Bedrock Knowledge Bases**: Managed RAG with vector search and data sources
-- **Amazon Kendra**: Enterprise search service with AI-powered semantic search
-- **Amazon OpenSearch Serverless**: Vector search and hybrid search capabilities
-- **Pinecone**: Managed vector database
-- **Weaviate**: Open-source vector database
-- **Chroma**: Embedded vector database
-- **Qdrant**: High-performance vector search
-- **Milvus**: Scalable vector database
-- **LangChain Vector Stores**: Abstraction layer for multiple backends
-- **LlamaIndex**: Data framework for LLM applications
-
-**Best Practices**:
-- Chunk documents appropriately (200-500 tokens)
-- Use metadata filtering for precision
-- Implement hybrid search (keyword + semantic)
-- Re-rank results for better relevance
-- Monitor retrieval quality
-
-**Use Cases**:
-- Document Q&A systems
-- Knowledge base assistants
-- Research tools
-- Customer support chatbots
-- Legal document analysis
-
----
-
 ## Function Calling / Tool Use
 
 📖 [Detailed Documentation](./function_calling_tool_use.md)
@@ -183,6 +145,44 @@ This document outlines key AI engineering patterns and techniques for building p
 - **Function Calling / Tool Use**: Tool schemas provide implicit instructions
 - **Structured Output**: Pydantic field descriptions guide output generation
 - **Prompt Engineering**: Complements explicit prompting techniques
+
+---
+
+## RAG (Retrieval-Augmented Generation)
+
+**Description**: Augmenting LLM inputs with relevant context retrieved from external knowledge bases or vector databases. Combines the power of semantic search with generative capabilities.
+
+**Key Components**:
+- Vector embeddings of documents
+- Vector database for storage and retrieval
+- Retrieval mechanism (semantic search)
+- Context injection into prompts
+
+**Popular Solutions**:
+- **AWS Bedrock Knowledge Bases**: Managed RAG with vector search and data sources
+- **Amazon Kendra**: Enterprise search service with AI-powered semantic search
+- **Amazon OpenSearch Serverless**: Vector search and hybrid search capabilities
+- **Pinecone**: Managed vector database
+- **Weaviate**: Open-source vector database
+- **Chroma**: Embedded vector database
+- **Qdrant**: High-performance vector search
+- **Milvus**: Scalable vector database
+- **LangChain Vector Stores**: Abstraction layer for multiple backends
+- **LlamaIndex**: Data framework for LLM applications
+
+**Best Practices**:
+- Chunk documents appropriately (200-500 tokens)
+- Use metadata filtering for precision
+- Implement hybrid search (keyword + semantic)
+- Re-rank results for better relevance
+- Monitor retrieval quality
+
+**Use Cases**:
+- Document Q&A systems
+- Knowledge base assistants
+- Research tools
+- Customer support chatbots
+- Legal document analysis
 
 ---
 
