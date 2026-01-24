@@ -1,7 +1,7 @@
 """
-Tool Use Examples: Sequential, Parallel, and Interleaved Patterns
+Pattern 3: Function Calling / Tool Use
 
-This module demonstrates three patterns for tool use with LLMs:
+This example demonstrates three patterns for tool use with LLMs:
 
 1. **Sequential Tool Use** (default):
    - Model makes one tool call
@@ -21,6 +21,14 @@ This module demonstrates three patterns for tool use with LLMs:
    - Can iteratively refine approach based on tool results
    - Supports multi-step reasoning workflows with tools
 
+Key Concepts:
+- Tool schema definitions (JSON Schema)
+- Tool selection by LLM
+- Parameter extraction and validation
+- Tool execution and response integration
+
+Use Case: Translation with language analysis tools
+
 Usage:
     # Sequential (default)
     python -m src.tool_use_example --mode sequential
@@ -36,14 +44,208 @@ import argparse
 import json
 import os
 import time
+from enum import Enum
+from typing import List, Optional
 from openai import OpenAI
-from structured_output_example import assess_lang
+from pydantic import BaseModel, Field
 from utils import (
     create_client,
     print_indented,
     print_response_timing,
     print_token_usage,
 )
+
+
+# Prompt for language assessment
+LANGUAGE_ASSESSMENT_PROMPT = """Analyze the following phrase and identify the language,
+regional variant, and dialect characteristics.
+
+Identify:
+1. The ISO 639-1 language code (e.g., 'en', 'fr', 'es', 'de')
+2. The ISO 3166-1 alpha-2 region code (e.g., 'CA', 'US', 'MX', 'FR', 'DE')
+3. A clear English description of the language variant, including
+   dialect characteristics, linguistic features, and grammatical
+   constructions that indicate regional origin
+4. The specific regional or dialectal variant name (e.g., Eastern
+   Canadian English, Irish English, Quebec French, Latin American
+   Spanish, Parisian French, Southern US English, East German)
+5. The semantic meaning of the phrase in English (not a translation, but
+   an explanation of what the phrase means, including any implied context,
+   tone, or cultural nuances)
+6. Your confidence level in the assessment (high, medium, low)
+7. Specific linguistic features detected (idioms, slang, regionalisms, etc.)
+8. Alternative interpretations if confidence is not high
+
+Phrase: "{phrase}"
+
+Pay careful attention to:
+- Grammatical constructions and syntax patterns
+- Regional vocabulary and expressions
+- Preposition usage and phrasal verb patterns
+- Contractions and informal speech markers
+- Word order and sentence structure
+- Idioms, slang, and colloquialisms
+- Regional markers and cultural references
+- Semantic meaning and implied context
+
+For each linguistic feature, identify:
+- The type of feature (idiom, slang, regionalism, colloquialism, etc.)
+- The specific word or phrase that demonstrates it
+- An explanation of its regional significance
+
+Provide a detailed assessment of the language characteristics,
+regional markers, and variant type. Consider all regional variants
+globally, not just American English."""
+
+
+# Enums for language assessment
+class LanguageCode(str, Enum):
+    """ISO 639-1 language codes."""
+
+    ENGLISH = "en"
+    SPANISH = "es"
+    FRENCH = "fr"
+    GERMAN = "de"
+    ITALIAN = "it"
+    PORTUGUESE = "pt"
+    CHINESE = "zh"
+    JAPANESE = "ja"
+    KOREAN = "ko"
+    RUSSIAN = "ru"
+    ARABIC = "ar"
+    HINDI = "hi"
+    DUTCH = "nl"
+    POLISH = "pl"
+    TURKISH = "tr"
+    GREEK = "el"
+
+
+class RegionCode(str, Enum):
+    """ISO 3166-1 alpha-2 region codes."""
+
+    US = "US"
+    CA = "CA"
+    GB = "GB"
+    AU = "AU"
+    NZ = "NZ"
+    IE = "IE"
+    FR = "FR"
+    BE = "BE"
+    CH = "CH"
+    ES = "ES"
+    MX = "MX"
+    AR = "AR"
+    CO = "CO"
+    DE = "DE"
+    AT = "AT"
+    IT = "IT"
+    PT = "PT"
+    BR = "BR"
+    CN = "CN"
+    JP = "JP"
+    KR = "KR"
+    RU = "RU"
+    SA = "SA"
+    EG = "EG"
+    IN = "IN"
+
+
+class ConfidenceLevel(str, Enum):
+    """Confidence level for language assessment."""
+
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+# Pydantic models for language assessment
+class LinguisticFeature(BaseModel):
+    """Individual linguistic feature detected in the phrase."""
+
+    feature_type: str = Field(
+        description="Type of linguistic feature (e.g., 'idiom', 'slang', 'regionalism', 'colloquialism')"
+    )
+    example: str = Field(
+        description="The specific word or phrase that demonstrates this feature"
+    )
+    description: str = Field(
+        description="Explanation of the feature and its regional significance"
+    )
+
+
+class LanguageAssessment(BaseModel):
+    """Assessment of a language phrase with region-specific details."""
+
+    language_code: LanguageCode = Field(description="ISO 639-1 language code")
+    region_code: RegionCode = Field(description="ISO 3166-1 alpha-2 region code")
+    description: str = Field(
+        description=(
+            "English description of the language variant detected, "
+            "including dialect characteristics and linguistic features"
+        )
+    )
+    variant: str = Field(
+        description=(
+            "Specific regional or dialectal variant name (e.g., "
+            "'Quebec French', 'Latin American Spanish', "
+            "'Canadian English', 'Parisian French', "
+            "'Southern US English')"
+        )
+    )
+    meaning: str = Field(
+        description=(
+            "The semantic meaning or interpretation of the phrase in English. "
+            "This is not a translation, but rather an explanation of what the phrase means, "
+            "including any implied context, tone, or cultural nuances."
+        )
+    )
+    confidence: ConfidenceLevel = Field(
+        description="Confidence level in the assessment"
+    )
+    linguistic_features: List[LinguisticFeature] = Field(
+        description="List of specific linguistic features detected in the phrase",
+        default_factory=list,
+    )
+    alternative_interpretations: Optional[List[str]] = Field(
+        description="Alternative language or region interpretations if confidence is not high",
+        default=None,
+    )
+
+
+def assess_lang(phrase: str, client=None, model: str = None):
+    """
+    Assess the language, variant, and region of a given phrase using structured output.
+
+    Args:
+        phrase: The text phrase to analyze
+        client: OpenAI client instance (creates one if not provided)
+        model: Model name to use (uses default if not provided)
+
+    Returns:
+        Tuple of (LanguageAssessment object, response object, elapsed_time) for access to token usage and timing
+    """
+    if client is None:
+        client = create_client()
+
+    if model is None:
+        # Determine default model based on API provider
+        openrouter_key = os.getenv("OPENROUTER_API_KEY")
+        if openrouter_key:
+            model = "openai/gpt-4o-mini"
+        else:
+            model = "gpt-4o-mini"
+
+    prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
+
+    start_time = time.time()
+    response = client.beta.chat.completions.parse(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        response_format=LanguageAssessment,
+    )
+    elapsed_time = time.time() - start_time
+
+    return response.choices[0].message.parsed, response, elapsed_time
 
 
 def analyze_language(phrase: str) -> dict:

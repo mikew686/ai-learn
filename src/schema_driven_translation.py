@@ -1,3 +1,27 @@
+"""
+Pattern 4: Schema-Driven Inference
+
+This example demonstrates combining multiple patterns:
+- Function Calling / Tool Use: Tools for language lookup and cultural context
+- Structured Output: Pydantic models for validated translation results
+- Schema-Driven Inference: Minimal prompts with detailed schemas
+
+Key Concepts:
+- Tool schema descriptions as implicit instructions
+- Pydantic field descriptions guide output generation
+- Minimal prompts with detailed schemas
+- Combining explicit and implicit instructions
+
+The prompt is intentionally simplified - much of the detail is inferred by the model from:
+- Tool descriptions: The model understands what tools are available and their purposes
+- Pydantic field descriptions: Guide the model on what data to extract and how to format it
+- Tool execution results: The model uses results from tool calls to inform structured output
+
+This pattern reduces prompt verbosity while maintaining high-quality, validated outputs.
+
+Use Case: Translation with tools and structured output
+"""
+
 import argparse
 import json
 import os

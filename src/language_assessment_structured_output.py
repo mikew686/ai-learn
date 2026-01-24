@@ -1,3 +1,16 @@
+"""
+Pattern 2: Structured Output
+
+This example demonstrates advanced structured output features:
+- Pydantic models for type-safe, validated responses
+- Enums for constrained values (LanguageCode, RegionCode, ConfidenceLevel)
+- Nested models (LinguisticFeature)
+- Arrays and lists (linguistic_features, alternative_interpretations)
+- Field descriptions that guide model behavior
+
+Use Case: Language assessment with structured validation
+"""
+
 import argparse
 import os
 import time
@@ -5,12 +18,53 @@ from collections import Counter
 from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from prompts import language_assessment_prompt
 from utils import (
     create_client,
     print_indented,
     print_response_timing,
 )
+
+
+# Prompt for language assessment
+LANGUAGE_ASSESSMENT_PROMPT = """Analyze the following phrase and identify the language,
+regional variant, and dialect characteristics.
+
+Identify:
+1. The ISO 639-1 language code (e.g., 'en', 'fr', 'es', 'de')
+2. The ISO 3166-1 alpha-2 region code (e.g., 'CA', 'US', 'MX', 'FR', 'DE')
+3. A clear English description of the language variant, including
+   dialect characteristics, linguistic features, and grammatical
+   constructions that indicate regional origin
+4. The specific regional or dialectal variant name (e.g., Eastern
+   Canadian English, Irish English, Quebec French, Latin American
+   Spanish, Parisian French, Southern US English, East German)
+5. The semantic meaning of the phrase in English (not a translation, but
+   an explanation of what the phrase means, including any implied context,
+   tone, or cultural nuances)
+6. Your confidence level in the assessment (high, medium, low)
+7. Specific linguistic features detected (idioms, slang, regionalisms, etc.)
+8. Alternative interpretations if confidence is not high
+
+Phrase: "{phrase}"
+
+Pay careful attention to:
+- Grammatical constructions and syntax patterns
+- Regional vocabulary and expressions
+- Preposition usage and phrasal verb patterns
+- Contractions and informal speech markers
+- Word order and sentence structure
+- Idioms, slang, and colloquialisms
+- Regional markers and cultural references
+- Semantic meaning and implied context
+
+For each linguistic feature, identify:
+- The type of feature (idiom, slang, regionalism, colloquialism, etc.)
+- The specific word or phrase that demonstrates it
+- An explanation of its regional significance
+
+Provide a detailed assessment of the language characteristics,
+regional markers, and variant type. Consider all regional variants
+globally, not just American English."""
 
 
 # Advanced structured output: Using enums for constrained values
@@ -151,7 +205,7 @@ def assess_lang(phrase: str, client=None, model: str = None):
         else:
             model = "gpt-4o-mini"
 
-    prompt = language_assessment_prompt.format(phrase=phrase)
+    prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
 
     start_time = time.time()
     response = client.beta.chat.completions.parse(

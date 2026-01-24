@@ -103,6 +103,198 @@ if message.tool_calls:
             )
 ```
 
+## Tool Use Patterns
+
+There are three main patterns for how models can use tools: sequential, parallel, and interleaved. Understanding these patterns helps you design efficient tool workflows.
+
+### Sequential Tool Use
+
+**Description**: The model makes one tool call, receives the result, and then generates a final response. This is the most common pattern and works with all models that support function calling.
+
+**Characteristics**:
+- **API Calls**: 2 total (initial with tool call, final response)
+- **Flow**: User request → Tool call → Tool result → Final response
+- **Use Case**: Standard pattern for most applications
+- **Model Support**: All models with function calling support
+
+**Example**:
+
+```python
+# Step 1: Initial call with tools
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Translate 'Hello' to French"}],
+    tools=[analyze_language_tool],
+    tool_choice="auto"
+)
+
+message = response.choices[0].message
+messages.append(message)
+
+# Step 2: Handle tool call
+if message.tool_calls:
+    for tool_call in message.tool_calls:
+        # Execute tool
+        result = analyze_language(tool_call.function.arguments)
+        
+        # Add tool result
+        messages.append({
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": json.dumps(result)
+        })
+        
+        # Step 3: Get final response
+        final_response = client.chat.completions.create(
+            model="gpt-4",
+            messages=messages
+        )
+```
+
+**When to Use**:
+- Simple workflows with one tool call needed
+- When tool results are required before generating final output
+- Most common use case for function calling
+
+### Parallel Tool Use
+
+**Description**: The model can call multiple tools simultaneously in a single response. All tool calls are executed, results are collected, and then sent back together for the final response.
+
+**Characteristics**:
+- **API Calls**: 2 total (initial with multiple tool calls, final response)
+- **Flow**: User request → Multiple tool calls (parallel) → All tool results → Final response
+- **Use Case**: Efficient for independent operations that don't depend on each other
+- **Model Support**: All models with function calling support
+
+**Example**:
+
+```python
+# Step 1: Initial call with multiple tools
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[{"role": "user", "content": "Translate with cultural context"}],
+    tools=[analyze_language_tool, get_cultural_context_tool],
+    tool_choice="auto"
+)
+
+message = response.choices[0].message
+messages.append(message)
+
+# Step 2: Handle all tool calls (model may call multiple in one response)
+tool_results = {}
+if message.tool_calls:
+    for tool_call in message.tool_calls:
+        # Execute each tool
+        if tool_call.function.name == "analyze_language":
+            result = analyze_language(**json.loads(tool_call.function.arguments))
+        elif tool_call.function.name == "get_cultural_context":
+            result = get_cultural_context(**json.loads(tool_call.function.arguments))
+        
+        tool_results[tool_call.id] = result
+        
+        # Add all tool results
+        messages.append({
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": json.dumps(result)
+        })
+    
+    # Step 3: Get final response with all tool results
+    final_response = client.chat.completions.create(
+        model="gpt-4",
+        messages=messages
+    )
+```
+
+**When to Use**:
+- Multiple independent operations needed
+- Gathering information from different sources simultaneously
+- Optimizing for fewer API calls when tools don't depend on each other
+
+**Note**: While the model can call multiple tools in one response, your code executes them sequentially. For I/O-bound tools, consider using `concurrent.futures` for true parallel execution.
+
+### Interleaved Tool Use
+
+**Description**: Reasoning models can make multiple tool calls in sequence, reasoning between each call. The model can iteratively refine its approach based on tool results, making additional tool calls as needed.
+
+**Characteristics**:
+- **API Calls**: N+1 total (N tool-call iterations + 1 final response, where N >= 2)
+- **Flow**: User request → Tool call 1 → Result 1 → Reasoning → Tool call 2 → Result 2 → ... → Final response
+- **Use Case**: Complex multi-step reasoning workflows requiring iterative refinement
+- **Model Support**: Reasoning models (o1-preview, o1-mini, o3-mini, o4-mini)
+
+**Example**:
+
+```python
+messages = [
+    {"role": "user", "content": "Translate with detailed analysis"}
+]
+
+max_iterations = 5
+iteration = 0
+
+# Interleaved loop: model can make multiple tool calls in sequence
+while iteration < max_iterations:
+    iteration += 1
+    
+    # Make API call (may return tool calls or final response)
+    response = client.chat.completions.create(
+        model="o3-mini",
+        messages=messages,
+        tools=[analyze_language_tool, get_translation_suggestions_tool],
+        tool_choice="auto"
+    )
+    
+    message = response.choices[0].message
+    messages.append(message)
+    
+    # If no tool calls, we have the final response
+    if not message.tool_calls and message.content:
+        break
+    
+    # Handle tool calls for this iteration
+    for tool_call in message.tool_calls:
+        # Execute tool
+        result = execute_tool(tool_call)
+        
+        # Add tool result for next iteration
+        messages.append({
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": json.dumps(result)
+        })
+    
+    # Model will reason about results and potentially make another tool call
+```
+
+**When to Use**:
+- Complex problem-solving requiring multiple reasoning steps
+- Iterative refinement based on intermediate results
+- Multi-step workflows where each step informs the next
+- With reasoning models (o-series) that support extended reasoning
+
+**Best Practices**:
+- Set `max_iterations` to prevent infinite loops
+- Monitor token usage (interleaved patterns use more tokens)
+- Use for complex tasks that benefit from step-by-step reasoning
+- Consider cost implications (more API calls = higher cost)
+
+### Pattern Comparison
+
+| Pattern | API Calls | Model Support | Best For | Cost Efficiency |
+|---------|-----------|---------------|----------|-----------------|
+| **Sequential** | 2 | All models | Simple workflows | High |
+| **Parallel** | 2 | All models | Independent operations | High |
+| **Interleaved** | N+1 (N≥2) | Reasoning models | Complex reasoning | Lower (more calls) |
+
+### Choosing the Right Pattern
+
+1. **Start with Sequential**: Most use cases only need one tool call
+2. **Use Parallel**: When you need multiple independent pieces of information
+3. **Use Interleaved**: Only for complex reasoning tasks with reasoning models
+
+**Example Implementation**: See `src/tool_use_patterns.py` for complete working examples of all three patterns with translation use cases.
+
 ## Tool Choice Options
 
 The `tool_choice` parameter controls how the model uses tools:
@@ -171,6 +363,12 @@ In practice, this creates a **tool-using agent** pattern where:
 - Implement retry logic
 - Monitor tool usage and execution
 - Implement safety limits (max tool calls, timeouts)
+- Choose the right tool use pattern:
+  - Use sequential for simple workflows
+  - Use parallel for independent operations
+  - Use interleaved only with reasoning models for complex tasks
+- Set `max_iterations` for interleaved patterns to prevent infinite loops
+- Consider cost implications: interleaved patterns use more API calls
 
 ## Use Cases
 
@@ -219,8 +417,13 @@ In practice, this creates a **tool-using agent** pattern where:
 2. **The model returns tool calls, not direct execution** - Your code must execute the functions
 3. **Your code executes the functions and returns results** - Bridge between LLM and external systems
 4. **You can continue the conversation with tool results** - Multi-turn interactions with tool feedback
-5. **Supports multiple tool calls in one response** - Model can call multiple functions simultaneously
-6. **Works with models that support function calling** - GPT-4, Claude, and other modern models
+5. **Three tool use patterns available**:
+   - **Sequential**: One tool call → final response (2 API calls, all models)
+   - **Parallel**: Multiple tools in one response → final response (2 API calls, all models)
+   - **Interleaved**: Multiple tool calls in sequence with reasoning (N+1 API calls, reasoning models)
+6. **Supports multiple tool calls in one response** - Model can call multiple functions simultaneously
+7. **Works with models that support function calling** - GPT-4, Claude, and other modern models
+8. **Interleaved pattern requires reasoning models** - o1-preview, o1-mini, o3-mini, o4-mini for iterative tool use
 
 ## Example: Complete Workflow with OpenAI SDK
 

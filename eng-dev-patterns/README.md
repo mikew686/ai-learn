@@ -2,6 +2,54 @@
 
 This document outlines key AI engineering patterns and techniques for building production systems using established models and services. These patterns focus on application-level engineering rather than model training or fine-tuning.
 
+## Learning Progression
+
+📚 [Learning Progression Guide](./learning_progression.md) - A self-learning progression that demonstrates how these patterns build on each other through a consistent use case. Start with foundational patterns and progressively add complexity as you learn.
+
+---
+
+## Understanding Models
+
+Understanding model capabilities helps you select the right model for your use case. Models available through OpenRouter and similar services can be categorized into general classes:
+
+**Chat/Conversational Models**: General-purpose models optimized for dialogue and text generation. Support function calling, structured outputs, and streaming. Best for most application patterns.
+- **OpenAI**: GPT-4, GPT-4 Turbo, GPT-3.5-turbo
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
+- **Google**: Gemini Pro, Gemini Ultra
+- **Other Vendors**: Meta Llama 3, Mistral Large, Cohere Command, DeepSeek Chat, xAI Grok
+
+**Reasoning Models**: Models designed for explicit step-by-step reasoning. Better for complex problem-solving, multi-step analysis, and tasks requiring logical deduction.
+- **OpenAI**: o1-preview, o1-mini, o3-mini
+- **Anthropic**: Claude 3.5 Sonnet (with reasoning capabilities)
+- **Google**: Gemini Pro (with chain-of-thought prompting)
+- **Other Vendors**: DeepSeek R1, Meta Llama 3 (with CoT prompting)
+
+**Fast/Cheap Models**: Lightweight models optimized for speed and cost. Suitable for simple tasks, high-volume operations, and when latency is critical.
+- **OpenAI**: GPT-3.5-turbo, GPT-4o-mini
+- **Anthropic**: Claude 3 Haiku
+- **Google**: Gemini Flash
+- **Other Vendors**: Meta Llama 3.1 8B, Mistral Small, Cohere Command Light, DeepSeek Chat 7B
+
+**Embedding Models**: Specialized for generating vector representations of text. Used for semantic search, RAG, and similarity matching.
+- **OpenAI**: text-embedding-3-small, text-embedding-3-large, text-embedding-ada-002
+- **Anthropic**: (Embeddings via third-party services)
+- **Google**: text-embedding-004, textembedding-gecko
+- **Other Vendors**: Cohere Embed, Mistral Embed, Voyage AI, Nomic Embed
+
+**Code Models**: Optimized for code generation and understanding. Better at code completion, debugging, and code explanation tasks.
+- **OpenAI**: GPT-4 (code capabilities), GPT-3.5-turbo (code)
+- **Anthropic**: Claude 3.5 Sonnet (strong code capabilities)
+- **Google**: Gemini Pro (code generation)
+- **Other Vendors**: Meta CodeLlama, DeepSeek Coder, Mistral Code, StarCoder
+
+**Multimodal Models**: Support both text and image inputs/outputs. Enable image analysis, visual question answering, and image generation workflows.
+- **OpenAI**: GPT-4 Vision, GPT-4o (multimodal)
+- **Anthropic**: Claude 3.5 Sonnet (vision), Claude 3 Opus (vision)
+- **Google**: Gemini Pro Vision, Gemini Ultra (multimodal)
+- **Other Vendors**: Meta Llama 3.1 (vision), Mistral Large (multimodal), Cohere Command R+ (multimodal)
+
+📖 [Detailed Documentation](./understanding_models.md) - Comprehensive guide to model capabilities, selection criteria, and use case mapping.
+
 ---
 
 ## Prompt Engineering

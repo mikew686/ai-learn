@@ -1,14 +1,47 @@
+"""
+Pattern 1: Prompt Engineering
+
+This example demonstrates system vs user prompts:
+- Stateless approach: Instructions repeated in each user message
+- Stateful approach: System prompt set once, reused across messages
+- Token efficiency comparison between approaches
+- Role-setting and constraint injection in system prompts
+
+Use Case: Translation with system role optimization
+"""
+
 import argparse
 import os
 import time
 from openai import OpenAI
-from prompts import quebec_french_translate
 from utils import (
     create_client,
     format_response,
     print_response_timing,
     print_token_usage,
 )
+
+
+# Prompt for Québécois French translation
+QUEBEC_FRENCH_TRANSLATE = """You are an expert translator specializing in Québécois French from Montréal.
+
+Your task is to translate English text into authentic, informal Québécois French.
+
+Translation Requirements:
+1. Use tutoiement (informal "you") form exclusively
+2. Always use contractions: 'j'suis' (never 'je suis'), 't'es' (never 'tu es'), 'c'est' (never 'ce est')
+3. Use Montréal-specific slang and expressions:
+   - 'boulot' for work/job
+   - 'bureau' for office
+   - 'frette' or 'bière' for drink
+4. Prefer colloquial expressions over formal language
+5. Avoid literal translations and Parisian French phrasing
+6. For ambiguous phrases, infer meaning as a native Montréal speaker would
+
+Output Format:
+- Output only the translation(s), no explanations, metadata, or comments
+- Maintain consistent tone, slang level, and register across all translations
+- Sound authentic to a native Québécois speaker from Montréal"""
 
 
 def run_stateless_example(client: OpenAI, model: str):
@@ -31,7 +64,7 @@ def run_stateless_example(client: OpenAI, model: str):
         messages=[
             {
                 "role": "user",
-                "content": f"{quebec_french_translate}\n\nTranslate: '{message1}'",
+                "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'",
             }
         ],
     )
@@ -45,7 +78,7 @@ def run_stateless_example(client: OpenAI, model: str):
         messages=[
             {
                 "role": "user",
-                "content": f"{quebec_french_translate}\n\nTranslate: '{message2}'",
+                "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'",
             }
         ],
     )
@@ -85,7 +118,7 @@ def run_stateful_example(client: OpenAI, model: str):
     messages = [
         {
             "role": "system",
-            "content": quebec_french_translate
+            "content": QUEBEC_FRENCH_TRANSLATE
             + "\n\nIf multiple user messages are provided, translate ALL of them, one per line.",
         },
         {"role": "user", "content": message1},
