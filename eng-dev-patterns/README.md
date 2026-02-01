@@ -50,6 +50,8 @@ Understanding model capabilities helps you select the right model for your use c
 
 📖 [Detailed Documentation](./understanding_models.md) - Comprehensive guide to model capabilities, selection criteria, and use case mapping.
 
+📖 [LLM vs. Reasoning Problems](./llm_vs_reasoning_problems.md) - Problem types that suit chat models vs. reasoning models, with examples and selection guidelines.
+
 ---
 
 ## Prompt Engineering

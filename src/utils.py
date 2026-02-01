@@ -40,7 +40,13 @@ def format_response(content: str) -> str:
     return "\n".join(f">> {line}" if line.strip() else ">>" for line in lines)
 
 
-def print_indented(label: str, content: str, indent: int = 2, width: int = 120):
+def print_indented(
+    label: str,
+    content: str,
+    indent: int = 2,
+    width: int = 120,
+    max_length: int | None = None,
+):
     """
     Print a label followed by indented multiline content with text wrapping.
 
@@ -48,8 +54,11 @@ def print_indented(label: str, content: str, indent: int = 2, width: int = 120):
         label: Label text (e.g., "Phrase:", "Language Code:")
         content: Content to print (may contain newlines)
         indent: Number of spaces for indentation (default: 2)
-        width: Maximum width for wrapped text (default: 60)
+        width: Maximum width for wrapped text (default: 120)
+        max_length: If set, truncate content to this many characters (default: None)
     """
+    if max_length is not None and len(content) > max_length:
+        content = content[:max_length] + "\n... [truncated]"
     print(f"{label}:")
     indent_str = " " * indent
     # Calculate available width after indentation

@@ -1,6 +1,8 @@
 # ai-learn
 
-Personal AI Learning project.
+A personal learning project for understanding the fundamentals of developing software using LLMs and reasoning models. This project focuses on **AI technology as a component**—what it takes to build products with these tools—rather than techniques for AI-assisted software development.
+
+I got interested after attending the [DeepLearning.AI developer conference in 2025](deeplearning-ai-dev-2025/README.md). This project is an attempt to understand the building blocks of AI development and develop a learning approach for what is required to build products using this new technology.
 
 ## Setup
 

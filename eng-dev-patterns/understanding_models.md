@@ -6,14 +6,15 @@ Understanding model capabilities and categories is essential for selecting the r
 
 ## Model Categories
 
-Models available through OpenRouter and similar services can be categorized into six general classes:
+Models available through OpenRouter and similar services can be categorized into seven general classes:
 
 1. **Chat/Conversational Models** - General-purpose dialogue and text generation
 2. **Reasoning Models** - Explicit step-by-step reasoning and problem-solving
-3. **Fast/Cheap Models** - Lightweight models optimized for speed and cost
-4. **Embedding Models** - Vector representations for semantic search and RAG
-5. **Code Models** - Specialized for code generation and understanding
-6. **Multimodal Models** - Support text and image inputs/outputs
+3. **Hybrid Models** - Systems that combine chat and reasoning (e.g., GPT-5 with routing, Claude extended thinking)
+4. **Fast/Cheap Models** - Lightweight models optimized for speed and cost
+5. **Embedding Models** - Vector representations for semantic search and RAG
+6. **Code Models** - Specialized for code generation and understanding
+7. **Multimodal Models** - Support text and image inputs/outputs
 
 ---
 
@@ -213,6 +214,47 @@ response = client.chat.completions.create(
 - **OpenAI Reasoning Models**: https://platform.openai.com/docs/guides/reasoning
 - **OpenAI Reasoning Best Practices**: https://platform.openai.com/docs/guides/reasoning-best-practices
 - **Chain-of-Thought Prompting**: https://arxiv.org/abs/2201.11903
+
+---
+
+## Hybrid Models: Chat + Reasoning Combined
+
+Some systems blur the boundary between chat and reasoning by combining both capabilities. These hybrids can simplify model selection when you want both fast responses and strong reasoning without choosing explicitly.
+
+### GPT-5: Routed Hybrid System
+
+[GPT-5](https://platform.openai.com/docs/models/gpt-5) is a hybrid **system**, not a single model:
+
+- **gpt-5-main**: Fast, high-throughput model for most questions
+- **gpt-5-thinking**: Deeper reasoning model for complex problems
+- **Router**: Automatically chooses between them based on complexity, tool needs, and user intent (e.g., "think hard about this")
+
+You call one API; the router decides which sub-model to use. Simple lookups stay fast; harder logic problems get routed to the reasoning path without you having to switch models.
+
+### Claude: Implicit Extended Thinking
+
+[Claude's extended thinking](https://docs.anthropic.com/en/docs/about-claude/models/extended-thinking-models) uses a single model that can reason internally when needed, but the reasoning is **hidden** from the output. The model produces a direct answer while optionally doing extended reasoning behind the scenes.
+
+### Hybrid Approaches Summary
+
+| Type | How it works | Examples |
+|------|--------------|----------|
+| **Routed** | System selects chat vs. reasoning sub-model per request | GPT-5 |
+| **Implicit** | Single model reasons internally; reasoning not shown | Claude extended thinking |
+| **Explicit CoT** | Reasoning shown in output; typically a dedicated model | o1, o3, o4-mini |
+| **Prompt-level** | "Think step by step" added to a chat model prompt | Any chat model with CoT prompting |
+
+### When Hybrids Help
+
+- You want one API and don't want to choose chat vs. reasoning per request
+- Your workload mixes simple and complex questions
+- You prefer automatic routing over explicit model selection
+
+### When Explicit Choice Still Matters
+
+- Benchmarking or comparing chat vs. reasoning behavior (e.g., with `understand_llm_models.py` vs. `understand_reasoning_model.py`)
+- Cost control (reasoning models use more tokens; you may want to limit their use)
+- Debugging or auditing reasoning steps (explicit CoT models show their work)
 
 ---
 
@@ -896,6 +938,19 @@ Understanding key parameters and their effects helps optimize model behavior for
 ---
 
 ## Self-Learning Resources
+
+### Understanding Model Fundamentals (How They Work)
+
+References for understanding the underlying technology—architecture, training, and mechanics—rather than capabilities or API usage:
+
+- **The Illustrated Transformer** (Jay Alammar): https://jalammar.github.io/illustrated-transformer/ — Visual explanation of transformer architecture; widely used in university courses.
+- **How Transformer LLMs Work** (DeepLearning.AI short course, ~1.5 hrs): https://www.deeplearning.ai/short-courses/how-transformer-llms-work/ — Covers tokenization, embeddings, self-attention, transformer blocks, KV cache.
+- **State of GPT** (Andrej Karpathy): https://karpathy.ai/stateofgpt — Presentation on the complete training pipeline (pretraining, SFT, RLHF); also on [YouTube](https://www.youtube.com/watch?v=s6zNXZaIiiI).
+- **Neural Networks: Zero to Hero** (Andrej Karpathy): https://karpathy.ai/zero-to-hero.html — Builds from backprop to language models; includes building a GPT from scratch.
+- **Hugging Face LLM Course — How Transformers Work**: https://huggingface.co/learn/llm-course — Technical coverage of transformer architecture and history.
+- **Google ML Crash Course — LLMs & Transformers**: https://developers.google.com/machine-learning/crash-course/llm/transformers — Introduction to encoders/decoders and self-attention.
+- **Attention Is All You Need** (Vaswani et al., 2017): https://arxiv.org/abs/1706.03762 — Original transformer paper.
+- **Pretraining LLMs** (DeepLearning.AI short course): https://www.deeplearning.ai/short-courses/pretraining-llms/ — Data preparation through model evaluation for pretraining.
 
 ### Official Documentation
 
