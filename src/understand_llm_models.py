@@ -7,8 +7,28 @@ and tool results. Uses a simple fetch_url tool. Type "done" to exit.
 Behavior: Chat models typically return either content OR tool_calls in a
 single response, not both. We check tool_calls first, then content.
 
+Example settings (omit any flag to use API default):
+
+  # Deterministic, factual (best for tool use, extraction, classification)
+  python -m src.understand_llm_models --temperature 0
+
+  # Balanced creativity and consistency (general chat)
+  python -m src.understand_llm_models --temperature 0.7
+
+  # More creative, varied outputs (brainstorming, drafting)
+  python -m src.understand_llm_models --temperature 1.0
+
+  # Limit response length (shorter, cheaper)
+  python -m src.understand_llm_models --max-tokens 256
+
+  # Allow longer responses (summaries, explanations)
+  python -m src.understand_llm_models --max-tokens 4096
+
+  # Combine: deterministic + short (e.g. quick lookups)
+  python -m src.understand_llm_models --temperature 0 --max-tokens 256
+
 Usage:
-    python -m src.understand_llm_models [--model MODEL]
+    python -m src.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]
 """
 
 import argparse
@@ -49,17 +69,24 @@ def fetch_url(url: str) -> dict:
         return {"url": url, "error": str(e)}
 
 
-def run_turn(client: OpenAI, model: str, messages: list) -> tuple[list, bool, int, int]:
+def run_turn(
+    client: OpenAI,
+    model: str,
+    messages: list,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> tuple[list, bool, int, int]:
     """
     Run one API turn. Returns (updated messages, done, prompt_tokens, completion_tokens).
     Handles tool calls and continues until the model returns text.
     """
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=[FETCH_URL_TOOL],
-        tool_choice="auto",
-    )
+    api_kwargs = {"model": model, "messages": messages, "tools": [FETCH_URL_TOOL], "tool_choice": "auto"}
+    if temperature is not None:
+        api_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        api_kwargs["max_tokens"] = max_tokens
+    response = client.chat.completions.create(**api_kwargs)
     msg = response.choices[0].message
     messages.append(msg)
 
@@ -103,12 +130,16 @@ def run_turn(client: OpenAI, model: str, messages: list) -> tuple[list, bool, in
 def main():
     parser = argparse.ArgumentParser(description="Interactive LLM chat with tool use")
     parser.add_argument("--model", default=None, help="Model to use")
+    parser.add_argument("--temperature", type=float, default=None, help="Sampling temperature (omit to use API default)")
+    parser.add_argument("--max-tokens", type=int, default=None, help="Max tokens per response (omit to use API default)")
     args = parser.parse_args()
 
     client = create_client()
     default = "openai/gpt-4o-mini" if os.getenv("OPENROUTER_API_KEY") else "gpt-4o-mini"
     model = args.model or os.getenv("MODEL", default)
     print(f"Model: {model}")
+    if args.temperature is not None or args.max_tokens is not None:
+        print(f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}")
     print('Type "done" to exit.\n')
 
     system_content = "You are a helpful assistant. You can use fetch_url to get web page content when needed. Keep responses concise."
@@ -138,7 +169,13 @@ def main():
         done = False
         while not done:
             start = time.time()
-            messages, done, in_tok, out_tok = run_turn(client, model, messages)
+            messages, done, in_tok, out_tok = run_turn(
+                client,
+                model,
+                messages,
+                temperature=args.temperature,
+                max_tokens=args.max_tokens,
+            )
             total_in += in_tok
             total_out += out_tok
             elapsed = time.time() - start

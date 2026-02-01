@@ -182,7 +182,14 @@ class LanguageAssessment(BaseModel):
     )
 
 
-def assess_lang(phrase: str, client=None, model: str = None):
+def assess_lang(
+    phrase: str,
+    client=None,
+    model: str = None,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+):
     """
     Assess the language, variant, and region of a given phrase using structured output.
 
@@ -190,6 +197,8 @@ def assess_lang(phrase: str, client=None, model: str = None):
         phrase: The text phrase to analyze
         client: OpenAI client instance (creates one if not provided)
         model: Model name to use (uses default if not provided)
+        temperature: Sampling temperature (omit to use API default)
+        max_tokens: Max tokens per response (omit to use API default)
 
     Returns:
         Tuple of (LanguageAssessment object, response object, elapsed_time) for access to token usage and timing
@@ -208,11 +217,16 @@ def assess_lang(phrase: str, client=None, model: str = None):
     prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
 
     start_time = time.time()
-    response = client.beta.chat.completions.parse(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        response_format=LanguageAssessment,
-    )
+    parse_kwargs = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": LanguageAssessment,
+    }
+    if temperature is not None:
+        parse_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        parse_kwargs["max_tokens"] = max_tokens
+    response = client.beta.chat.completions.parse(**parse_kwargs)
     elapsed_time = time.time() - start_time
 
     return response.choices[0].message.parsed, response, elapsed_time
@@ -239,6 +253,18 @@ def main():
         type=str,
         default=None,
         help="Override with a custom phrase to analyze (takes precedence over --example-phrases)",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Sampling temperature (omit to use API default)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="Max tokens per response (omit to use API default)",
     )
     args = parser.parse_args()
 
@@ -306,7 +332,13 @@ def main():
         print_indented("Phrase", phrase)
 
         try:
-            assessment, response, elapsed_time = assess_lang(phrase, client, model)
+            assessment, response, elapsed_time = assess_lang(
+                phrase,
+                client,
+                model,
+                temperature=args.temperature,
+                max_tokens=args.max_tokens,
+            )
             assessments.append(assessment)
 
             # Collect statistics

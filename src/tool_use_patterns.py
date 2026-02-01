@@ -212,7 +212,14 @@ class LanguageAssessment(BaseModel):
     )
 
 
-def assess_lang(phrase: str, client=None, model: str = None):
+def assess_lang(
+    phrase: str,
+    client=None,
+    model: str = None,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+):
     """
     Assess the language, variant, and region of a given phrase using structured output.
 
@@ -220,6 +227,8 @@ def assess_lang(phrase: str, client=None, model: str = None):
         phrase: The text phrase to analyze
         client: OpenAI client instance (creates one if not provided)
         model: Model name to use (uses default if not provided)
+        temperature: Sampling temperature (omit to use API default)
+        max_tokens: Max tokens per response (omit to use API default)
 
     Returns:
         Tuple of (LanguageAssessment object, response object, elapsed_time) for access to token usage and timing
@@ -238,17 +247,29 @@ def assess_lang(phrase: str, client=None, model: str = None):
     prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
 
     start_time = time.time()
-    response = client.beta.chat.completions.parse(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        response_format=LanguageAssessment,
-    )
+    parse_kwargs = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": LanguageAssessment,
+    }
+    if temperature is not None:
+        parse_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        parse_kwargs["max_tokens"] = max_tokens
+    response = client.beta.chat.completions.parse(**parse_kwargs)
     elapsed_time = time.time() - start_time
 
     return response.choices[0].message.parsed, response, elapsed_time
 
 
-def analyze_language(phrase: str) -> dict:
+def analyze_language(
+    phrase: str,
+    client=None,
+    model: str = None,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> dict:
     """
     Analyze the language, variant, and region of a given phrase.
 
@@ -258,7 +279,13 @@ def analyze_language(phrase: str) -> dict:
     Returns:
         Dictionary with language_code, region_code, description, and variant
     """
-    assessment, _, _ = assess_lang(phrase)
+    assessment, _, _ = assess_lang(
+        phrase,
+        client=client,
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
     return {
         "language_code": assessment.language_code,
         "region_code": assessment.region_code,
@@ -291,7 +318,15 @@ analyze_language_tool = {
 }
 
 
-def translate_phrase(phrase: str, target_language: str, client: OpenAI, model: str):
+def translate_phrase(
+    phrase: str,
+    target_language: str,
+    client: OpenAI,
+    model: str,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+):
     """
     Translate a phrase using tool calling to first identify the language.
 
@@ -323,12 +358,17 @@ Use the analyze_language tool to identify the source language before translating
     start_time = time.time()
 
     # Initial call with tools
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=[analyze_language_tool],
-        tool_choice="auto",
-    )
+    create_kwargs = {
+        "model": model,
+        "messages": messages,
+        "tools": [analyze_language_tool],
+        "tool_choice": "auto",
+    }
+    if temperature is not None:
+        create_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        create_kwargs["max_tokens"] = max_tokens
+    response = client.chat.completions.create(**create_kwargs)
 
     message = response.choices[0].message
     messages.append(message)
@@ -343,7 +383,13 @@ Use the analyze_language tool to identify the source language before translating
 
             if function_name == "analyze_language":
                 # Execute the function
-                result = analyze_language(**arguments)
+                result = analyze_language(
+                    **arguments,
+                    client=client,
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
 
                 # Send results back to the model
                 messages.append(
@@ -355,10 +401,12 @@ Use the analyze_language tool to identify the source language before translating
                 )
 
                 # Get final response with translation
-                final_response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                )
+                final_kwargs = {"model": model, "messages": messages}
+                if temperature is not None:
+                    final_kwargs["temperature"] = temperature
+                if max_tokens is not None:
+                    final_kwargs["max_tokens"] = max_tokens
+                final_response = client.chat.completions.create(**final_kwargs)
 
                 elapsed_time = time.time() - start_time
                 return response, message, final_response, result, elapsed_time
@@ -368,7 +416,13 @@ Use the analyze_language tool to identify the source language before translating
 
 
 def translate_with_parallel_tools(
-    phrase: str, target_language: str, client: OpenAI, model: str
+    phrase: str,
+    target_language: str,
+    client: OpenAI,
+    model: str,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
 ):
     """
     Translate a phrase using parallel tool calls.
@@ -440,12 +494,17 @@ You can call multiple tools in parallel to gather information efficiently."""
     start_time = time.time()
 
     # Initial call with multiple tools available
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=[analyze_language_tool, get_cultural_context_tool],
-        tool_choice="auto",
-    )
+    create_kwargs = {
+        "model": model,
+        "messages": messages,
+        "tools": [analyze_language_tool, get_cultural_context_tool],
+        "tool_choice": "auto",
+    }
+    if temperature is not None:
+        create_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        create_kwargs["max_tokens"] = max_tokens
+    response = client.chat.completions.create(**create_kwargs)
 
     message = response.choices[0].message
     messages.append(message)
@@ -462,7 +521,13 @@ You can call multiple tools in parallel to gather information efficiently."""
             arguments = json.loads(tool_call.function.arguments)
 
             if function_name == "analyze_language":
-                result = analyze_language(**arguments)
+                result = analyze_language(
+                    **arguments,
+                    client=client,
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
             elif function_name == "get_cultural_context":
                 result = get_cultural_context(**arguments)
             else:
@@ -480,10 +545,12 @@ You can call multiple tools in parallel to gather information efficiently."""
             )
 
         # Get final response with all tool results
-        final_response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-        )
+        final_kwargs = {"model": model, "messages": messages}
+        if temperature is not None:
+            final_kwargs["temperature"] = temperature
+        if max_tokens is not None:
+            final_kwargs["max_tokens"] = max_tokens
+        final_response = client.chat.completions.create(**final_kwargs)
 
         elapsed_time = time.time() - start_time
         return response, tool_results, final_response, elapsed_time
@@ -498,6 +565,9 @@ def translate_with_interleaved_tools(
     client: OpenAI,
     model: str,
     max_iterations: int = 5,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
 ):
     """
     Translate a phrase using interleaved tool calls (for reasoning models).
@@ -601,12 +671,17 @@ Use interleaved tool calls to iteratively refine your translation."""
         iteration += 1
 
         # Make API call (may return tool calls or final response)
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            tools=[analyze_language_tool, get_translation_suggestions_tool],
-            tool_choice="auto",
-        )
+        create_kwargs = {
+            "model": model,
+            "messages": messages,
+            "tools": [analyze_language_tool, get_translation_suggestions_tool],
+            "tool_choice": "auto",
+        }
+        if temperature is not None:
+            create_kwargs["temperature"] = temperature
+        if max_tokens is not None:
+            create_kwargs["max_tokens"] = max_tokens
+        response = client.chat.completions.create(**create_kwargs)
 
         all_responses.append(response)
         message = response.choices[0].message
@@ -625,7 +700,13 @@ Use interleaved tool calls to iteratively refine your translation."""
             arguments = json.loads(tool_call.function.arguments)
 
             if function_name == "analyze_language":
-                result = analyze_language(**arguments)
+                result = analyze_language(
+                    **arguments,
+                    client=client,
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
             elif function_name == "get_translation_suggestions":
                 result = get_translation_suggestions(**arguments)
             else:
@@ -689,6 +770,18 @@ def main():
         type=str,
         default=None,
         help="Override with a custom phrase to translate (takes precedence over --example-phrases)",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Sampling temperature (omit to use API default)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="Max tokens per response (omit to use API default)",
     )
     args = parser.parse_args()
 
@@ -758,7 +851,14 @@ def main():
                     final_response,
                     tool_result,
                     elapsed_time,
-                ) = translate_phrase(phrase, args.target, client, model)
+                ) = translate_phrase(
+                    phrase,
+                    args.target,
+                    client,
+                    model,
+                    temperature=args.temperature,
+                    max_tokens=args.max_tokens,
+                )
 
                 if tool_result and final_response:
                     print("\nIntermediate Message (Assistant with Tool Call):")
@@ -800,7 +900,14 @@ def main():
                     tool_results,
                     final_response,
                     elapsed_time,
-                ) = translate_with_parallel_tools(phrase, args.target, client, model)
+                ) = translate_with_parallel_tools(
+                    phrase,
+                    args.target,
+                    client,
+                    model,
+                    temperature=args.temperature,
+                    max_tokens=args.max_tokens,
+                )
 
                 if tool_results and final_response:
                     print("\nParallel Tool Calls:")
@@ -827,7 +934,14 @@ def main():
                     all_tool_results,
                     final_response,
                     elapsed_time,
-                ) = translate_with_interleaved_tools(phrase, args.target, client, model)
+                ) = translate_with_interleaved_tools(
+                    phrase,
+                    args.target,
+                    client,
+                    model,
+                    temperature=args.temperature,
+                    max_tokens=args.max_tokens,
+                )
 
                 print(f"\nInterleaved Tool Calls ({len(all_responses)} iterations):")
                 for iteration, tool_id, result in all_tool_results:

@@ -150,7 +150,13 @@ get_cultural_context_tool = {
 
 
 def translate_with_tools_and_structured(
-    source_text: str, target_language: str, client: OpenAI, model: str
+    source_text: str,
+    target_language: str,
+    client: OpenAI,
+    model: str,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
 ):
     """
     Translate text using tool calling and structured output.
@@ -194,12 +200,17 @@ def translate_with_tools_and_structured(
     start_time = time.time()
 
     # Initial call with tools
-    initial_response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=tools,
-        tool_choice="auto",
-    )
+    create_kwargs = {
+        "model": model,
+        "messages": messages,
+        "tools": tools,
+        "tool_choice": "auto",
+    }
+    if temperature is not None:
+        create_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        create_kwargs["max_tokens"] = max_tokens
+    initial_response = client.chat.completions.create(**create_kwargs)
 
     message = initial_response.choices[0].message
     messages.append(message)
@@ -227,11 +238,12 @@ def translate_with_tools_and_structured(
             )
 
     # Final call with structured output
-    final_response = client.beta.chat.completions.parse(
-        model=model,
-        messages=messages,
-        response_format=TranslationResult,
-    )
+    parse_kwargs = {"model": model, "messages": messages, "response_format": TranslationResult}
+    if temperature is not None:
+        parse_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        parse_kwargs["max_tokens"] = max_tokens
+    final_response = client.beta.chat.completions.parse(**parse_kwargs)
 
     elapsed_time = time.time() - start_time
     translation_result = final_response.choices[0].message.parsed
@@ -261,6 +273,18 @@ def main():
         type=str,
         default=None,
         help="Override the target language (default: French)",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Sampling temperature (omit to use API default)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="Max tokens per response (omit to use API default)",
     )
 
     args = parser.parse_args()
@@ -296,7 +320,12 @@ def main():
             final_response,
             elapsed_time,
         ) = translate_with_tools_and_structured(
-            source_text, target_language, client, model
+            source_text,
+            target_language,
+            client,
+            model,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens,
         )
 
         print("✓ Success")

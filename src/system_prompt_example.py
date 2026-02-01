@@ -44,7 +44,13 @@ Output Format:
 - Sound authentic to a native Québécois speaker from Montréal"""
 
 
-def run_stateless_example(client: OpenAI, model: str):
+def run_stateless_example(
+    client: OpenAI,
+    model: str,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+):
     """
     Run Example A: Stateless approach where system prompt is repeated in each user message.
 
@@ -59,29 +65,29 @@ def run_stateless_example(client: OpenAI, model: str):
     # Call 1 - Stateless (instructions repeated in user message)
     message1 = "I'm running late to the office."
     start1 = time.time()
-    r1 = client.chat.completions.create(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'",
-            }
-        ],
-    )
+    r1_kwargs = {
+        "model": model,
+        "messages": [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'"}],
+    }
+    if temperature is not None:
+        r1_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        r1_kwargs["max_tokens"] = max_tokens
+    r1 = client.chat.completions.create(**r1_kwargs)
     elapsed1 = time.time() - start1
 
     # Call 2 - Stateless (instructions repeated again)
     message2 = "Let's grab a drink after work."
     start2 = time.time()
-    r2 = client.chat.completions.create(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'",
-            }
-        ],
-    )
+    r2_kwargs = {
+        "model": model,
+        "messages": [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'"}],
+    }
+    if temperature is not None:
+        r2_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        r2_kwargs["max_tokens"] = max_tokens
+    r2 = client.chat.completions.create(**r2_kwargs)
     elapsed2 = time.time() - start2
 
     print(f"\n{message1}")
@@ -100,7 +106,13 @@ def run_stateless_example(client: OpenAI, model: str):
     print_response_timing(total_time, "Total Response Time")
 
 
-def run_stateful_example(client: OpenAI, model: str):
+def run_stateful_example(
+    client: OpenAI,
+    model: str,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+):
     """
     Run Example B: Stateful approach where system prompt is set once and reused.
 
@@ -127,7 +139,12 @@ def run_stateful_example(client: OpenAI, model: str):
 
     # Single stateful session with system + 2 user messages
     start = time.time()
-    response = client.chat.completions.create(model=model, messages=messages)
+    response_kwargs = {"model": model, "messages": messages}
+    if temperature is not None:
+        response_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        response_kwargs["max_tokens"] = max_tokens
+    response = client.chat.completions.create(**response_kwargs)
     elapsed = time.time() - start
 
     print(f"\n{message1}")
@@ -164,6 +181,18 @@ def main():
         default=None,
         help="Model to use (overrides MODEL env var and default)",
     )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Sampling temperature (omit to use API default)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="Max tokens per response (omit to use API default)",
+    )
     args = parser.parse_args()
 
     openrouter_key = os.getenv("OPENROUTER_API_KEY")
@@ -182,8 +211,18 @@ def main():
     model = args.model or os.getenv("MODEL", default_model)
     print(f"Using model: {model}\n")
 
-    run_stateless_example(client, model)
-    run_stateful_example(client, model)
+    run_stateless_example(
+        client,
+        model,
+        temperature=args.temperature,
+        max_tokens=args.max_tokens,
+    )
+    run_stateful_example(
+        client,
+        model,
+        temperature=args.temperature,
+        max_tokens=args.max_tokens,
+    )
 
 
 if __name__ == "__main__":

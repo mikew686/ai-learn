@@ -9,8 +9,25 @@ Behavior: Reasoning models may return both content (chain-of-thought) and
 tool_calls in the same response. We handle content first so reasoning is
 printed before any tool calls. System prompt includes "Think step by step."
 
+Note: Many reasoning models (e.g. o3-mini) ignore or fix temperature;
+max_tokens is the main tunable, since reasoning chains use many tokens.
+
+Example settings (omit any flag to use API default):
+
+  # Allow full reasoning chains (complex problems, multi-step logic)
+  python -m src.understand_reasoning_model --max-tokens 8192
+
+  # Shorter reasoning (faster, cheaper; may truncate on hard problems)
+  python -m src.understand_reasoning_model --max-tokens 2048
+
+  # Cap at 16k for very long analyses
+  python -m src.understand_reasoning_model --max-tokens 16384
+
+  # If the model supports it: lower temperature for more consistent logic
+  python -m src.understand_reasoning_model --temperature 0.2 --max-tokens 4096
+
 Usage:
-    python -m src.understand_reasoning_model [--model MODEL]
+    python -m src.understand_reasoning_model [--model MODEL] [--temperature T] [--max-tokens N]
 """
 
 import argparse
@@ -50,14 +67,21 @@ def fetch_url(url: str) -> dict:
         return {"url": url, "error": str(e)}
 
 
-def run_turn(client: OpenAI, model: str, messages: list) -> tuple[list, bool, int, int]:
+def run_turn(
+    client: OpenAI,
+    model: str,
+    messages: list,
+    *,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> tuple[list, bool, int, int]:
     """Run one API turn. Returns (messages, done, prompt_tokens, completion_tokens)."""
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=[FETCH_URL_TOOL],
-        tool_choice="auto",
-    )
+    api_kwargs = {"model": model, "messages": messages, "tools": [FETCH_URL_TOOL], "tool_choice": "auto"}
+    if temperature is not None:
+        api_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        api_kwargs["max_tokens"] = max_tokens
+    response = client.chat.completions.create(**api_kwargs)
     msg = response.choices[0].message
     messages.append(msg)
 
@@ -104,12 +128,16 @@ def run_turn(client: OpenAI, model: str, messages: list) -> tuple[list, bool, in
 def main():
     parser = argparse.ArgumentParser(description="Interactive reasoning model chat")
     parser.add_argument("--model", default=None, help="Model to use")
+    parser.add_argument("--temperature", type=float, default=None, help="Sampling temperature (omit to use API default)")
+    parser.add_argument("--max-tokens", type=int, default=None, help="Max tokens per response (omit to use API default)")
     args = parser.parse_args()
 
     client = create_client()
     default = "openai/o3-mini" if os.getenv("OPENROUTER_API_KEY") else "o3-mini"
     model = args.model or os.getenv("MODEL", default)
     print(f"Model: {model}")
+    if args.temperature is not None or args.max_tokens is not None:
+        print(f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}")
     print('Type "done" to exit.\n')
 
     system_content = "You are a helpful assistant. You can use fetch_url to get web page content. Think step by step and keep responses concise."
@@ -139,7 +167,13 @@ def main():
         done = False
         while not done:
             start = time.time()
-            messages, done, in_tok, out_tok = run_turn(client, model, messages)
+            messages, done, in_tok, out_tok = run_turn(
+                client,
+                model,
+                messages,
+                temperature=args.temperature,
+                max_tokens=args.max_tokens,
+            )
             total_in += in_tok
             total_out += out_tok
             elapsed = time.time() - start
