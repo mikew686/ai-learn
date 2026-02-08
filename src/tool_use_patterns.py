@@ -384,13 +384,12 @@ Use the analyze_language tool to identify the source language before translating
         create_kwargs["temperature"] = temperature
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
-    t0 = time.time()
+    log.start_call()
     response = client.chat.completions.create(**create_kwargs)
     log.register(
         "chat.completions.create",
         messages,
         response,
-        elapsed_time=time.time() - t0,
         label="Sequential initial",
     )
 
@@ -431,13 +430,12 @@ Use the analyze_language tool to identify the source language before translating
                     final_kwargs["temperature"] = temperature
                 if max_tokens is not None:
                     final_kwargs["max_tokens"] = max_tokens
-                t1 = time.time()
+                log.start_call()
                 final_response = client.chat.completions.create(**final_kwargs)
                 log.register(
                     "chat.completions.create",
                     messages,
                     final_response,
-                    elapsed_time=time.time() - t1,
                     label="Sequential final",
                 )
 
@@ -539,13 +537,12 @@ You can call multiple tools in parallel to gather information efficiently."""
         create_kwargs["temperature"] = temperature
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
-    t0 = time.time()
+    log.start_call()
     response = client.chat.completions.create(**create_kwargs)
     log.register(
         "chat.completions.create",
         messages,
         response,
-        elapsed_time=time.time() - t0,
         label="Parallel initial",
     )
 
@@ -594,13 +591,12 @@ You can call multiple tools in parallel to gather information efficiently."""
             final_kwargs["temperature"] = temperature
         if max_tokens is not None:
             final_kwargs["max_tokens"] = max_tokens
-        t1 = time.time()
+        log.start_call()
         final_response = client.chat.completions.create(**final_kwargs)
         log.register(
             "chat.completions.create",
             messages,
             final_response,
-            elapsed_time=time.time() - t1,
             label="Parallel final",
         )
 
@@ -735,13 +731,12 @@ Use interleaved tool calls to iteratively refine your translation."""
             create_kwargs["temperature"] = temperature
         if max_tokens is not None:
             create_kwargs["max_tokens"] = max_tokens
-        t_iter = time.time()
+        log.start_call()
         response = client.chat.completions.create(**create_kwargs)
         log.register(
             "chat.completions.create",
             messages,
             response,
-            elapsed_time=time.time() - t_iter,
             label=f"Interleaved iter {iteration}",
         )
 

@@ -219,7 +219,6 @@ def assess_lang(
     prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
     messages = [{"role": "user", "content": prompt}]
 
-    start_time = time.time()
     parse_kwargs = {
         "model": model,
         "messages": messages,
@@ -229,15 +228,16 @@ def assess_lang(
         parse_kwargs["temperature"] = temperature
     if max_tokens is not None:
         parse_kwargs["max_tokens"] = max_tokens
+    start_time = time.time()
+    if log is not None:
+        log.start_call()
     response = client.beta.chat.completions.parse(**parse_kwargs)
     elapsed_time = time.time() - start_time
-
     if log is not None:
         log.register(
             "beta.chat.completions.parse",
             messages,
             response,
-            elapsed_time=elapsed_time,
         )
 
     return response.choices[0].message.parsed, response, elapsed_time

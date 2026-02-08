@@ -210,14 +210,12 @@ def translate_with_tools_and_structured(
         create_kwargs["temperature"] = temperature
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
-    t0 = time.time()
+    log.start_call()
     initial_response = client.chat.completions.create(**create_kwargs)
-    elapsed_initial = time.time() - t0
     log.register(
         "chat.completions.create",
         messages,
         initial_response,
-        elapsed_time=elapsed_initial,
         label="Initial (with tools)",
     )
 
@@ -252,14 +250,12 @@ def translate_with_tools_and_structured(
         parse_kwargs["temperature"] = temperature
     if max_tokens is not None:
         parse_kwargs["max_tokens"] = max_tokens
-    t1 = time.time()
+    log.start_call()
     final_response = client.beta.chat.completions.parse(**parse_kwargs)
-    elapsed_final = time.time() - t1
     log.register(
         "beta.chat.completions.parse",
         messages,
         final_response,
-        elapsed_time=elapsed_final,
         label="Final (structured)",
     )
 

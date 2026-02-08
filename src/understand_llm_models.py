@@ -34,7 +34,6 @@ Usage:
 import argparse
 import json
 import os
-import time
 import urllib.request
 from urllib.error import URLError
 
@@ -170,7 +169,7 @@ def main():
 
         done = False
         while not done:
-            start = time.time()
+            log.start_call()
             messages, done, in_tok, out_tok, response, messages_sent = run_turn(
                 client,
                 model,
@@ -180,16 +179,13 @@ def main():
             )
             total_in += in_tok
             total_out += out_tok
-            elapsed = time.time() - start
             log.register(
                 "chat.completions.create",
                 messages_sent,
                 response,
-                elapsed_time=elapsed,
             )
             print(
-                f"  [Time: {elapsed:.2f}s "
-                f"in: {in_tok} out: {out_tok} "
+                f"  [in: {in_tok} out: {out_tok} "
                 f"total in: {total_in} total out: {total_out}]"
             )
         first_turn = False

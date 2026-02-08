@@ -12,7 +12,6 @@ Use Case: Translation with system role optimization
 
 import argparse
 import os
-import time
 from openai import OpenAI
 from utils import (
     create_client,
@@ -46,58 +45,50 @@ Output Format:
 def run_stateless_example(
     client: OpenAI,
     model: str,
-    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
 ):
     """
     Run Example A: Stateless approach where system prompt is repeated in each user message.
-
-    Args:
-        client: OpenAI client instance
-        model: Model name to use for completions
-        log: OpenAILog instance for consistent request/response logging
+    Uses a separate OpenAILog for this message train.
     """
     print("=" * 60)
     print("EXAMPLE A: Stateless User-only Prompts")
     print("=" * 60)
 
+    log = OpenAILog()
     # Call 1 - Stateless (instructions repeated in user message)
     message1 = "I'm running late to the office."
-    start1 = time.time()
     r1_messages = [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'"}]
     r1_kwargs = {"model": model, "messages": r1_messages}
     if temperature is not None:
         r1_kwargs["temperature"] = temperature
     if max_tokens is not None:
         r1_kwargs["max_tokens"] = max_tokens
+    log.start_call()
     r1 = client.chat.completions.create(**r1_kwargs)
-    elapsed1 = time.time() - start1
     log.register(
         "chat.completions.create",
         r1_messages,
         r1,
-        elapsed_time=elapsed1,
         label="Stateless 1",
     )
 
     # Call 2 - Stateless (instructions repeated again)
     message2 = "Let's grab a drink after work."
-    start2 = time.time()
     r2_messages = [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'"}]
     r2_kwargs = {"model": model, "messages": r2_messages}
     if temperature is not None:
         r2_kwargs["temperature"] = temperature
     if max_tokens is not None:
         r2_kwargs["max_tokens"] = max_tokens
+    log.start_call()
     r2 = client.chat.completions.create(**r2_kwargs)
-    elapsed2 = time.time() - start2
     log.register(
         "chat.completions.create",
         r2_messages,
         r2,
-        elapsed_time=elapsed2,
         label="Stateless 2",
     )
 
@@ -107,27 +98,25 @@ def run_stateless_example(
     print(f"\n{message2}")
     print(format_response(r2.choices[0].message.content))
 
+    log.print_summary()
+
 
 def run_stateful_example(
     client: OpenAI,
     model: str,
-    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
 ):
     """
     Run Example B: Stateful approach where system prompt is set once and reused.
-
-    Args:
-        client: OpenAI client instance
-        model: Model name to use for completions
-        log: OpenAILog instance for consistent request/response logging
+    Uses a separate OpenAILog for this message train.
     """
     print("\n" + "=" * 60)
     print("EXAMPLE B: Stateful System Prompt")
     print("=" * 60)
 
+    log = OpenAILog()
     message1 = "I'm running late to the office."
     message2 = "Let's grab a drink after work."
 
@@ -142,25 +131,25 @@ def run_stateful_example(
     ]
 
     # Single stateful session with system + 2 user messages
-    start = time.time()
     response_kwargs = {"model": model, "messages": messages}
     if temperature is not None:
         response_kwargs["temperature"] = temperature
     if max_tokens is not None:
         response_kwargs["max_tokens"] = max_tokens
+    log.start_call()
     response = client.chat.completions.create(**response_kwargs)
-    elapsed = time.time() - start
     log.register(
         "chat.completions.create",
         messages,
         response,
-        elapsed_time=elapsed,
         label="Stateful",
     )
 
     print(f"\n{message1}")
     print(f"{message2}")
     print(format_response(response.choices[0].message.content))
+
+    log.print_summary()
 
 
 def main():
@@ -217,22 +206,18 @@ def main():
     model = args.model or os.getenv("MODEL", default_model)
     print(f"Using model: {model}\n")
 
-    log = OpenAILog()
     run_stateless_example(
         client,
         model,
-        log,
         temperature=args.temperature,
         max_tokens=args.max_tokens,
     )
     run_stateful_example(
         client,
         model,
-        log,
         temperature=args.temperature,
         max_tokens=args.max_tokens,
     )
-    log.print_summary()
 
 
 if __name__ == "__main__":

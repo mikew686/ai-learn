@@ -1,6 +1,8 @@
 import json
 import os
 import textwrap
+import time
+from datetime import datetime
 from openai import OpenAI
 
 
@@ -193,6 +195,76 @@ def _response_summary(response, max_length: int = 400) -> str:
     return "\n".join(parts) if parts else "(empty)"
 
 
+def _response_to_dict(response):  # noqa: C901
+    """Serialize OpenAI response to a JSON-serializable dict. Returns None on failure."""
+    try:
+        if hasattr(response, "model_dump"):
+            try:
+                return response.model_dump(mode="json")
+            except TypeError:
+                return response.model_dump()
+        return None
+    except Exception:
+        return None
+
+
+def _messages_to_jsonable(messages: list) -> list:
+    """Convert messages list to JSON-serializable list of dicts."""
+    out = []
+    for m in messages:
+        if isinstance(m, dict):
+            out.append(m)
+        elif hasattr(m, "model_dump"):
+            try:
+                out.append(m.model_dump(mode="json"))
+            except TypeError:
+                out.append(m.model_dump())
+        else:
+            out.append({"role": getattr(m, "role", None), "content": getattr(m, "content", None)})
+    return out
+
+
+def _write_raw_response(
+    log_raw_dir: str,
+    request_type: str,
+    messages: list,
+    response,
+    *,
+    elapsed_time: float | None = None,
+    label: str | None = None,
+) -> str | None:
+    """
+    Write raw request/response to log_raw_dir/YYYYMMDD/<timestamp>-openai-response.json.
+    Returns the path written, or None on failure.
+    """
+    try:
+        response_dict = _response_to_dict(response)
+        if response_dict is None:
+            return None
+        now = datetime.now()
+        date_dir = now.strftime("%Y%m%d")
+        # Timestamp + microsecond for uniqueness
+        timestamp = now.strftime("%Y%m%d-%H%M%S") + f"-{now.microsecond:06d}"
+        filename = f"{timestamp}-openai-response.json"
+        dirpath = os.path.join(log_raw_dir, date_dir)
+        os.makedirs(dirpath, exist_ok=True)
+        filepath = os.path.join(dirpath, filename)
+        payload = {
+            "meta": {
+                "request_type": request_type,
+                "label": label,
+                "elapsed_time": elapsed_time,
+                "messages": _messages_to_jsonable(messages),
+            },
+            "response": response_dict,
+        }
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+        return filepath
+    except Exception:
+        return None
+
+
 def _print_indented_block(
     indent_str: str,
     content: str,
@@ -216,9 +288,12 @@ class OpenAILog:
     Collects and formats OpenAI request/response pairs for test and example programs.
 
     Callers register each API call with register(); each entry is printed in a
-    consistent format (request type, message summary, response summary, token
-    use with running total, optional timing). At the end, call print_summary()
-    for aggregate statistics.
+    consistent format (request type, model from response, message summary, response
+    summary, token use with running total, optional timing). At the end, call
+    print_summary() for aggregate statistics.
+
+    Use a separate OpenAILog instance per message train or when mixing models, so
+    each summary applies to one coherent run.
     """
 
     def __init__(
@@ -227,15 +302,27 @@ class OpenAILog:
         width: int = 120,
         max_message_length: int = 200,
         max_response_length: int = 400,
+        log_raw_dir: str | None = "data",
     ):
         self.indent = indent
         self.width = width
         self.max_message_length = max_message_length
         self.max_response_length = max_response_length
+        self._log_raw_dir = log_raw_dir
         self._entries: list[dict] = []
         self._running_prompt_tokens = 0
         self._running_completion_tokens = 0
         self._total_elapsed = 0.0
+        self._running_cost: float = 0.0
+        self._has_cost = False
+        self._call_start: float | None = None
+
+    def start_call(self) -> None:
+        """
+        Record the start of an API call. Elapsed time is computed from this when register() is called.
+        Call immediately before the API request.
+        """
+        self._call_start = time.time()
 
     def register(
         self,
@@ -243,23 +330,39 @@ class OpenAILog:
         messages: list,
         response,
         *,
-        elapsed_time: float | None = None,
         label: str | None = None,
     ) -> None:
         """
         Register one OpenAI request/response and print a formatted log entry.
 
+        Model is read from response.model. Use a separate OpenAILog instance per
+        message train or when mixing models, so each summary applies to one coherent run.
+
+        Call log.start_call() before the API call; elapsed time is computed at log time from that.
+
         Args:
             request_type: e.g. "chat.completions.create", "beta.chat.completions.parse"
             messages: The messages list sent in the request (for summary).
             response: The API response object (must have .usage and .choices).
-            elapsed_time: Optional elapsed time in seconds for this call.
             label: Optional short label (e.g. "Initial (with tools)", "Final").
         """
+        start = self._call_start
+        elapsed_time = (time.time() - start) if start is not None else None
+        self._call_start = None
+
+        model = getattr(response, "model", None) or ""
         usage = getattr(response, "usage", None)
         prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
         completion_tokens = getattr(usage, "completion_tokens", 0) or 0
         total_tokens = getattr(usage, "total_tokens", 0) or 0
+        cost = getattr(usage, "cost", None)
+        if cost is not None:
+            try:
+                cost = float(cost)
+                self._running_cost += cost
+                self._has_cost = True
+            except (TypeError, ValueError):
+                cost = None
 
         self._running_prompt_tokens += prompt_tokens
         self._running_completion_tokens += completion_tokens
@@ -270,19 +373,35 @@ class OpenAILog:
             "request_type": request_type,
             "messages": messages,
             "response": response,
+            "model": model,
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
             "total_tokens": total_tokens,
+            "cost": cost,
             "elapsed_time": elapsed_time,
             "label": label,
         }
         self._entries.append(entry)
+
+        if self._log_raw_dir:
+            written = _write_raw_response(
+                self._log_raw_dir,
+                request_type,
+                messages,
+                response,
+                elapsed_time=elapsed_time,
+                label=label,
+            )
+            if written:
+                entry["_raw_log_path"] = written
 
         # Format and print this entry
         indent_str = " " * self.indent
         req_label = f" [{label}]" if label else ""
         print(f"\n{indent_str}--- Request #{len(self._entries)} ---")
         print(f"{indent_str}Request type: {request_type}{req_label}")
+        if model:
+            print(f"{indent_str}Model: {model}")
         print(f"{indent_str}Response type: {_response_type(response)}")
         msg_summary = _message_summary(messages, self.max_message_length)
         print(f"{indent_str}Message:")
@@ -295,6 +414,10 @@ class OpenAILog:
             f"Total: {total_tokens} (running: {self._running_prompt_tokens} in, "
             f"{self._running_completion_tokens} out)"
         )
+        if cost is not None:
+            print(
+                f"{indent_str}Cost: ${cost:.6f} (running: ${self._running_cost:.6f})"
+            )
         if elapsed_time is not None:
             print(f"{indent_str}Response time: {elapsed_time:.3f}s")
 
@@ -317,4 +440,8 @@ class OpenAILog:
         if self._total_elapsed > 0:
             print(f"  Total time: {self._total_elapsed:.3f}s")
             print(f"  Average time per request: {self._total_elapsed / n:.3f}s")
+        if self._has_cost and self._running_cost >= 0:
+            print(f"  Total cost: ${self._running_cost:.6f}")
+            if n > 0:
+                print(f"  Average cost per request: ${self._running_cost / n:.6f}")
         print("=" * 60)
