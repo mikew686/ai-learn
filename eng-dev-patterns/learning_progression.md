@@ -160,6 +160,8 @@ This approach demonstrates how patterns combine and build on each other in a rea
 
 ## Pattern 7: Embeddings / Vector Search
 
+📖 [Detailed Documentation](./embeddings_and_vector_search.md)
+
 **Description**: Convert text into dense vector representations (embeddings) and use similarity search to find relevant content. Foundation for semantic search and RAG.
 
 **Technology**: OpenAI SDK (text-embedding-3-small/large) + Local vector storage (SQLite/FAISS)
@@ -177,6 +179,8 @@ This approach demonstrates how patterns combine and build on each other in a rea
 - Embed translation examples and retrieve similar ones for few-shot prompts
 - Semantic search for previously translated phrases
 - Similarity-based example selection for dynamic few-shot learning
+
+**Example**: [embeddings_vector_search.py](../src/embeddings_vector_search.py)
 
 ---
 

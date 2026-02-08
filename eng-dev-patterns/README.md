@@ -385,6 +385,8 @@ Understanding model capabilities helps you select the right model for your use c
 
 ## Embeddings / Vector Search
 
+📖 [Detailed Documentation](./embeddings_and_vector_search.md)
+
 **Description**: Converting text into dense vector representations (embeddings) and using similarity search to find relevant content. Foundation for semantic search and RAG.
 
 **Key Concepts**:
