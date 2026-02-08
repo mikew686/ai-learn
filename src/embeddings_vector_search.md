@@ -81,7 +81,7 @@ So we never show off-language examples, and within the same language we prefer s
 
 For each row in the filtered (same-language) set:
 
-$$\text{score}_i = \text{cosine}(\mathbf{q}, \mathbf{v}_i) \times \text{dialect\_weight}(\text{row}_i, \text{user\_region})$$
+$$\text{score}_i = \text{cosine}(\mathbf{q}, \mathbf{v}_i) \times \text{dialect weight}(\text{row}_i, \text{user region})$$
 
 We sort by `score` descending and take the **top-k** (e.g. 3) as few-shot examples.
 
@@ -130,7 +130,7 @@ So: **same phrase**, **two targets**. The first run produces standard French *mo
 
 1. **Filter:** Keep only rows where `target_language == "French"` → both rows pass.
 2. **Embed:** The new phrase is the same (*hello there buddy*), so its embedding matches the stored source embeddings very closely (cosine ≈ 1.0).
-3. **Score:** For each row, score = cosine(q, v) × dialect_weight(row_region, user_region):
+3. **Score:** For each row, `score = cosine(q, v) × dialect_weight(row_region, user_region)`:
    - Standard French (region empty) vs user region `BE`: **0.7** (one or both regions empty).
    - Quebec (region `CA`) vs user region `BE`: **0.5** (same language, different region).
 4. **Top-k:** Sorted by score, the standard-French example ranks first (e.g. 1.0 × 0.7), the Quebec example second (e.g. 1.0 × 0.5). With `top_k=3`, both are returned as few-shot examples.
