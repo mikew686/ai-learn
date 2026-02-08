@@ -68,7 +68,7 @@ conn.execute(
 
 ### 3. Similarity search
 
-Load the relevant rows (e.g. same language/dialect or all rows), reconstruct vectors from BLOBs, compute similarity between the query vector and each stored vector, then take the top-K.
+Load the relevant rows (e.g. same language/dialect or all rows), reconstruct vectors from BLOBs, compute similarity between the query vector and each stored vector, then take the top-K. The choice of **similarity metric** determines how “closeness” is defined; see the next subsection for detail.
 
 ```python
 import numpy as np
@@ -88,6 +88,51 @@ vectors = np.array([np.frombuffer(r[0], dtype=np.float32) for r in rows])
 scores = cosine_similarities(np.array(query_embedding), vectors)
 top_indices = np.argsort(-scores)[:top_k]
 ```
+
+#### Vector similarity metrics: cosine and alternatives
+
+**Cosine similarity**
+
+Cosine similarity measures the angle between two vectors, ignoring their length. It is defined as:
+
+\[
+\text{cosine}(a, b) = \frac{a \cdot b}{\|a\| \,\|b\|} = \frac{\sum_i a_i b_i}{\sqrt{\sum_i a_i^2} \sqrt{\sum_i b_i^2}}
+\]
+
+- **Range**: \([-1, 1]\). Value 1 means same direction (most similar), 0 means orthogonal, \(-1\) means opposite direction.
+- **Interpretation**: High values indicate that the two texts are semantically aligned; low or negative values indicate unrelated or opposing meaning. For typical embedding models, most pairwise similarities are positive.
+- **Why it’s common for embeddings**: Many embedding APIs (including OpenAI) return **normalized** vectors (unit length). For normalized vectors, cosine similarity equals the **dot product** \(a \cdot b\), so you can skip the denominator and just use the dot product for both ranking and interpretation. Even when vectors are not normalized, cosine similarity focuses on **direction** (topic/semantics) rather than **magnitude**, which often makes it more stable across documents of different length or scale.
+- **Implementation note**: If the API does not normalize, normalize once (e.g. divide by \(\|a\|\)) before storing or comparing, or compute the full formula above to avoid double work.
+
+**Dot product**
+
+\[
+\text{dot}(a, b) = a \cdot b = \sum_i a_i b_i
+\]
+
+- **Range**: Unbounded; depends on vector length and dimension.
+- **When to use**: When vectors are **already normalized** (unit length), dot product and cosine similarity are identical. Using the dot product alone is then a small optimization (no division). If vectors are not normalized, dot product is sensitive to magnitude: longer documents can score higher even when direction is less similar, which may or may not be desired.
+- **Summary**: Prefer dot product when you normalize (or the API guarantees normalization); otherwise cosine is usually preferable for semantic ranking.
+
+**Euclidean (L2) distance**
+
+\[
+d(a, b) = \|a - b\|_2 = \sqrt{\sum_i (a_i - b_i)^2}
+\]
+
+- **Range**: \([0, +\infty)\). Smaller distance = more similar.
+- **Relationship to cosine**: For **normalized** vectors, \(d^2 = 2(1 - \cos(a,b))\), so ranking by increasing L2 distance is equivalent to ranking by decreasing cosine similarity. For unnormalized vectors, L2 distance is influenced by both direction and length.
+- **When to use**: Many vector indexes (e.g. FAISS, Annoy) are built for “nearest neighbor” under L2. If your vectors are normalized, you can use L2 in the index and get the same ordering as cosine; otherwise L2 may emphasize magnitude differences. Some systems also support “cosine” natively by storing normalized vectors and using L2.
+
+**Other options**
+
+- **Manhattan (L1) distance** \(\sum_i |a_i - b_i|\): Less common for embeddings; more sensitive to coordinate-wise differences. Sometimes used in low-dimensional or sparse settings.
+- **Negative distance as similarity**: If your search API returns “distance” (e.g. L2), you can use **negative distance** as a score so that “smaller distance” becomes “higher score” and you still take top-K by score. For normalized vectors, \(-\|a-b\|_2\) preserves the same order as cosine similarity.
+- **Inner product (IP)** in vector DBs: Often synonymous with dot product; when vectors are normalized, IP and cosine rank identically.
+
+**Practical recommendation**
+
+For embedding-based retrieval: use **cosine similarity** (or dot product on normalized vectors) by default. It matches how embedding models are usually trained and how most APIs behave. Use **L2 distance** when you plug into a vector index that expects it; if you normalize vectors first, ranking stays consistent with cosine.
 
 ### 4. Combine with language/dialect weighting
 
