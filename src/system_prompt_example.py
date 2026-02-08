@@ -17,8 +17,7 @@ from openai import OpenAI
 from utils import (
     create_client,
     format_response,
-    print_response_timing,
-    print_token_usage,
+    OpenAILog,
 )
 
 
@@ -47,6 +46,7 @@ Output Format:
 def run_stateless_example(
     client: OpenAI,
     model: str,
+    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -57,6 +57,7 @@ def run_stateless_example(
     Args:
         client: OpenAI client instance
         model: Model name to use for completions
+        log: OpenAILog instance for consistent request/response logging
     """
     print("=" * 60)
     print("EXAMPLE A: Stateless User-only Prompts")
@@ -65,50 +66,52 @@ def run_stateless_example(
     # Call 1 - Stateless (instructions repeated in user message)
     message1 = "I'm running late to the office."
     start1 = time.time()
-    r1_kwargs = {
-        "model": model,
-        "messages": [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'"}],
-    }
+    r1_messages = [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'"}]
+    r1_kwargs = {"model": model, "messages": r1_messages}
     if temperature is not None:
         r1_kwargs["temperature"] = temperature
     if max_tokens is not None:
         r1_kwargs["max_tokens"] = max_tokens
     r1 = client.chat.completions.create(**r1_kwargs)
     elapsed1 = time.time() - start1
+    log.register(
+        "chat.completions.create",
+        r1_messages,
+        r1,
+        elapsed_time=elapsed1,
+        label="Stateless 1",
+    )
 
     # Call 2 - Stateless (instructions repeated again)
     message2 = "Let's grab a drink after work."
     start2 = time.time()
-    r2_kwargs = {
-        "model": model,
-        "messages": [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'"}],
-    }
+    r2_messages = [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'"}]
+    r2_kwargs = {"model": model, "messages": r2_messages}
     if temperature is not None:
         r2_kwargs["temperature"] = temperature
     if max_tokens is not None:
         r2_kwargs["max_tokens"] = max_tokens
     r2 = client.chat.completions.create(**r2_kwargs)
     elapsed2 = time.time() - start2
+    log.register(
+        "chat.completions.create",
+        r2_messages,
+        r2,
+        elapsed_time=elapsed2,
+        label="Stateless 2",
+    )
 
     print(f"\n{message1}")
     print(format_response(r1.choices[0].message.content))
-    print_token_usage(r1)
-    print_response_timing(elapsed1)
 
     print(f"\n{message2}")
     print(format_response(r2.choices[0].message.content))
-    print_token_usage(r2)
-    print_response_timing(elapsed2)
-
-    total_tokens = r1.usage.total_tokens + r2.usage.total_tokens
-    total_time = elapsed1 + elapsed2
-    print(f"\nTotal Tokens (Example A): {total_tokens}")
-    print_response_timing(total_time, "Total Response Time")
 
 
 def run_stateful_example(
     client: OpenAI,
     model: str,
+    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -119,6 +122,7 @@ def run_stateful_example(
     Args:
         client: OpenAI client instance
         model: Model name to use for completions
+        log: OpenAILog instance for consistent request/response logging
     """
     print("\n" + "=" * 60)
     print("EXAMPLE B: Stateful System Prompt")
@@ -146,15 +150,17 @@ def run_stateful_example(
         response_kwargs["max_tokens"] = max_tokens
     response = client.chat.completions.create(**response_kwargs)
     elapsed = time.time() - start
+    log.register(
+        "chat.completions.create",
+        messages,
+        response,
+        elapsed_time=elapsed,
+        label="Stateful",
+    )
 
     print(f"\n{message1}")
     print(f"{message2}")
     print(format_response(response.choices[0].message.content))
-    print_token_usage(response)
-    print_response_timing(elapsed)
-
-    print(f"\nTotal Tokens (Example B): {response.usage.total_tokens}")
-    print_response_timing(elapsed, "Total Response Time")
 
 
 def main():
@@ -211,18 +217,22 @@ def main():
     model = args.model or os.getenv("MODEL", default_model)
     print(f"Using model: {model}\n")
 
+    log = OpenAILog()
     run_stateless_example(
         client,
         model,
+        log,
         temperature=args.temperature,
         max_tokens=args.max_tokens,
     )
     run_stateful_example(
         client,
         model,
+        log,
         temperature=args.temperature,
         max_tokens=args.max_tokens,
     )
+    log.print_summary()
 
 
 if __name__ == "__main__":

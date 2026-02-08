@@ -38,7 +38,7 @@ import urllib.request
 from urllib.error import URLError
 
 from openai import OpenAI
-from utils import create_client, print_indented
+from utils import create_client, OpenAILog, print_indented
 
 FETCH_URL_TOOL = {
     "type": "function",
@@ -74,8 +74,9 @@ def run_turn(
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
-) -> tuple[list, bool, int, int]:
-    """Run one API turn. Returns (messages, done, prompt_tokens, completion_tokens)."""
+) -> tuple[list, bool, int, int, object, list]:
+    """Run one API turn. Returns (messages, done, prompt_tokens, completion_tokens, response, messages_sent)."""
+    messages_sent = list(messages)
     api_kwargs = {"model": model, "messages": messages, "tools": [FETCH_URL_TOOL], "tool_choice": "auto"}
     if temperature is not None:
         api_kwargs["temperature"] = temperature
@@ -111,18 +112,18 @@ def run_turn(
         usage = response.usage
         in_tok = getattr(usage, "prompt_tokens", 0) or 0
         out_tok = getattr(usage, "completion_tokens", 0) or 0
-        return messages, False, in_tok, out_tok
+        return messages, False, in_tok, out_tok, response, messages_sent
 
     if msg.content:
         usage = response.usage
         in_tok = getattr(usage, "prompt_tokens", 0) or 0
         out_tok = getattr(usage, "completion_tokens", 0) or 0
-        return messages, True, in_tok, out_tok
+        return messages, True, in_tok, out_tok, response, messages_sent
 
     usage = response.usage
     in_tok = getattr(usage, "prompt_tokens", 0) or 0
     out_tok = getattr(usage, "completion_tokens", 0) or 0
-    return messages, False, in_tok, out_tok
+    return messages, False, in_tok, out_tok, response, messages_sent
 
 
 def main():
@@ -145,6 +146,7 @@ def main():
     first_turn = True
     total_in = 0
     total_out = 0
+    log = OpenAILog()
 
     while True:
         try:
@@ -167,7 +169,7 @@ def main():
         done = False
         while not done:
             start = time.time()
-            messages, done, in_tok, out_tok = run_turn(
+            messages, done, in_tok, out_tok, response, messages_sent = run_turn(
                 client,
                 model,
                 messages,
@@ -177,6 +179,12 @@ def main():
             total_in += in_tok
             total_out += out_tok
             elapsed = time.time() - start
+            log.register(
+                "chat.completions.create",
+                messages_sent,
+                response,
+                elapsed_time=elapsed,
+            )
             print(
                 f"  [Time: {elapsed:.2f}s "
                 f"in: {in_tok} out: {out_tok} "
@@ -184,6 +192,7 @@ def main():
             )
         first_turn = False
 
+    log.print_summary()
     print("Goodbye.")
 
 

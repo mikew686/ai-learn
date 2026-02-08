@@ -50,9 +50,8 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 from utils import (
     create_client,
+    OpenAILog,
     print_indented,
-    print_response_timing,
-    print_token_usage,
 )
 
 
@@ -216,6 +215,7 @@ def assess_lang(
     phrase: str,
     client=None,
     model: str = None,
+    log: OpenAILog | None = None,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -227,6 +227,7 @@ def assess_lang(
         phrase: The text phrase to analyze
         client: OpenAI client instance (creates one if not provided)
         model: Model name to use (uses default if not provided)
+        log: Optional OpenAILog to register the request/response
         temperature: Sampling temperature (omit to use API default)
         max_tokens: Max tokens per response (omit to use API default)
 
@@ -245,11 +246,12 @@ def assess_lang(
             model = "gpt-4o-mini"
 
     prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
+    messages = [{"role": "user", "content": prompt}]
 
     start_time = time.time()
     parse_kwargs = {
         "model": model,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "response_format": LanguageAssessment,
     }
     if temperature is not None:
@@ -259,6 +261,15 @@ def assess_lang(
     response = client.beta.chat.completions.parse(**parse_kwargs)
     elapsed_time = time.time() - start_time
 
+    if log is not None:
+        log.register(
+            "beta.chat.completions.parse",
+            messages,
+            response,
+            elapsed_time=elapsed_time,
+            label="assess_lang",
+        )
+
     return response.choices[0].message.parsed, response, elapsed_time
 
 
@@ -266,6 +277,7 @@ def analyze_language(
     phrase: str,
     client=None,
     model: str = None,
+    log: OpenAILog | None = None,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -275,6 +287,7 @@ def analyze_language(
 
     Args:
         phrase: The text phrase to analyze
+        log: Optional OpenAILog to register the request/response
 
     Returns:
         Dictionary with language_code, region_code, description, and variant
@@ -283,6 +296,7 @@ def analyze_language(
         phrase,
         client=client,
         model=model,
+        log=log,
         temperature=temperature,
         max_tokens=max_tokens,
     )
@@ -323,6 +337,7 @@ def translate_phrase(
     target_language: str,
     client: OpenAI,
     model: str,
+    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -337,6 +352,7 @@ def translate_phrase(
         target_language: Target language for translation (e.g., 'English', 'French')
         client: OpenAI client instance
         model: Model name to use
+        log: OpenAILog instance for consistent request/response logging
     """
     system_prompt = f"""You are a translation assistant. Your task is to:
 1. Identify the language of the user's phrase using the analyze_language tool
@@ -368,7 +384,15 @@ Use the analyze_language tool to identify the source language before translating
         create_kwargs["temperature"] = temperature
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
+    t0 = time.time()
     response = client.chat.completions.create(**create_kwargs)
+    log.register(
+        "chat.completions.create",
+        messages,
+        response,
+        elapsed_time=time.time() - t0,
+        label="Sequential initial",
+    )
 
     message = response.choices[0].message
     messages.append(message)
@@ -387,6 +411,7 @@ Use the analyze_language tool to identify the source language before translating
                     **arguments,
                     client=client,
                     model=model,
+                    log=log,
                     temperature=temperature,
                     max_tokens=max_tokens,
                 )
@@ -406,7 +431,15 @@ Use the analyze_language tool to identify the source language before translating
                     final_kwargs["temperature"] = temperature
                 if max_tokens is not None:
                     final_kwargs["max_tokens"] = max_tokens
+                t1 = time.time()
                 final_response = client.chat.completions.create(**final_kwargs)
+                log.register(
+                    "chat.completions.create",
+                    messages,
+                    final_response,
+                    elapsed_time=time.time() - t1,
+                    label="Sequential final",
+                )
 
                 elapsed_time = time.time() - start_time
                 return response, message, final_response, result, elapsed_time
@@ -420,6 +453,7 @@ def translate_with_parallel_tools(
     target_language: str,
     client: OpenAI,
     model: str,
+    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -436,6 +470,7 @@ def translate_with_parallel_tools(
         target_language: Target language for translation
         client: OpenAI client instance
         model: Model name to use
+        log: OpenAILog instance for consistent request/response logging
 
     Returns:
         Tuple of (initial_response, tool_results, final_response, elapsed_time)
@@ -504,7 +539,15 @@ You can call multiple tools in parallel to gather information efficiently."""
         create_kwargs["temperature"] = temperature
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
+    t0 = time.time()
     response = client.chat.completions.create(**create_kwargs)
+    log.register(
+        "chat.completions.create",
+        messages,
+        response,
+        elapsed_time=time.time() - t0,
+        label="Parallel initial",
+    )
 
     message = response.choices[0].message
     messages.append(message)
@@ -525,6 +568,7 @@ You can call multiple tools in parallel to gather information efficiently."""
                     **arguments,
                     client=client,
                     model=model,
+                    log=log,
                     temperature=temperature,
                     max_tokens=max_tokens,
                 )
@@ -550,7 +594,15 @@ You can call multiple tools in parallel to gather information efficiently."""
             final_kwargs["temperature"] = temperature
         if max_tokens is not None:
             final_kwargs["max_tokens"] = max_tokens
+        t1 = time.time()
         final_response = client.chat.completions.create(**final_kwargs)
+        log.register(
+            "chat.completions.create",
+            messages,
+            final_response,
+            elapsed_time=time.time() - t1,
+            label="Parallel final",
+        )
 
         elapsed_time = time.time() - start_time
         return response, tool_results, final_response, elapsed_time
@@ -564,6 +616,7 @@ def translate_with_interleaved_tools(
     target_language: str,
     client: OpenAI,
     model: str,
+    log: OpenAILog,
     max_iterations: int = 5,
     *,
     temperature: float | None = None,
@@ -585,6 +638,7 @@ def translate_with_interleaved_tools(
         target_language: Target language for translation
         client: OpenAI client instance
         model: Model name to use (should be a reasoning model like o3-mini, o4-mini)
+        log: OpenAILog instance for consistent request/response logging
         max_iterations: Maximum number of tool-call iterations (default: 5)
 
     Returns:
@@ -681,7 +735,15 @@ Use interleaved tool calls to iteratively refine your translation."""
             create_kwargs["temperature"] = temperature
         if max_tokens is not None:
             create_kwargs["max_tokens"] = max_tokens
+        t_iter = time.time()
         response = client.chat.completions.create(**create_kwargs)
+        log.register(
+            "chat.completions.create",
+            messages,
+            response,
+            elapsed_time=time.time() - t_iter,
+            label=f"Interleaved iter {iteration}",
+        )
 
         all_responses.append(response)
         message = response.choices[0].message
@@ -704,6 +766,7 @@ Use interleaved tool calls to iteratively refine your translation."""
                     **arguments,
                     client=client,
                     model=model,
+                    log=log,
                     temperature=temperature,
                     max_tokens=max_tokens,
                 )
@@ -833,6 +896,7 @@ def main():
     print(f"Translation Tool Use Examples - Mode: {args.mode}")
     print("=" * 60)
 
+    log = OpenAILog()
     if args.mode == "interleaved":
         print(
             "\nNote: Interleaved mode is designed for reasoning models (o3-mini, o4-mini). "
@@ -856,6 +920,7 @@ def main():
                     args.target,
                     client,
                     model,
+                    log,
                     temperature=args.temperature,
                     max_tokens=args.max_tokens,
                 )
@@ -884,15 +949,10 @@ def main():
                     print_indented(
                         "Translation", final_response.choices[0].message.content
                     )
-
-                    print("\nToken Usage (Initial + Final):")
-                    print_token_usage(initial_response)
-                    print_token_usage(final_response)
                 else:
                     print_indented(
                         "Response", initial_response.choices[0].message.content
                     )
-                    print_token_usage(initial_response)
 
             elif args.mode == "parallel":
                 (
@@ -905,6 +965,7 @@ def main():
                     args.target,
                     client,
                     model,
+                    log,
                     temperature=args.temperature,
                     max_tokens=args.max_tokens,
                 )
@@ -918,15 +979,10 @@ def main():
                     print_indented(
                         "Translation", final_response.choices[0].message.content
                     )
-
-                    print("\nToken Usage:")
-                    print_token_usage(initial_response)
-                    print_token_usage(final_response)
                 else:
                     print_indented(
                         "Response", initial_response.choices[0].message.content
                     )
-                    print_token_usage(initial_response)
 
             elif args.mode == "interleaved":
                 (
@@ -939,6 +995,7 @@ def main():
                     args.target,
                     client,
                     model,
+                    log,
                     temperature=args.temperature,
                     max_tokens=args.max_tokens,
                 )
@@ -955,15 +1012,10 @@ def main():
                     print_indented(
                         "Translation", final_response.choices[0].message.content
                     )
-
-                    print("\nToken Usage:")
-                    for i, resp in enumerate(all_responses, 1):
-                        print_token_usage(resp, f"Iteration {i}")
-                    print_token_usage(final_response, "Final")
-
-            print_response_timing(elapsed_time)
         except Exception as e:
             print_indented("Error", str(e))
+
+    log.print_summary()
 
     print("\n" + "=" * 60)
     print("\nTool Use Patterns Summary:")

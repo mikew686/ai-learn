@@ -30,9 +30,8 @@ from pydantic import BaseModel, Field
 from openai import OpenAI
 from utils import (
     create_client,
+    OpenAILog,
     print_indented,
-    print_response_timing,
-    print_token_usage,
 )
 
 
@@ -154,6 +153,7 @@ def translate_with_tools_and_structured(
     target_language: str,
     client: OpenAI,
     model: str,
+    log: OpenAILog,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -210,7 +210,16 @@ def translate_with_tools_and_structured(
         create_kwargs["temperature"] = temperature
     if max_tokens is not None:
         create_kwargs["max_tokens"] = max_tokens
+    t0 = time.time()
     initial_response = client.chat.completions.create(**create_kwargs)
+    elapsed_initial = time.time() - t0
+    log.register(
+        "chat.completions.create",
+        messages,
+        initial_response,
+        elapsed_time=elapsed_initial,
+        label="Initial (with tools)",
+    )
 
     message = initial_response.choices[0].message
     messages.append(message)
@@ -243,7 +252,16 @@ def translate_with_tools_and_structured(
         parse_kwargs["temperature"] = temperature
     if max_tokens is not None:
         parse_kwargs["max_tokens"] = max_tokens
+    t1 = time.time()
     final_response = client.beta.chat.completions.parse(**parse_kwargs)
+    elapsed_final = time.time() - t1
+    log.register(
+        "beta.chat.completions.parse",
+        messages,
+        final_response,
+        elapsed_time=elapsed_final,
+        label="Final (structured)",
+    )
 
     elapsed_time = time.time() - start_time
     translation_result = final_response.choices[0].message.parsed
@@ -313,6 +331,7 @@ def main():
     print(f"Source text: {source_text}")
     print(f"Target language: {target_language}\n")
 
+    log = OpenAILog()
     try:
         (
             translation_result,
@@ -324,6 +343,7 @@ def main():
             target_language,
             client,
             model,
+            log,
             temperature=args.temperature,
             max_tokens=args.max_tokens,
         )
@@ -340,21 +360,10 @@ def main():
         print_indented("Translated Text", translation_result.translated_text)
         print_indented("Confidence", translation_result.confidence)
         print_indented("Cultural Notes", translation_result.cultural_notes)
-
-        # Token usage for all steps
-        print("\nToken Usage:")
-        print_token_usage(initial_response, "Initial (with tools)")
-        print_token_usage(final_response, "Final (including tools results)")
-
-        # Total token usage
-        initial_tokens = initial_response.usage.total_tokens
-        final_tokens = final_response.usage.total_tokens
-        total_tokens = initial_tokens + final_tokens
-        print(f"\nTotal Tokens: {total_tokens}")
-
-        print_response_timing(elapsed_time)
+        log.print_summary()
     except Exception as e:
         print(f"✗ Error: {e}")
+        log.print_summary()
 
 
 if __name__ == "__main__":

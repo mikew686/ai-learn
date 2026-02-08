@@ -20,8 +20,8 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from utils import (
     create_client,
+    OpenAILog,
     print_indented,
-    print_response_timing,
 )
 
 
@@ -186,6 +186,7 @@ def assess_lang(
     phrase: str,
     client=None,
     model: str = None,
+    log: OpenAILog | None = None,
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
@@ -197,6 +198,7 @@ def assess_lang(
         phrase: The text phrase to analyze
         client: OpenAI client instance (creates one if not provided)
         model: Model name to use (uses default if not provided)
+        log: Optional OpenAILog to register the request/response
         temperature: Sampling temperature (omit to use API default)
         max_tokens: Max tokens per response (omit to use API default)
 
@@ -215,11 +217,12 @@ def assess_lang(
             model = "gpt-4o-mini"
 
     prompt = LANGUAGE_ASSESSMENT_PROMPT.format(phrase=phrase)
+    messages = [{"role": "user", "content": prompt}]
 
     start_time = time.time()
     parse_kwargs = {
         "model": model,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "response_format": LanguageAssessment,
     }
     if temperature is not None:
@@ -228,6 +231,14 @@ def assess_lang(
         parse_kwargs["max_tokens"] = max_tokens
     response = client.beta.chat.completions.parse(**parse_kwargs)
     elapsed_time = time.time() - start_time
+
+    if log is not None:
+        log.register(
+            "beta.chat.completions.parse",
+            messages,
+            response,
+            elapsed_time=elapsed_time,
+        )
 
     return response.choices[0].message.parsed, response, elapsed_time
 
@@ -316,6 +327,7 @@ def main():
     print("Language Assessment Examples")
     print("=" * 60)
 
+    log = OpenAILog()
     # Track statistics for summary
     assessments = []
     total_tokens = 0
@@ -336,6 +348,7 @@ def main():
                 phrase,
                 client,
                 model,
+                log=log,
                 temperature=args.temperature,
                 max_tokens=args.max_tokens,
             )
@@ -384,24 +397,10 @@ def main():
                 print("\nAlternative Interpretations:")
                 for alt in assessment.alternative_interpretations:
                     print_indented("  -", alt)
-
-            # Print detailed token usage
-            print("\nToken Usage Details:")
-            usage = response.usage
-            print(f"  Prompt tokens: {usage.prompt_tokens:,}")
-            print(f"  Completion tokens: {usage.completion_tokens:,}")
-            print(f"  Total tokens: {usage.total_tokens:,}")
-            # Show additional details if available (for some API versions)
-            if hasattr(usage, "prompt_tokens_details") and usage.prompt_tokens_details:
-                print(f"  Prompt token details: {usage.prompt_tokens_details}")
-            if (
-                hasattr(usage, "completion_tokens_details")
-                and usage.completion_tokens_details
-            ):
-                print(f"  Completion token details: {usage.completion_tokens_details}")
-            print_response_timing(elapsed_time)
         except Exception as e:
             print_indented("Error", str(e))
+
+    log.print_summary()
 
     print("\n" + "=" * 60)
     print("SUMMARY")
