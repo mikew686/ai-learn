@@ -1,29 +1,32 @@
 """
-Interactive demo for reasoning models (o1, o3, etc.).
+Interactive demo: Reasoning models (o1, o3, etc.) with tool use
 
-Shows each step of the API conversation: assistant messages, tool calls,
-reasoning (when visible), and tool results. Uses a simple fetch_url tool.
-Type "done" to exit.
+Use case: Step through a conversation with a reasoning model that can show
+chain-of-thought and call a fetch_url tool. Type "done" to exit.
 
-Behavior: Reasoning models may return both content (chain-of-thought) and
-tool_calls in the same response. We handle content first so reasoning is
-printed before any tool calls. System prompt includes "Think step by step."
+Patterns shown:
+  - **Reasoning models (primary)**: Model may return both content (reasoning)
+    and tool_calls in the same response; we print content first, then tool
+    calls and results. System prompt encourages "Think step by step."
+  - **Chat completions with tools**: Same tool-execution loop as chat models;
+    one OpenAILog for the session.
+  - **Tuning**: Many reasoning models ignore or fix temperature; max_tokens
+    is the main lever for length and cost.
 
-Note: Many reasoning models (e.g. o3-mini) ignore or fix temperature;
-max_tokens is the main tunable, since reasoning chains use many tokens.
+Details:
+  - Uses a simple fetch_url tool. Reasoning (when present) appears before
+    tool call blocks. Session is stateful until you type "done".
 
 Example settings (omit any flag to use API default):
 
-  # Allow full reasoning chains (complex problems, multi-step logic)
+  # Full reasoning chains (complex problems)
   python -m src.understand_reasoning_model --max-tokens 8192
 
-  # Shorter reasoning (faster, cheaper; may truncate on hard problems)
+  # Shorter (faster, cheaper)
   python -m src.understand_reasoning_model --max-tokens 2048
-
-  # Cap at 16k for very long analyses
   python -m src.understand_reasoning_model --max-tokens 16384
 
-  # If the model supports it: lower temperature for more consistent logic
+  # Lower temperature if supported
   python -m src.understand_reasoning_model --temperature 0.2 --max-tokens 4096
 
 Usage:

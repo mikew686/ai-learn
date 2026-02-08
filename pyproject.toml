@@ -13,6 +13,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "openai>=1.48.0",  # Required for beta.chat.completions.parse() and structured outputs
+    "numpy",
     "pytest",
     "black",
     "ruff",

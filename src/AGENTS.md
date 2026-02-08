@@ -53,7 +53,7 @@ Use the string that matches how you called the API.
 
 **`OpenAILog`** writes each registered request/response to a JSON file by default under **`data/`**. Pass **`log_raw_dir=None`** to disable, or another path to change the directory. Files are written as:
 
-- Path: `log_raw_dir/YYYYMMDD/<timestamp>-openai-response.json` (e.g. `data/20250207/20250207-143052-123456-openai-response.json`).
+- Path: `log_raw_dir/YYYYMMDD/<unix_ms>-openai-response.json` (e.g. `data/20250207/1736265318220-openai-response.json`). Unix milliseconds so filenames sort alphabetically by time.
 - Each file has two top-level keys: **`meta`** (added by our logger: `request_type`, `label`, `elapsed_time`, `messages`) and **`response`** (raw SDK/API response). Use `meta` to distinguish logger fields from API data. The `data/` directory is in `.gitignore`.
 
 ## CLI and environment
@@ -73,7 +73,7 @@ Use the string that matches how you called the API.
 
 ## File and structure
 
-- **Module docstring** – Name the pattern, what it demonstrates, and a one-line use case. Include a short “Usage” or “Example settings” section if helpful.
+- **Module docstring** – State which patterns the example demonstrates (examples may show more than one); list them explicitly. Include use case. Include a short “Usage” or “Example settings” section if helpful.
 - **Run as module** – Scripts are run as `python -m src.<script_name>`. Imports from this directory use `from utils import ...` (no `src.` prefix when inside `src/`).
 - **main()** – Parse args, create client, resolve model, then call one or more example functions. Each example that is a separate message train should create its own `OpenAILog`, register its calls, and call `print_summary()`.
 
@@ -109,4 +109,4 @@ if __name__ == "__main__":
     main()
 ```
 
-Keep examples focused on one pattern, use the shared utils and one log per message train, and register every API call so output stays consistent across the repo.
+Clearly document which patterns each example shows (they may combine several). Use the shared utils and one log per message train, and register every API call so output stays consistent across the repo.

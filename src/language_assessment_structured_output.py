@@ -1,14 +1,28 @@
 """
 Pattern 2: Structured Output
 
-This example demonstrates advanced structured output features:
-- Pydantic models for type-safe, validated responses
-- Enums for constrained values (LanguageCode, RegionCode, ConfidenceLevel)
-- Nested models (LinguisticFeature)
-- Arrays and lists (linguistic_features, alternative_interpretations)
-- Field descriptions that guide model behavior
+Use case: Language assessment — analyze a phrase and get a validated structure for
+language code, region, variant, confidence, linguistic features, and alternatives.
 
-Use Case: Language assessment with structured validation
+Patterns shown:
+  - **Structured output (primary)**: Pydantic models with
+    client.beta.chat.completions.parse(); type-safe, validated responses.
+  - **Constrained values**: Enums for LanguageCode, RegionCode, ConfidenceLevel
+    so the model must pick from allowed values.
+  - **Nested and repeated data**: Nested model (LinguisticFeature), list fields
+    (linguistic_features, alternative_interpretations).
+  - **Schema as instruction**: Field descriptions guide what the model extracts
+    and how it is formatted.
+
+Details:
+  - Single prompt per call; supports one phrase or a list (--example-phrases,
+    --prompt). Each call returns a LanguageAssessment instance.
+  - Summary section aggregates counts (tokens, time, language/region/variant
+    distribution) across all assessed phrases.
+  - See eng-dev-patterns/structured_output.md for the pattern guide.
+
+Usage:
+    python -m src.language_assessment_structured_output [--model MODEL] [--prompt PHRASE] [--example-phrases] [--temperature T] [--max-tokens N]
 """
 
 import argparse

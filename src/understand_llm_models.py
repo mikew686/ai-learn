@@ -1,31 +1,33 @@
 """
-Interactive demo for chat/conversational LLM models.
+Interactive demo: Chat / conversational LLM models with tool use
 
-Shows each step of the API conversation: assistant messages, tool calls,
-and tool results. Uses a simple fetch_url tool. Type "done" to exit.
+Use case: Step through a conversation where the model can call a fetch_url tool;
+see assistant messages, tool calls, and tool results. Type "done" to exit.
 
-Behavior: Chat models typically return either content OR tool_calls in a
-single response, not both. We check tool_calls first, then content.
+Patterns shown:
+  - **Chat completions with tools (primary)**: Single conversation; model may
+    return content or tool_calls (chat models usually return one or the other per turn).
+  - **Tool execution loop**: We run the tool, append the result, and call the API
+    again until the model returns a final text response.
+  - **Logging**: One OpenAILog for the session; each turn registered with
+    log.start_call() and log.register().
+
+Details:
+  - Uses a simple fetch_url tool. We check tool_calls first, then content.
+  - Session is stateful; messages accumulate until you type "done".
 
 Example settings (omit any flag to use API default):
 
-  # Deterministic, factual (best for tool use, extraction, classification)
+  # Deterministic (best for tool use, extraction)
   python -m src.understand_llm_models --temperature 0
 
-  # Balanced creativity and consistency (general chat)
+  # Balanced or more creative
   python -m src.understand_llm_models --temperature 0.7
-
-  # More creative, varied outputs (brainstorming, drafting)
   python -m src.understand_llm_models --temperature 1.0
 
-  # Limit response length (shorter, cheaper)
+  # Shorter or longer responses
   python -m src.understand_llm_models --max-tokens 256
-
-  # Allow longer responses (summaries, explanations)
   python -m src.understand_llm_models --max-tokens 4096
-
-  # Combine: deterministic + short (e.g. quick lookups)
-  python -m src.understand_llm_models --temperature 0 --max-tokens 256
 
 Usage:
     python -m src.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]

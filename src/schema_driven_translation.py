@@ -1,25 +1,25 @@
 """
 Pattern 4: Schema-Driven Inference
 
-This example demonstrates combining multiple patterns:
-- Function Calling / Tool Use: Tools for language lookup and cultural context
-- Structured Output: Pydantic models for validated translation results
-- Schema-Driven Inference: Minimal prompts with detailed schemas
+Use case: Translation with tools and structured output — minimal prompt; the model
+uses tool schemas and Pydantic field descriptions to infer what to do and how to format it.
 
-Key Concepts:
-- Tool schema descriptions as implicit instructions
-- Pydantic field descriptions guide output generation
-- Minimal prompts with detailed schemas
-- Combining explicit and implicit instructions
+Patterns shown:
+  - **Schema-driven inference (primary)**: Minimal prompt; tool schema descriptions
+    and Pydantic field descriptions act as implicit instructions.
+  - **Function calling / tool use**: Tools for language lookup and cultural context;
+    model calls tools then produces a final answer.
+  - **Structured output**: Pydantic TranslationResult via
+    client.beta.chat.completions.parse(); validated translation and metadata.
 
-The prompt is intentionally simplified - much of the detail is inferred by the model from:
-- Tool descriptions: The model understands what tools are available and their purposes
-- Pydantic field descriptions: Guide the model on what data to extract and how to format it
-- Tool execution results: The model uses results from tool calls to inform structured output
+Details:
+  - One user message; model may call tools, then we send tool results and request
+    structured output. Single OpenAILog for the run.
+  - Reduces prompt verbosity while keeping validated outputs. See
+    eng-dev-patterns/schema_driven_inference.md and structured_output.md.
 
-This pattern reduces prompt verbosity while maintaining high-quality, validated outputs.
-
-Use Case: Translation with tools and structured output
+Usage:
+    python -m src.schema_driven_translation [--model MODEL] [--prompt TEXT] [--target LANG] [--temperature T] [--max-tokens N]
 """
 
 import argparse

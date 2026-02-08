@@ -234,7 +234,8 @@ def _write_raw_response(
     label: str | None = None,
 ) -> str | None:
     """
-    Write raw request/response to log_raw_dir/YYYYMMDD/<timestamp>-openai-response.json.
+    Write raw request/response to log_raw_dir/YYYYMMDD/<unix_ms>-openai-response.json.
+    Unix timestamp in milliseconds so filenames sort alphabetically by time.
     Returns the path written, or None on failure.
     """
     try:
@@ -243,9 +244,8 @@ def _write_raw_response(
             return None
         now = datetime.now()
         date_dir = now.strftime("%Y%m%d")
-        # Timestamp + microsecond for uniqueness
-        timestamp = now.strftime("%Y%m%d-%H%M%S") + f"-{now.microsecond:06d}"
-        filename = f"{timestamp}-openai-response.json"
+        unix_ms = int(round(time.time() * 1000))
+        filename = f"{unix_ms}-openai-response.json"
         dirpath = os.path.join(log_raw_dir, date_dir)
         os.makedirs(dirpath, exist_ok=True)
         filepath = os.path.join(dirpath, filename)

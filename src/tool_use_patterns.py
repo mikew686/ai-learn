@@ -1,43 +1,25 @@
 """
 Pattern 3: Function Calling / Tool Use
 
-This example demonstrates three patterns for tool use with LLMs:
+Use case: Translation with language analysis tools — model uses a tool to
+identify the source language (and optionally cultural context), then translates.
 
-1. **Sequential Tool Use** (default):
-   - Model makes one tool call
-   - Tool result is returned
-   - Model generates final response
-   - Standard pattern for most use cases
+Patterns shown:
+  - **Tool use (primary)**: Tool schema (JSON Schema), model selects tools and
+    arguments; we execute tools and send results back; final response from model.
+  - **Sequential tool use**: One tool call, then one final response (default mode).
+  - **Parallel tool use**: Model may call multiple tools in one response; we run
+    them and send all results back; one final response.
+  - **Interleaved tool use**: For reasoning models (e.g. o3-mini); multiple
+    tool-call rounds with reasoning between; supports multi-step workflows.
 
-2. **Parallel Tool Use**:
-   - Model can call multiple tools simultaneously in a single response
-   - All tool calls are executed in parallel
-   - Results are collected and sent back together
-   - Efficient for independent operations that don't depend on each other
-
-3. **Interleaved Tool Use** (for reasoning models):
-   - Reasoning models (o3-mini, o4-mini) can make multiple tool calls in sequence
-   - Model reasons between tool calls
-   - Can iteratively refine approach based on tool results
-   - Supports multi-step reasoning workflows with tools
-
-Key Concepts:
-- Tool schema definitions (JSON Schema)
-- Tool selection by LLM
-- Parameter extraction and validation
-- Tool execution and response integration
-
-Use Case: Translation with language analysis tools
+Details:
+  - Modes: --mode sequential (default), parallel, or interleaved. One OpenAILog
+    per run. Nested assess_lang calls (for the analyze_language tool) use the same log.
+  - See eng-dev-patterns/function_calling_tool_use.md.
 
 Usage:
-    # Sequential (default)
-    python -m src.tool_use_example --mode sequential
-
-    # Parallel tool calls
-    python -m src.tool_use_example --mode parallel
-
-    # Interleaved (for reasoning models)
-    python -m src.tool_use_example --mode interleaved --model o3-mini
+    python -m src.tool_use_patterns [--model MODEL] [--mode sequential|parallel|interleaved] [--target LANG] [--prompt PHRASE] [--example-phrases] [--temperature T] [--max-tokens N]
 """
 
 import argparse
