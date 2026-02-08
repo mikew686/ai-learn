@@ -977,6 +977,20 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
+## Related patterns
+
+- **Structured Output**: Specify output format in the prompt and enforce it with schemas; see [structured_output.md](./structured_output.md).
+- **Schema-Driven Inference**: Use tool and Pydantic field descriptions as implicit instructions; see [schema_driven_inference.md](./schema_driven_inference.md).
+- **Few-Shot / In-Context Learning**: Provide examples in the prompt; see [learning_progression.md](./learning_progression.md) Pattern 7 and [README.md](./README.md).
+- **Embeddings / Vector Search**: Use semantic similarity to select few-shot examples; see [embeddings_and_vector_search.md](./embeddings_and_vector_search.md).
+- **RAG**: Combine prompts with retrieved context; see [learning_progression.md](./learning_progression.md) Pattern 8.
+
+## Practical technologies
+
+- **Templating**: [LangChain Prompt Templates](https://python.langchain.com/docs/modules/model_io/prompts/), [Jinja2](https://jinja.palletsprojects.com/) for variable substitution and reuse.
+- **Versioning and observability**: [PromptLayer](https://promptlayer.com/), [Weights & Biases Prompts](https://wandb.ai/), [LangSmith](https://docs.smith.langchain.com/) for prompt tracking and A/B testing.
+- **Libraries**: OpenAI SDK (system/user messages, `response_format`), Anthropic SDK; use provider docs for model-specific guidance (e.g. XML tags, prompt caching).
+
 ## Documentation Links
 
 ### Official Documentation

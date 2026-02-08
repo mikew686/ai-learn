@@ -951,11 +951,15 @@ tool = {
     - URL: https://json-schema.org/
     - Description: Standard format for tool parameter definitions
 
-### Related Patterns
+### Related patterns
 
-- **Function Calling / Tool Use**: Tool schemas are a key component of schema-driven inference
-- **Structured Output**: Pydantic field descriptions provide implicit instructions
-- **Prompt Engineering**: Schema-driven inference complements explicit prompting techniques
+- **Function Calling / Tool Use**: Tool schemas are a key component of schema-driven inference; see [function_calling_tool_use.md](./function_calling_tool_use.md).
+- **Structured Output**: Pydantic field descriptions provide implicit instructions; see [structured_output.md](./structured_output.md).
+- **Prompt Engineering**: Schema-driven inference complements explicit prompting; see [prompt_engineering.md](./prompt_engineering.md).
+
+### Learning path
+
+Schema-Driven Inference is Pattern 5 in the [learning progression](./learning_progression.md). Learn it after **Understanding Models**, **Prompt Engineering**, **Structured Output**, and **Function Calling**; then combine them (e.g. in [schema_driven_translation.py](../src/schema_driven_translation.py)) for minimal prompts and validated, tool-augmented outputs. Embeddings (Pattern 6) follows.
 
 ## Key Points
 

@@ -1,5 +1,5 @@
 """
-Pattern 7: Embeddings / Vector Search
+Pattern 6: Embeddings / Vector Search
 
 Use case: Interactive translator that asks once for target language (with optional
 region or dialect), normalizes it via one LLM call to canonical language + region,
@@ -20,7 +20,7 @@ Details:
   - Embeddings: text-embedding-3-small (or OPENROUTER default). Dimension stored per row.
   - No tools; single chat completion per phrase with optional structured output.
 
-See eng-dev-patterns/learning_progression.md (Pattern 7) and understanding_models.md.
+See eng-dev-patterns/learning_progression.md (Pattern 6) and understanding_models.md.
 
 Usage:
     python -m src.embeddings_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db PATH] [--top-k N] [--temperature T] [--max-tokens N]
@@ -43,7 +43,9 @@ DEFAULT_DB_PATH = "data/embeddings_vector_search.db"
 class TranslationWithNotes(BaseModel):
     """Translation plus brief notes (cultural/contextual)."""
 
-    translated_text: str = Field(description="The translated text in the target language and dialect")
+    translated_text: str = Field(
+        description="The translated text in the target language and dialect"
+    )
     notes: str = Field(
         description="Brief cultural or contextual notes about the translation (in English)"
     )
@@ -105,7 +107,11 @@ def parse_language_region(
             "content": f"Normalize this translation target: {user_input.strip()}",
         },
     ]
-    kwargs = {"model": chat_model, "messages": messages, "response_format": CanonicalLanguageRegion}
+    kwargs = {
+        "model": chat_model,
+        "messages": messages,
+        "response_format": CanonicalLanguageRegion,
+    }
     if temperature is not None:
         kwargs["temperature"] = temperature
     if max_tokens is not None:
@@ -123,9 +129,22 @@ def parse_language_region(
     return name, code, region, description
 
 
-def get_embedding(client: OpenAI, model: str, text: str) -> list[float]:
-    """Return embedding vector for a single text."""
+def get_embedding(
+    client: OpenAI,
+    model: str,
+    text: str,
+    *,
+    log: OpenAILog | None = None,
+) -> list[float]:
+    """Return embedding vector for a single text. Optionally log the request/response."""
+    request_descriptor = [
+        {"model": model, "input": text[:2000] + ("..." if len(text) > 2000 else "")}
+    ]
+    if log:
+        log.start_call()
     response = client.embeddings.create(model=model, input=text)
+    if log:
+        log.register("embeddings.create", request_descriptor, response)
     return response.data[0].embedding
 
 
@@ -149,14 +168,12 @@ def _print_db_summary(conn: sqlite3.Connection) -> None:
     print("--- Vector store summary ---")
     print(f"  Total records: {total}")
     if total > 0:
-        rows = conn.execute(
-            """
+        rows = conn.execute("""
             SELECT target_language, COUNT(*) AS n
             FROM translations
             GROUP BY target_language
             ORDER BY target_language
-            """
-        ).fetchall()
+            """).fetchall()
         for lang, n in rows:
             print(f"    {lang}: {n}")
     print("-----------------------------")
@@ -201,7 +218,16 @@ def store_translation(
         (target_language, target_dialect, source_text, translated_text, notes, embedding, embedding_dim, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (target_language, target_dialect, source_text, translated_text, notes, blob, dim, now),
+        (
+            target_language,
+            target_dialect,
+            source_text,
+            translated_text,
+            notes,
+            blob,
+            dim,
+            now,
+        ),
     )
     conn.commit()
 
@@ -211,28 +237,20 @@ def _normalize_lang(s: str) -> str:
     return (s or "").strip().lower()
 
 
-def language_dialect_weight(
-    row_lang: str,
-    row_dialect: str,
-    user_lang: str,
-    user_dialect: str,
-) -> float:
+def dialect_weight(row_dialect: str, user_dialect: str) -> float:
     """
-    Weight for how well a stored (language, dialect) matches the user's choice.
-    - Exact match (same language, same dialect): 1.0
-    - Same language, dialect differs or one empty: 0.6 (e.g. French vs French Quebec)
-    - Different language: 0.15 (so French ranks much higher than German)
+    Weight for region/dialect match when language already matches (filter-then-rank).
+    Used only among same-language results so region acts as a ranking factor, not a filter.
+    - Exact region match: 1.0
+    - Same language, one or both regions empty: 0.7 (e.g. generic French vs French (CA))
+    - Same language, different region: 0.5 (e.g. French (CA) vs French (FR))
     """
-    r_l = _normalize_lang(row_lang)
     r_d = _normalize_lang(row_dialect)
-    u_l = _normalize_lang(user_lang)
     u_d = _normalize_lang(user_dialect)
-    if r_l != u_l:
-        return 0.15
     if r_d == u_d:
         return 1.0
     if not r_d or not u_d:
-        return 0.6
+        return 0.7
     return 0.5
 
 
@@ -245,16 +263,19 @@ def get_similar_translations(
 ) -> list[tuple[str, str, str]]:
     """
     Return up to top_k past translations (source_text, translated_text, notes)
-    ranked by phrase similarity weighted by language/dialect match. Same language
-    (e.g. French) ranks higher than another language (e.g. German); exact
-    language+dialect match ranks highest.
+    for the given target language only, ranked by semantic similarity weighted
+    by region/dialect match.
+
+    Uses filter-then-rank: filter to the target language only (no results from
+    other languages), then rank by cosine similarity × dialect weight. This
+    follows the usual vector-search practice of metadata pre-filtering before
+    similarity ranking.
     """
-    cursor = conn.execute(
-        """
+    user_lang_norm = _normalize_lang(target_language)
+    cursor = conn.execute("""
         SELECT target_language, target_dialect, source_text, translated_text, notes, embedding, embedding_dim
         FROM translations
-        """
-    )
+        """)
     rows = cursor.fetchall()
     if not rows:
         return []
@@ -266,15 +287,18 @@ def get_similar_translations(
     if not rows:
         return []
 
+    # Filter by language only (hard filter); region is used as weight below
+    rows = [r for r in rows if _normalize_lang(r[0]) == user_lang_norm]
+    if not rows:
+        return []
+
     blobs = [r[5] for r in rows]
     vectors = np.array([np.frombuffer(b, dtype=np.float32) for b in blobs])
     phrase_sims = cosine_similarities(query, vectors)
 
-    user_lang = target_language
-    user_dialect = target_dialect
     scores = []
     for i, r in enumerate(rows):
-        w = language_dialect_weight(r[0], r[1], user_lang, user_dialect)
+        w = dialect_weight(r[1], target_dialect)
         scores.append(phrase_sims[i] * w)
 
     scores = np.array(scores)
@@ -311,11 +335,17 @@ def translate_phrase(
 
     for src, trans, notes in few_shot_examples:
         messages.append({"role": "user", "content": f"{tgt_label}: {src}"})
-        messages.append({"role": "assistant", "content": f"Translation: {trans}\nNotes: {notes}"})
+        messages.append(
+            {"role": "assistant", "content": f"Translation: {trans}\nNotes: {notes}"}
+        )
 
     messages.append({"role": "user", "content": f"{tgt_label}: {source_text}"})
 
-    kwargs = {"model": chat_model, "messages": messages, "response_format": TranslationWithNotes}
+    kwargs = {
+        "model": chat_model,
+        "messages": messages,
+        "response_format": TranslationWithNotes,
+    }
     if temperature is not None:
         kwargs["temperature"] = temperature
     if max_tokens is not None:
@@ -353,8 +383,10 @@ def main() -> None:
 
     client = create_client()
     is_openrouter = bool(os.getenv("OPENROUTER_API_KEY"))
-    default_chat = "openai/gpt-4o-mini" if is_openrouter else "gpt-4o-mini"
-    default_emb = "openai/text-embedding-3-small" if is_openrouter else "text-embedding-3-small"
+    default_chat = "openai/gpt-4.1-mini" if is_openrouter else "gpt-4.1-mini"
+    default_emb = (
+        "openai/text-embedding-3-small" if is_openrouter else "text-embedding-3-small"
+    )
     chat_model = args.model or os.getenv("MODEL", default_chat)
     embedding_model = args.embedding_model or os.getenv("EMBEDDING_MODEL", default_emb)
 
@@ -363,26 +395,38 @@ def main() -> None:
     conn = sqlite3.connect(db_path)
     init_db(conn)
 
-    print("Translator with vector-backed few-shot (Pattern 7: Embeddings / Vector Search)")
+    print(
+        "Translator with vector-backed few-shot (Pattern 6: Embeddings / Vector Search)"
+    )
     print(f"Chat model: {chat_model}")
     print(f"Embedding model: {embedding_model}")
     print(f"Vector store: {db_path}")
     print(f"Few-shot: up to {args.top_k} similar past translations per phrase")
     if args.temperature is not None or args.max_tokens is not None:
-        print(f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}")
+        print(
+            f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}"
+        )
     print()
 
-    log = OpenAILog()
+    # Separate logs per API category in data subdirectories (data/language, data/embeddings, data/translations)
+    log_language = OpenAILog(log_raw_dir="data/language", description="language")
+    log_embeddings = OpenAILog(log_raw_dir="data/embeddings", description="embeddings")
+    log_translations = OpenAILog(
+        log_raw_dir="data/translations", description="translations"
+    )
+
     raw_target = input(
         "Target language (with optional region or dialect, e.g. Spanish, French (Quebec), German): "
     ).strip()
-    target_language, target_language_code, target_dialect, target_description = parse_language_region(
-        client,
-        chat_model,
-        raw_target or "Spanish",
-        log=log,
-        temperature=args.temperature,
-        max_tokens=args.max_tokens,
+    target_language, target_language_code, target_dialect, target_description = (
+        parse_language_region(
+            client,
+            chat_model,
+            raw_target or "Spanish",
+            log=log_language,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens,
+        )
     )
     # target_dialect = ISO 3166-1 region code (e.g. CA, MX); target_language_code = ISO 639-1 (e.g. fr, es)
 
@@ -407,12 +451,14 @@ def main() -> None:
             break
 
         # Embed and retrieve similar examples
-        query_embedding = get_embedding(client, embedding_model, phrase)
+        query_embedding = get_embedding(
+            client, embedding_model, phrase, log=log_embeddings
+        )
         similar = get_similar_translations(
             conn, target_language, target_dialect, query_embedding, args.top_k
         )
 
-        log.start_call()
+        log_translations.start_call()
         try:
             result, response, messages_sent = translate_phrase(
                 client,
@@ -426,9 +472,11 @@ def main() -> None:
                 max_tokens=args.max_tokens,
             )
         except Exception as e:
-            log.print_summary()
+            log_translations.print_summary()
             raise
-        log.register("beta.chat.completions.parse", messages_sent, response)
+        log_translations.register(
+            "beta.chat.completions.parse", messages_sent, response
+        )
 
         store_translation(
             conn,
@@ -442,13 +490,17 @@ def main() -> None:
 
         if similar:
             print("  [Few-shot: used", len(similar), "similar past translation(s)]")
-        print_indented("  Translation", result.translated_text, indent=4, max_length=2000)
+        print_indented(
+            "  Translation", result.translated_text, indent=4, max_length=2000
+        )
         print_indented("  Notes", result.notes, indent=4, max_length=1000)
         print()
 
     _print_db_summary(conn)
     conn.close()
-    log.print_summary()
+    log_language.print_summary()
+    log_embeddings.print_summary()
+    log_translations.print_summary()
     print("Goodbye.")
 
 

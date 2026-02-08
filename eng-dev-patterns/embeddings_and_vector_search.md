@@ -66,6 +66,24 @@ conn.execute(
 )
 ```
 
+#### Popular databases and stores for embedding data
+
+Choosing where to store vectors depends on scale, latency, and operational needs. Common options:
+
+| Store | Type | Typical use | Notes |
+|-------|------|-------------|--------|
+| **SQLite** (e.g. BLOB column) | Relational, file-based | Prototypes, small to medium datasets, single process | No native vector index; load rows and compute similarity in app (e.g. NumPy). Simple, portable, good for thousands to low millions of vectors. |
+| **FAISS** (Facebook AI Similarity Search) | In-memory index | High-throughput similarity search on one machine | Library, not a server. Build an index from vectors; query for top-K nearest neighbors. Supports L2 and inner product. Best when the index fits in RAM and you can rebuild or update in batch. |
+| **Pinecone** | Managed vector DB | Production RAG, semantic search, multi-tenant | Hosted; no ops. Namespaces for multi-tenancy. Scale to large vector counts; pay per index and queries. |
+| **Weaviate** | Vector DB (self-hosted or cloud) | RAG, hybrid search (vector + keyword) | Open source; can run locally or managed. GraphQL and REST; supports multiple vectorizers and metadata filters. |
+| **Qdrant** | Vector DB (self-hosted or cloud) | RAG, filtering by metadata, payload search | Open source; filter-then-rank (e.g. by language) then vector search. Good fit when you need metadata filters alongside similarity. |
+| **Milvus** / **Zilliz** | Vector DB | Large-scale similarity search, ML pipelines | Open source (Milvus); Zilliz is managed. Built for billions of vectors; supports multiple index types and metrics. |
+| **Chroma** | Embedded / client library | Local dev, small apps, quick RAG experiments | Lightweight; often used in Python scripts or notebooks. Persists to disk; no separate server. |
+| **pgvector** (PostgreSQL) | Extension to Postgres | Apps already on Postgres; vector + SQL in one DB | Add a vector column and use `<=>` (or similar) for approximate nearest neighbor. Keeps vectors and relational data in one place. |
+| **Redis** (e.g. RediSearch) | In-memory store with vector support | Low-latency search, caching, real-time apps | Vector similarity search in Redis; good when you already use Redis and need fast lookups. |
+
+**Practical path**: Start with **SQLite + BLOB** (or Chroma) for development and small data. Move to **FAISS** for higher QPS on one machine with in-memory index, or to a **vector DB** (Pinecone, Qdrant, Weaviate, pgvector) when you need filtering, persistence, scale, or a shared service. Use **filter-then-rank** (metadata filter then vector similarity) when your store supports it.
+
 ### 3. Similarity search
 
 Load the relevant rows (e.g. same language/dialect or all rows), reconstruct vectors from BLOBs, compute similarity between the query vector and each stored vector, then take the top-K. The choice of **similarity metric** determines how “closeness” is defined; see the next subsection for detail.
@@ -167,9 +185,18 @@ So the database grows over time and later runs get better few-shot context for t
 - RAG (retrieval-augmented generation): embed documents, embed query, retrieve, then generate with retrieved context.
 - Clustering, deduplication, or recommendation when items have a text component.
 
+## Learning path
+
+- **Start**: Use **SQLite + BLOB** (or Chroma) for development and small datasets. Implement cosine similarity in your app (e.g. NumPy). No extra infrastructure.
+- **Scale up**: Add **FAISS** for higher QPS when the index fits in memory and you can build/update in batch; or move to a **vector DB** (Pinecone, Qdrant, Weaviate, pgvector) when you need filtering, persistence, or shared access.
+- **Filter-then-rank**: When your store supports metadata (e.g. language), filter first, then rank by similarity (and optional weights). See the [Translation example](#translation-example-few-shot-from-vector-search) and [embeddings_vector_search.py](../src/embeddings_vector_search.py).
+- **In the progression**: This is Pattern 6 in the [learning progression](./learning_progression.md); it builds on Understanding Models, Prompts, Structured Output, Tools, and Schema-Driven Inference, and leads into Few-Shot and RAG (Pattern 8).
+
 ## Related patterns
 
 - **RAG (Retrieval-Augmented Generation)**: Uses embeddings and vector search to retrieve context before generation; see [learning_progression.md](./learning_progression.md) Pattern 8.
+- **Few-Shot / In-Context Learning**: Vector search often selects which few-shot examples to include; see [README.md](./README.md) and [learning_progression.md](./learning_progression.md) Pattern 7.
+- **Prompt Engineering**: Retrieved content is injected into prompts; see [prompt_engineering.md](./prompt_engineering.md).
 - **Understanding Models – Embedding Models**: Technical details on embedding APIs and similarity; see [understanding_models.md](./understanding_models.md#embedding-models).
 
 ## Documentation links

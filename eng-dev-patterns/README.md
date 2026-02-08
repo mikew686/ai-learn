@@ -4,7 +4,9 @@ This document outlines key AI engineering patterns and techniques for building p
 
 ## Learning Progression
 
-📚 [Learning Progression Guide](./learning_progression.md) - A self-learning progression that demonstrates how these patterns build on each other through a consistent use case. Start with foundational patterns and progressively add complexity as you learn.
+📚 [Learning Progression Guide](./learning_progression.md) – A self-learning progression that demonstrates how these patterns build on each other through a consistent use case.
+
+**Recommended order**: Cover **core principles first** (1. Understanding Models, 2. Prompts, 3. Schemas, 4. Tools, 5. Schema-Driven Inference), then **tying together** (6. Embeddings, 7. Few-Shot, 8. RAG, 9. Chain-of-Thought), then production patterns (Streaming, Caching, Memory, Guardrails, Agents, Orchestration, Evaluation, Advanced). See [learning_progression.md](./learning_progression.md) for the full order and example script links.
 
 ---
 

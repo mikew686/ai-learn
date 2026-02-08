@@ -1,5 +1,5 @@
 """
-Pattern 4: Schema-Driven Inference
+Pattern 5: Schema-Driven Inference
 
 Use case: Translation with tools and structured output — minimal prompt; the model
 uses tool schemas and Pydantic field descriptions to infer what to do and how to format it.
@@ -245,7 +245,11 @@ def translate_with_tools_and_structured(
             )
 
     # Final call with structured output
-    parse_kwargs = {"model": model, "messages": messages, "response_format": TranslationResult}
+    parse_kwargs = {
+        "model": model,
+        "messages": messages,
+        "response_format": TranslationResult,
+    }
     if temperature is not None:
         parse_kwargs["temperature"] = temperature
     if max_tokens is not None:

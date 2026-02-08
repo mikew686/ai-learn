@@ -63,7 +63,9 @@ def get_embedding(client: OpenAI, model: str, text: str) -> list[float]:
     return response.data[0].embedding
 
 
-def get_embeddings_batch(client: OpenAI, model: str, texts: list[str]) -> list[list[float]]:
+def get_embeddings_batch(
+    client: OpenAI, model: str, texts: list[str]
+) -> list[list[float]]:
     """Return embedding vectors for a list of texts (batch)."""
     if not texts:
         return []
@@ -96,14 +98,19 @@ def build_messages_with_retrieval(
             {"role": "system", "content": system_content},
             {"role": "user", "content": current_user_message},
         ]
-    turn_texts = [turn_to_text(turns[i]) + "\n" + turn_to_text(turns[i + 1]) for i in range(0, len(turns) - 1, 2)]
+    turn_texts = [
+        turn_to_text(turns[i]) + "\n" + turn_to_text(turns[i + 1])
+        for i in range(0, len(turns) - 1, 2)
+    ]
     if len(turns) % 2 == 1:
         turn_texts.append(turn_to_text(turns[-1]))
     query_emb = get_embedding(client, embedding_model, current_user_message)
     turn_embs = get_embeddings_batch(client, embedding_model, turn_texts)
     similarities = [cosine_similarity(query_emb, te) for te in turn_embs]
     num_to_take = min(retrieve_k, len(turn_texts))
-    top_indices = sorted(range(len(similarities)), key=lambda i: -similarities[i])[:num_to_take]
+    top_indices = sorted(range(len(similarities)), key=lambda i: -similarities[i])[
+        :num_to_take
+    ]
     top_indices_sorted = sorted(top_indices)
     selected_turns = []
     for i in top_indices_sorted:
@@ -172,16 +179,24 @@ def main():
     client = create_client()
     is_openrouter = bool(os.getenv("OPENROUTER_API_KEY"))
     default_chat = "openai/gpt-4o-mini" if is_openrouter else "gpt-4o-mini"
-    default_emb = "openai/text-embedding-3-small" if is_openrouter else "text-embedding-3-small"
+    default_emb = (
+        "openai/text-embedding-3-small" if is_openrouter else "text-embedding-3-small"
+    )
     chat_model = args.model or os.getenv("MODEL", default_chat)
     embedding_model = args.embedding_model or os.getenv("EMBEDDING_MODEL", default_emb)
 
     print(f"Chat model: {chat_model}")
     print(f"Embedding model: {embedding_model}")
-    print(f"Retrieval: after {args.retrieve_after} user messages, keep {args.retrieve_k} most relevant turns")
-    print("  → With default (2), embedding retrieval is used from your 2nd message so you can see it in action.")
+    print(
+        f"Retrieval: after {args.retrieve_after} user messages, keep {args.retrieve_k} most relevant turns"
+    )
+    print(
+        "  → With default (2), embedding retrieval is used from your 2nd message so you can see it in action."
+    )
     if args.temperature is not None or args.max_tokens is not None:
-        print(f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}")
+        print(
+            f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}"
+        )
     print('Type "done" to exit.\n')
 
     system_content = (
@@ -207,7 +222,9 @@ def main():
         print("[User]")
         print_indented("  ", prompt, indent=4, max_length=2000)
 
-        use_retrieval = len(full_turns) >= 2 and user_message_count >= args.retrieve_after
+        use_retrieval = (
+            len(full_turns) >= 2 and user_message_count >= args.retrieve_after
+        )
         if use_retrieval:
             messages = build_messages_with_retrieval(
                 client,

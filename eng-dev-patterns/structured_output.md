@@ -726,6 +726,19 @@ except ValidationError as e:
     # Fallback or retry
 ```
 
+## Related patterns
+
+- **Schema-Driven Inference**: Use Pydantic field descriptions as implicit prompts to reduce verbosity; see [schema_driven_inference.md](./schema_driven_inference.md).
+- **Function Calling / Tool Use**: Tool responses are often validated with structured output; see [function_calling_tool_use.md](./function_calling_tool_use.md).
+- **Prompt Engineering**: Clear prompts improve structured output quality; see [prompt_engineering.md](./prompt_engineering.md).
+- **RAG**: Structure retrieved context or model answers using schemas; see [learning_progression.md](./learning_progression.md) Pattern 8.
+
+## Practical technologies
+
+- **Python**: [Pydantic](https://docs.pydantic.dev/) for models and validation; OpenAI `client.beta.chat.completions.parse()` for native parsing.
+- **Alternatives**: [JSON Schema](https://json-schema.org/) with `response_format={"type": "json_schema", "json_schema": {...}}` when not using Pydantic or when avoiding beta API; [Outlines](https://github.com/outlines-dev/outlines) for constrained generation; [Zod](https://zod.dev/) (TypeScript) for schema validation.
+- **Learning path**: Structured output is Pattern 3 in the [learning progression](./learning_progression.md); use it after Understanding Models and Prompt Engineering and before Function Calling and Embeddings.
+
 ## Documentation Links
 
 ### Official Documentation

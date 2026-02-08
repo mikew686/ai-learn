@@ -381,6 +381,17 @@ In practice, this creates a **tool-using agent** pattern where:
 - Document manipulation (e.g., Google Slides, PowerPoint)
 - Multi-step task automation
 
+## Related patterns
+
+- **Schema-Driven Inference**: Tool schema descriptions act as implicit prompts; see [schema_driven_inference.md](./schema_driven_inference.md).
+- **Structured Output**: Validate tool arguments or return tool results as structured data; see [structured_output.md](./structured_output.md).
+- **Agentic Systems**: Function calling is the execution layer for agents; see [README.md](./README.md) and [learning_progression.md](./learning_progression.md) Pattern 14.
+- **Prompt Engineering**: System and user prompts guide when the model should use tools; see [prompt_engineering.md](./prompt_engineering.md).
+
+## Learning path
+
+Function Calling is Pattern 4 in the [learning progression](./learning_progression.md). Learn it after **Understanding Models**, **Prompt Engineering**, and **Structured Output**; then **Schema-Driven Inference** (Pattern 5) and **Embeddings** (Pattern 6). Example: [tool_use_patterns.py](../src/tool_use_patterns.py).
+
 ## Documentation Links
 
 ### Official Documentation
@@ -405,11 +416,11 @@ In practice, this creates a **tool-using agent** pattern where:
    - URL: https://github.com/openai/openai-python
    - Description: Python SDK documentation for tool calling implementation
 
-### Related Patterns
+### Related pattern docs
 
-- **Agentic Systems**: When tool use is combined with planning and memory
-- **Structured Output**: Often used together with function calling for validated responses
-- **Orchestration**: Coordinating multiple tool calls in workflows
+- **Agentic Systems**: [README.md](./README.md); when tool use is combined with planning and memory.
+- **Structured Output**: [structured_output.md](./structured_output.md); often used with function calling for validated responses.
+- **Orchestration**: [README.md](./README.md); coordinating multiple tool calls in workflows.
 
 ## Key Points
 

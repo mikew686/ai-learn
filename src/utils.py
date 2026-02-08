@@ -117,13 +117,24 @@ def _message_summary(messages: list, max_length: int = 200) -> str:
         if isinstance(m, dict):
             roles.append(m.get("role", "?"))
         elif hasattr(m, "role"):
-            roles.append(getattr(m.role, "value", m.role) if hasattr(m.role, "value") else str(m.role))
+            roles.append(
+                getattr(m.role, "value", m.role)
+                if hasattr(m.role, "value")
+                else str(m.role)
+            )
         else:
             roles.append("?")
     summary = f"{len(messages)} message(s): {', '.join(roles)}"
     # Append last user content if present and short enough
     for m in reversed(messages):
-        role = m.get("role") if isinstance(m, dict) else (getattr(m, "role", None) and (getattr(m.role, "value", None) or str(m.role)))
+        role = (
+            m.get("role")
+            if isinstance(m, dict)
+            else (
+                getattr(m, "role", None)
+                and (getattr(m.role, "value", None) or str(m.role))
+            )
+        )
         if role != "user":
             continue
         content = ""
@@ -220,7 +231,12 @@ def _messages_to_jsonable(messages: list) -> list:
             except TypeError:
                 out.append(m.model_dump())
         else:
-            out.append({"role": getattr(m, "role", None), "content": getattr(m, "content", None)})
+            out.append(
+                {
+                    "role": getattr(m, "role", None),
+                    "content": getattr(m, "content", None),
+                }
+            )
     return out
 
 
@@ -303,12 +319,16 @@ class OpenAILog:
         max_message_length: int = 200,
         max_response_length: int = 400,
         log_raw_dir: str | None = "data",
+        auto_print: bool = True,
+        description: str | None = None,
     ):
         self.indent = indent
         self.width = width
         self.max_message_length = max_message_length
         self.max_response_length = max_response_length
         self._log_raw_dir = log_raw_dir
+        self._auto_print = auto_print
+        self._description = (description or "").strip() or None
         self._entries: list[dict] = []
         self._running_prompt_tokens = 0
         self._running_completion_tokens = 0
@@ -380,6 +400,9 @@ class OpenAILog:
             "cost": cost,
             "elapsed_time": elapsed_time,
             "label": label,
+            "_running_prompt_tokens": self._running_prompt_tokens,
+            "_running_completion_tokens": self._running_completion_tokens,
+            "_running_cost": self._running_cost,
         }
         self._entries.append(entry)
 
@@ -395,10 +418,36 @@ class OpenAILog:
             if written:
                 entry["_raw_log_path"] = written
 
-        # Format and print this entry
+        if self._auto_print:
+            self.print_entry()
+
+    def print_entry(self, index: int | None = None) -> None:
+        """
+        Print a single registered entry. If index is None, print the last registered entry.
+        """
+        if not self._entries:
+            return
+        i = index if index is not None else len(self._entries) - 1
+        if i < 0 or i >= len(self._entries):
+            return
+        entry = self._entries[i]
         indent_str = " " * self.indent
+        request_type = entry["request_type"]
+        label = entry.get("label")
         req_label = f" [{label}]" if label else ""
-        print(f"\n{indent_str}--- Request #{len(self._entries)} ---")
+        model = entry.get("model") or ""
+        messages = entry["messages"]
+        response = entry["response"]
+        prompt_tokens = entry.get("prompt_tokens", 0)
+        completion_tokens = entry.get("completion_tokens", 0)
+        total_tokens = entry.get("total_tokens", 0)
+        cost = entry.get("cost")
+        elapsed_time = entry.get("elapsed_time")
+        run_prompt = entry.get("_running_prompt_tokens", prompt_tokens)
+        run_completion = entry.get("_running_completion_tokens", completion_tokens)
+        run_cost = entry.get("_running_cost", cost)
+
+        print(f"\n{indent_str}--- Request #{i + 1} ---")
         print(f"{indent_str}Request type: {request_type}{req_label}")
         if model:
             print(f"{indent_str}Model: {model}")
@@ -411,13 +460,10 @@ class OpenAILog:
         _print_indented_block(indent_str, resp_summary, self.width)
         print(
             f"{indent_str}Token usage - Prompt: {prompt_tokens}, Completion: {completion_tokens}, "
-            f"Total: {total_tokens} (running: {self._running_prompt_tokens} in, "
-            f"{self._running_completion_tokens} out)"
+            f"Total: {total_tokens} (running: {run_prompt} in, {run_completion} out)"
         )
         if cost is not None:
-            print(
-                f"{indent_str}Cost: ${cost:.6f} (running: ${self._running_cost:.6f})"
-            )
+            print(f"{indent_str}Cost: ${cost:.6f} (running: ${run_cost:.6f})")
         if elapsed_time is not None:
             print(f"{indent_str}Response time: {elapsed_time:.3f}s")
 
@@ -427,8 +473,11 @@ class OpenAILog:
         if n == 0:
             return
         total_tokens = self._running_prompt_tokens + self._running_completion_tokens
+        title = "OpenAI API summary" + (
+            f" ({self._description})" if self._description else ""
+        )
         print("\n" + "=" * 60)
-        print("OpenAI API summary")
+        print(title)
         print("=" * 60)
         print(f"  Requests sent: {n}")
         print(f"  Responses received: {n}")

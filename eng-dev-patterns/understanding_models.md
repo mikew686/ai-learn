@@ -965,14 +965,27 @@ References for understanding the underlying technology—architecture, training,
 - **Model Cards**: Check provider websites for detailed model specifications
 - **Benchmark Results**: Hugging Face Open LLM Leaderboard
 
-### Learning Paths
+### Learning paths
 
-1. Start with Chat/Conversational models (most versatile)
-2. Learn function calling and structured outputs
-3. Explore embeddings for RAG applications
-4. Try reasoning models for complex problems
-5. Experiment with multimodal for image tasks
-6. Optimize with fast/cheap models for scale
+1. Start with **Chat/Conversational models** (most versatile).
+2. Learn **function calling** and **structured outputs**; see [function_calling_tool_use.md](./function_calling_tool_use.md) and [structured_output.md](./structured_output.md).
+3. Explore **embeddings** for RAG and few-shot; see [embeddings_and_vector_search.md](./embeddings_and_vector_search.md).
+4. Try **reasoning models** for complex logic; see [llm_vs_reasoning_problems.md](./llm_vs_reasoning_problems.md).
+5. Experiment with **multimodal** for image tasks.
+6. Optimize with **fast/cheap models** for scale.
+
+For an ordered, use-case-driven path, follow the [learning progression](./learning_progression.md).
+
+### Related patterns
+
+This guide supports pattern selection; each pattern doc describes how to use the corresponding capability:
+
+- **Chat/function calling**: [function_calling_tool_use.md](./function_calling_tool_use.md)
+- **Structured output**: [structured_output.md](./structured_output.md)
+- **Embeddings & vector search**: [embeddings_and_vector_search.md](./embeddings_and_vector_search.md)
+- **Reasoning vs. chat**: [llm_vs_reasoning_problems.md](./llm_vs_reasoning_problems.md)
+- **Prompt design**: [prompt_engineering.md](./prompt_engineering.md)
+- **Schema-driven inference**: [schema_driven_inference.md](./schema_driven_inference.md)
 
 ### Community Resources
 

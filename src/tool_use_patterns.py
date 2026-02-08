@@ -1,5 +1,5 @@
 """
-Pattern 3: Function Calling / Tool Use
+Pattern 4: Function Calling / Tool Use
 
 Use case: Translation with language analysis tools — model uses a tool to
 identify the source language (and optionally cultural context), then translates.
@@ -35,7 +35,6 @@ from utils import (
     OpenAILog,
     print_indented,
 )
-
 
 # Prompt for language assessment
 LANGUAGE_ASSESSMENT_PROMPT = """Analyze the following phrase and identify the language,

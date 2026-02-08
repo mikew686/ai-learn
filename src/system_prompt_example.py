@@ -1,5 +1,5 @@
 """
-Pattern 1: Prompt Engineering
+Pattern 2: Prompt Engineering
 
 Use case: Translation with system role optimization — compare token use and
 behavior when instructions live in the system message vs repeated in each user message.
@@ -28,7 +28,6 @@ from utils import (
     format_response,
     OpenAILog,
 )
-
 
 # Prompt for Québécois French translation
 QUEBEC_FRENCH_TRANSLATE = """You are an expert translator specializing in Québécois French from Montréal.
@@ -70,7 +69,12 @@ def run_stateless_example(
     log = OpenAILog()
     # Call 1 - Stateless (instructions repeated in user message)
     message1 = "I'm running late to the office."
-    r1_messages = [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'"}]
+    r1_messages = [
+        {
+            "role": "user",
+            "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message1}'",
+        }
+    ]
     r1_kwargs = {"model": model, "messages": r1_messages}
     if temperature is not None:
         r1_kwargs["temperature"] = temperature
@@ -87,7 +91,12 @@ def run_stateless_example(
 
     # Call 2 - Stateless (instructions repeated again)
     message2 = "Let's grab a drink after work."
-    r2_messages = [{"role": "user", "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'"}]
+    r2_messages = [
+        {
+            "role": "user",
+            "content": f"{QUEBEC_FRENCH_TRANSLATE}\n\nTranslate: '{message2}'",
+        }
+    ]
     r2_kwargs = {"model": model, "messages": r2_messages}
     if temperature is not None:
         r2_kwargs["temperature"] = temperature

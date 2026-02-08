@@ -79,7 +79,12 @@ def run_turn(
 ) -> tuple[list, bool, int, int, object, list]:
     """Run one API turn. Returns (messages, done, prompt_tokens, completion_tokens, response, messages_sent)."""
     messages_sent = list(messages)
-    api_kwargs = {"model": model, "messages": messages, "tools": [FETCH_URL_TOOL], "tool_choice": "auto"}
+    api_kwargs = {
+        "model": model,
+        "messages": messages,
+        "tools": [FETCH_URL_TOOL],
+        "tool_choice": "auto",
+    }
     if temperature is not None:
         api_kwargs["temperature"] = temperature
     if max_tokens is not None:
@@ -106,11 +111,13 @@ def run_turn(
             result_str = json.dumps(result, indent=2)
             print("  [Tool result]")
             print_indented("  Result", result_str, indent=4, max_length=2000)
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": json.dumps(result),
-            })
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": json.dumps(result),
+                }
+            )
         usage = response.usage
         in_tok = getattr(usage, "prompt_tokens", 0) or 0
         out_tok = getattr(usage, "completion_tokens", 0) or 0
@@ -131,8 +138,18 @@ def run_turn(
 def main():
     parser = argparse.ArgumentParser(description="Interactive reasoning model chat")
     parser.add_argument("--model", default=None, help="Model to use")
-    parser.add_argument("--temperature", type=float, default=None, help="Sampling temperature (omit to use API default)")
-    parser.add_argument("--max-tokens", type=int, default=None, help="Max tokens per response (omit to use API default)")
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Sampling temperature (omit to use API default)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=None,
+        help="Max tokens per response (omit to use API default)",
+    )
     args = parser.parse_args()
 
     client = create_client()
@@ -140,7 +157,9 @@ def main():
     model = args.model or os.getenv("MODEL", default)
     print(f"Model: {model}")
     if args.temperature is not None or args.max_tokens is not None:
-        print(f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}")
+        print(
+            f"Overrides: temperature={args.temperature}, max_tokens={args.max_tokens}"
+        )
     print('Type "done" to exit.\n')
 
     system_content = "You are a helpful assistant. You can use fetch_url to get web page content. Think step by step and keep responses concise."

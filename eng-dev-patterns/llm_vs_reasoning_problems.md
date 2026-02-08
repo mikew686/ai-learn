@@ -166,4 +166,12 @@ Use the examples in this guide as a starting point for your own benchmarks.
 
 ---
 
+## Related patterns
+
+- **Understanding Models**: Model categories (chat vs. reasoning vs. fast/cheap) and when to use each; see [understanding_models.md](./understanding_models.md).
+- **Learning progression**: Pattern 9 covers Chain-of-Thought / Multi-Step Reasoning; see [learning_progression.md](./learning_progression.md).
+- **Prompt Engineering**: For chat models, techniques like "think step by step" can improve reasoning; see [prompt_engineering.md](./prompt_engineering.md).
+
+---
+
 *Last updated: January 2026*

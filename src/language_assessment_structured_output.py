@@ -1,5 +1,5 @@
 """
-Pattern 2: Structured Output
+Pattern 3: Structured Output
 
 Use case: Language assessment — analyze a phrase and get a validated structure for
 language code, region, variant, confidence, linguistic features, and alternatives.
@@ -37,7 +37,6 @@ from utils import (
     OpenAILog,
     print_indented,
 )
-
 
 # Prompt for language assessment
 LANGUAGE_ASSESSMENT_PROMPT = """Analyze the following phrase and identify the language,
