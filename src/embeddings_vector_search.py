@@ -408,12 +408,10 @@ def main() -> None:
         )
     print()
 
-    # Separate logs per API category in data subdirectories (data/language, data/embeddings, data/translations)
-    log_language = OpenAILog(log_raw_dir="data/language", description="language")
-    log_embeddings = OpenAILog(log_raw_dir="data/embeddings", description="embeddings")
-    log_translations = OpenAILog(
-        log_raw_dir="data/translations", description="translations"
-    )
+    # All API logs (language, embeddings, translations) go to data/YYYYMMDD/
+    log_language = OpenAILog(log_raw_dir="data", description="language")
+    log_embeddings = OpenAILog(log_raw_dir="data", description="embeddings")
+    log_translations = OpenAILog(log_raw_dir="data", description="translations")
 
     raw_target = input(
         "Target language (with optional region or dialect, e.g. Spanish, French (Quebec), German): "

@@ -18,6 +18,8 @@ dependencies = [
     "black",
     "ruff",
     "flake8",
+    "sqlalchemy>=2.0",  # 2.x API (create_engine, text(), conn.execute); pg_user.md examples
+    "psycopg2-binary",  # Postgres driver for SQLAlchemy; used by pg_sanity_test.py
 ]
 
 [tool.setuptools]

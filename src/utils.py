@@ -251,6 +251,7 @@ def _write_raw_response(
 ) -> str | None:
     """
     Write raw request/response to log_raw_dir/YYYYMMDD/<unix_ms>-openai-response.json.
+    If that file exists, use <unix_ms>-1-openai-response.json, -2, etc. so nothing is overwritten.
     Unix timestamp in milliseconds so filenames sort alphabetically by time.
     Returns the path written, or None on failure.
     """
@@ -261,10 +262,16 @@ def _write_raw_response(
         now = datetime.now()
         date_dir = now.strftime("%Y%m%d")
         unix_ms = int(round(time.time() * 1000))
-        filename = f"{unix_ms}-openai-response.json"
         dirpath = os.path.join(log_raw_dir, date_dir)
         os.makedirs(dirpath, exist_ok=True)
-        filepath = os.path.join(dirpath, filename)
+        base = f"{unix_ms}-openai-response.json"
+        filepath = os.path.join(dirpath, base)
+        n = 1
+        while os.path.exists(filepath):
+            filepath = os.path.join(
+                dirpath, f"{unix_ms}-{n}-openai-response.json"
+            )
+            n += 1
         payload = {
             "meta": {
                 "request_type": request_type,
