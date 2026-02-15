@@ -13,6 +13,8 @@ def create_client(openrouter_key: str | None = None) -> OpenAI:
     If OPENROUTER_API_KEY environment variable is set, uses OpenRouter API.
     Otherwise, uses OpenAI API directly.
 
+    The client uses 3 retries on transient errors (exponential backoff via the SDK).
+
     Args:
         openrouter_key: OpenRouter API key if available, None otherwise.
                        If None, will check OPENROUTER_API_KEY environment variable.
@@ -24,9 +26,12 @@ def create_client(openrouter_key: str | None = None) -> OpenAI:
         openrouter_key = os.getenv("OPENROUTER_API_KEY")
 
     if openrouter_key:
-        return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
-    else:
-        return OpenAI()
+        return OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=openrouter_key,
+            max_retries=3,
+        )
+    return OpenAI(max_retries=3)
 
 
 def format_response(content: str) -> str:
@@ -268,9 +273,7 @@ def _write_raw_response(
         filepath = os.path.join(dirpath, base)
         n = 1
         while os.path.exists(filepath):
-            filepath = os.path.join(
-                dirpath, f"{unix_ms}-{n}-openai-response.json"
-            )
+            filepath = os.path.join(dirpath, f"{unix_ms}-{n}-openai-response.json")
             n += 1
         payload = {
             "meta": {
