@@ -162,20 +162,25 @@ def cosine_similarities(query: np.ndarray, vectors: np.ndarray) -> np.ndarray:
 
 
 def _print_db_summary(conn: sqlite3.Connection) -> None:
-    """Print summary of current database state (record counts by language)."""
+    """Print summary of current database state (record counts by language and dialect)."""
     total = conn.execute("SELECT COUNT(*) FROM translations").fetchone()[0]
     print()
     print("--- Vector store summary ---")
     print(f"  Total records: {total}")
     if total > 0:
         rows = conn.execute("""
-            SELECT target_language, COUNT(*) AS n
+            SELECT target_language, target_dialect, COUNT(*) AS n
             FROM translations
-            GROUP BY target_language
-            ORDER BY target_language
+            GROUP BY target_language, target_dialect
+            ORDER BY target_language, target_dialect
             """).fetchall()
-        for lang, n in rows:
-            print(f"    {lang}: {n}")
+        prev_lang = None
+        for lang, dialect, n in rows:
+            dialect_label = dialect if dialect else "(no dialect)"
+            if lang != prev_lang:
+                print(f"  {lang}:")
+                prev_lang = lang
+            print(f"    {dialect_label}: {n}")
     print("-----------------------------")
     print()
 

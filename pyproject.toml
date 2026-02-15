@@ -20,6 +20,7 @@ dependencies = [
     "flake8",
     "sqlalchemy>=2.0",  # 2.x API (create_engine, text(), conn.execute); pg_user.md examples
     "psycopg2-binary",  # Postgres driver for SQLAlchemy; used by pg_sanity_test.py
+    "pgvector",  # pgvector type for psycopg2; used by db.utils and pg_vector_search
 ]
 
 [tool.setuptools]
