@@ -3,7 +3,7 @@
 This document describes **what understand_embedding_models.py does** and then walks through an example run (sonnet conversation). Run the example with:
 
 ```bash
-python -m src.understand_embedding_models [--model CHAT_MODEL] [--embedding-model EMB_MODEL] [--retrieve-after N] [--retrieve-k K] [--temperature T] [--max-tokens N]
+python -m src.examples.understand_embedding_models [--model CHAT_MODEL] [--embedding-model EMB_MODEL] [--retrieve-after N] [--retrieve-k K] [--temperature T] [--max-tokens N]
 ```
 
 ---

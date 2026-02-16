@@ -293,7 +293,7 @@ while iteration < max_iterations:
 2. **Use Parallel**: When you need multiple independent pieces of information
 3. **Use Interleaved**: Only for complex reasoning tasks with reasoning models
 
-**Example Implementation**: See `src/tool_use_patterns.py` for complete working examples of all three patterns with translation use cases.
+**Example Implementation**: See `src/examples/tool_use_patterns.py` for complete working examples of all three patterns with translation use cases.
 
 ## Tool Choice Options
 
@@ -390,7 +390,7 @@ In practice, this creates a **tool-using agent** pattern where:
 
 ## Learning path
 
-Function Calling is Pattern 4 in the [learning progression](./learning_progression.md). Learn it after **Understanding Models**, **Prompt Engineering**, and **Structured Output**; then **Schema-Driven Inference** (Pattern 5) and **Embeddings** (Pattern 6). Example: [tool_use_patterns.py](../src/tool_use_patterns.py).
+Function Calling is Pattern 4 in the [learning progression](./learning_progression.md). Learn it after **Understanding Models**, **Prompt Engineering**, and **Structured Output**; then **Schema-Driven Inference** (Pattern 5) and **Embeddings** (Pattern 6). Example: [tool_use_patterns.py](../src/examples/tool_use_patterns.py).
 
 ## Documentation Links
 
