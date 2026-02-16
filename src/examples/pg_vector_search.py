@@ -16,8 +16,16 @@ Embedding approach (exact-prompt embedding):
     purely by cosine distance. The database schema uses language_name, region_code
     (and dialect_description) for display and analytics.
 
+Target normalization (translation_targets table):
+  - The user's raw target (e.g. "French (Quebec)") is embedded and compared to
+    stored targets. If the nearest row has cosine distance below a threshold
+    (TARGET_MATCH_DISTANCE_THRESHOLD, default 0.2), we use that row's
+    (language_name, language_code, region_code, dialect_description) and skip
+    the LLM parse. Otherwise we call the LLM (with similar targets as few-shot)
+    and then store the new target for future lookups.
+
 Usage:
-    python -m src.pg_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db-url URL] [--top-k N] [--temperature T] [--max-tokens N]
+    python -m src.examples.pg_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db-url URL] [--top-k N] [--temperature T] [--max-tokens N]
 """
 
 import argparse
