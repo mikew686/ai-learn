@@ -278,7 +278,7 @@ Enables deep stable training.
 Training objective:
 
 $$
-P(x_t | x_{<t})
+P(x_t | x_{\text{<}t})
 $$
 
 With causal masking.
@@ -286,7 +286,7 @@ With causal masking.
 Loss:
 
 $$
-\mathcal{L} = - \sum_t \log P(x_t | x_{<t})
+\mathcal{L} = - \sum_t \log P(x_t \mid x_{\text{<}t})
 $$
 
 Next-token prediction at scale produces emergent capabilities.
