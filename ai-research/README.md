@@ -20,6 +20,7 @@ Foundations for building with LLMs: prompts, tools, and schema.
 * [foundations_prompt_engineering.md](foundations_prompt_engineering.md) — What happens to system/user prompts, roles, context window, and how to steer the model’s probability.
 * [foundations_tool_calling.md](foundations_tool_calling.md) — Tool calling as next-token prediction + external execution + context reintegration, with examples.
 * [foundations_structured_output.md](foundations_structured_output.md) — Getting machine-parseable, schema-conforming output from LLMs for workflows, APIs, and tool routing.
+* [foundations_behavioral_configuration_artifacts.md](foundations_behavioral_configuration_artifacts.md) — Repo-scoped AI playbooks: rules, architecture guardrails, skills, and conversational gating via context conditioning.
 
 ---
 
