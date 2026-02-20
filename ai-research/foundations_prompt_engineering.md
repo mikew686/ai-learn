@@ -21,6 +21,18 @@ Prompt engineering is the practice of controlling that process.
 
 ---
 
+## Related foundations
+
+This doc focuses on context-window shaping and probability. It connects to:
+
+* **[Tool calling](foundations_tool_calling.md)** — How tool schemas are injected as tokens and how the execution loop feeds results back into context.
+* **[Structured output](foundations_structured_output.md)** — Schema enforcement and machine-parseable responses; another lever for steering the output distribution.
+* **[Embeddings and vector search](foundations_embeddings_and_vector_search.md)** — How retrieval works and how RAG injects relevant context into the prompt.
+* **[Behavioral configuration artifacts](foundations_behavioral_configuration_artifacts.md)** — Repo-level, persistent prompt conditioning: rules, skills, architecture guardrails. Same mechanism (context injection), durable scope.
+* **[Reasoning](foundations_reasoning.md)** — How multi-step and chain-of-thought prompting affect the model’s reasoning behavior.
+
+---
+
 # 1. What Actually Happens to System and User Prompts?
 
 A modern chat API call like:
@@ -366,5 +378,17 @@ You are programming through probability, not rules.
 # 10. Compact Definition
 
 Prompt engineering is the practice of structuring and controlling the model’s context window — including instructions, examples, retrieved knowledge, and tool schemas — in order to shape the probability distribution over generated tokens.
+
+---
+
+# 11. Best practices
+
+* **Be explicit and declarative** — State behavior, tone, and constraints clearly; avoid vague or implicit instructions.
+* **Use structure to reduce entropy** — Formats, schemas, and examples narrow the output space and improve reliability.
+* **Place critical constraints where they count** — Late in the system prompt or near the task; order affects what the model attends to.
+* **Separate deterministic from probabilistic work** — Use tools for computation and lookups; use the LLM for language and synthesis.
+* **Anchor with behavioral artifacts** — Repo-level rules, skills, and architecture docs (see [behavioral configuration artifacts](foundations_behavioral_configuration_artifacts.md)) give consistent, durable conditioning across sessions.
+* **When using vector search / RAG** — Format retrieved chunks clearly (e.g. with source labels or section markers), instruct the model to answer only from the provided context, and tell it to say when the context is insufficient or off-topic to curb hallucination.
+* **Validate and iterate** — Prompt engineering is empirical; test with representative inputs and adjust based on outputs.
 
 ---
