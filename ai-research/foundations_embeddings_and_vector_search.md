@@ -67,6 +67,12 @@ The embedding vector captures semantic meaning as geometry.
 
 ### Core Idea
 
+```mermaid
+flowchart LR
+    O[Object: text, doc,<br/>image, user...] --> E[Embedding model]
+    E --> V[Vector in R^n]
+```
+
 Similar meaning → nearby vectors in space.
 
 If two pieces of text are similar in meaning, their embedding vectors will be close under a distance metric like:
@@ -221,7 +227,13 @@ Modern embedding models produce:
 
 Typical pipeline:
 
-Text → Tokenization → Transformer → Pooling → Dense vector
+```mermaid
+flowchart LR
+    T[Text] --> Tok[Tokenization]
+    Tok --> Tr[Transformer]
+    Tr --> P[Pooling]
+    P --> V[Dense vector]
+```
 
 Pooling strategies:
 
@@ -265,6 +277,15 @@ Given:
 * A database of stored embeddings
 
 We retrieve the top-k closest vectors.
+
+```mermaid
+flowchart TB
+    Q[User query] --> EQ[Embed query]
+    EQ --> VS[Vector search<br/>ANN index]
+    DB[(Vector DB<br/>stored embeddings)] --> VS
+    VS --> TK[Top-k nearest vectors]
+    TK --> RC[Retrieved chunks]
+```
 
 ---
 
@@ -321,6 +342,21 @@ Used for billion-scale systems.
 ---
 
 # 11. Practical Embedding + Vector Search Pipeline
+
+```mermaid
+flowchart TB
+    subgraph index["Indexing"]
+        D[Documents] --> CH[Chunk]
+        CH --> EM[Generate embeddings]
+        EM --> DB[(Vector DB + metadata)]
+    end
+    subgraph query["Query"]
+        Q[Query] --> QE[Embed query]
+        QE --> NN[ANN search]
+        DB --> NN
+        NN --> K[Top-k chunks]
+    end
+```
 
 ## Step 1: Chunk Documents
 
@@ -379,17 +415,14 @@ Process:
 
 RAG architecture:
 
-User query
-↓
-Embedding
-↓
-Vector search
-↓
-Relevant documents
-↓
-LLM with context
-↓
-Answer grounded in retrieval
+```mermaid
+flowchart TB
+    UQ[User query] --> EQ[Embed query]
+    EQ --> VS[Vector search]
+    VS --> RD[Relevant documents]
+    RD --> LLM[LLM with context]
+    LLM --> ANS[Answer grounded in retrieval]
+```
 
 This:
 

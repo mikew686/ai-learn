@@ -46,6 +46,18 @@ It is:
 
 Everything reduces to probabilistic token continuation.
 
+```mermaid
+flowchart TB
+    subgraph loop["Tool-calling loop"]
+        A[User prompt] --> B[Model: next-token prediction]
+        B --> C[Structured emission<br/>tool name + arguments]
+        C --> D[Runtime: execute tool]
+        D --> E[Result reintegration<br/>append to context]
+        E --> B
+    end
+    B --> F[Natural language response]
+```
+
 ---
 
 # 1. Decision Emerges from Next-Token Prediction
@@ -164,6 +176,17 @@ Continuation:
 > "It’s currently 58°F in San Francisco with partly cloudy skies and winds at 8 mph from the northwest."
 
 Again: just autoregressive continuation.
+
+```mermaid
+flowchart TB
+    U[User question] --> M1[Model predicts]
+    M1 --> TC[Tool call JSON]
+    TC --> RT[Runtime executes]
+    RT --> TR[Tool result JSON]
+    TR --> CX[Append to context]
+    CX --> M2[Model continues]
+    M2 --> R[Natural language reply]
+```
 
 ---
 
@@ -321,6 +344,15 @@ It is not:
 ---
 
 # Canonical Summary
+
+```mermaid
+flowchart LR
+    A[1. Next-token<br/>prediction] --> B[2. Structured<br/>emission]
+    B --> C[3. External<br/>execution]
+    C --> D[4. Context<br/>reintegration]
+    D --> E[5. Continued<br/>generation]
+    E --> A
+```
 
 Tool calling =
 
