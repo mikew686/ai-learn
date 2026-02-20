@@ -253,15 +253,15 @@ No symbolic reasoning layer exists outside autoregression.
 
 **User Prompt**
 
-> "Write Python code to compute the first 10 Fibonacci numbers and show the result."
+> "Write Python code to compute the first 10 Fibonacci numbers and show the result. Show me your steps including tool commands."
 
-Model emits:
+Model emits (Step 1 — write code; Step 2 — run it via tool):
 
 ```json
 {
-  "name": "execute_python",
+  "name": "python_user_visible.exec",
   "arguments": {
-    "code": "def fib(n):\n    seq=[0,1]\n    for _ in range(n-2):\n        seq.append(seq[-1]+seq[-2])\n    return seq\nfib(10)"
+    "code": "def first_n_fib(n: int) -> list[int]:\n    fib = []\n    a, b = 0, 1\n    for _ in range(n):\n        fib.append(a)\n        a, b = b, a + b\n    return fib\n\nresult = first_n_fib(10)\nresult"
   }
 }
 ```
@@ -272,16 +272,39 @@ Returns:
 
 ```json
 {
-  "result": [0,1,1,2,3,5,8,13,21,34]
+  "result": [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
 }
 ```
 
-Model continues:
+Model continues (presenting steps and result):
 
-> "Here are the first 10 Fibonacci numbers: [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]."
+> Here are the steps (including the tool command I ran) and the Python code.
+>
+> **Step 1 — Write the code**
+>
+> ```python
+> def first_n_fib(n: int) -> list[int]:
+>     fib = []
+>     a, b = 0, 1
+>     for _ in range(n):
+>         fib.append(a)
+>         a, b = b, a + b
+>     return fib
+>
+> result = first_n_fib(10)
+> result
+> ```
+>
+> **Step 2 — Run it (tool command)**  
+> Tool command executed: `python_user_visible.exec` (ran the code above).
+>
+> **Step 3 — Result**  
+> [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
 
 Again:
 Structured tokens → external execution → context continuation.
+
+
 
 ---
 
