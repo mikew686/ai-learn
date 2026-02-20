@@ -1,8 +1,12 @@
 # ai-learn
 
-A personal learning project for understanding the fundamentals of developing software using LLMs and reasoning models. This project focuses on **AI technology as a component**—what it takes to build products with these tools—rather than techniques for AI-assisted software development.
+A self-learning project to deepen my understanding of AI development: how modern LLMs and reasoning models work, how to use them as components in software, and which engineering patterns and examples support building with them.
 
-I got interested after attending the [DeepLearning.AI developer conference in 2025](deeplearning-ai-dev-2025/README.md). This project is an attempt to understand the building blocks of AI development and develop a learning approach for what is required to build products using this new technology.
+## What’s in this project
+
+- **Conference notes (2025)** — [DeepLearning.AI Dev Convention 2025](deeplearning-ai-dev-2025/README.md): themes, keynotes (e.g. Andrew Ng), context engineering, and technical directions from the conference.
+- **AI research notes** — [ai-research/](ai-research/): foundations (neural nets → LLMs → GPTs, embeddings & vector search, reasoning, tool calling), how modern LLMs work, and how LLMs write code. Written to solidify conceptual understanding.
+- **Dev patterns & examples** — [eng-dev-patterns/](eng-dev-patterns/) documents patterns (prompt engineering, structured output, function calling, schema-driven inference, embeddings/vector search, model selection). [src/examples/](src/examples/) holds runnable examples that demonstrate those patterns (chat vs reasoning models, tool use, embeddings, vector search with pgvector).
 
 ## Setup
 
