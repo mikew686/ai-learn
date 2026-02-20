@@ -1,5 +1,5 @@
 
-# Simplified Description of How Modern LLMs Work
+# How Modern LLMs Work
 
 Modern large language models (LLMs) are massively scaled neural networks trained to predict the next token in a sequence. From that simple objective, surprisingly powerful behaviors emerge.
 
