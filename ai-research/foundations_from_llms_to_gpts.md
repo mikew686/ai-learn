@@ -69,15 +69,15 @@ GPT models are:
 
 A GPT models:
 
-[
+$$
 P(x_t \mid x_{<t})
-]
+$$
 
 Training objective:
 
-[
+$$
 \mathcal{L} = -\sum_t \log P(x_t^{true})
-]
+$$
 
 There is:
 
@@ -111,15 +111,15 @@ Vocabulary size:
 
 Each token index maps to:
 
-[
+$$
 x_i \in \mathbb{R}^{d_{model}}
-]
+$$
 
 The input becomes:
 
-[
+$$
 X \in \mathbb{R}^{T \times d_{model}}
-]
+$$
 
 This embedding space becomes:
 
@@ -133,9 +133,9 @@ Transformers are permutation invariant.
 
 So positional information is injected via:
 
-[
+$$
 H_0 = X + P
-]
+$$
 
 Where:
 
@@ -163,35 +163,35 @@ Stacked dozens to hundreds of times.
 
 Given hidden states:
 
-[
+$$
 H \in \mathbb{R}^{T \times d}
-]
+$$
 
 Compute:
 
-[
+$$
 Q = HW_Q,\quad K = HW_K,\quad V = HW_V
-]
+$$
 
 Attention scores:
 
-[
+$$
 \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}} + \text{mask}\right)
-]
+$$
 
 Causal mask ensures:
 
-[
+$$
 j > i \Rightarrow \text{masked}
-]
+$$
 
 So the model cannot see future tokens.
 
 Final attention output:
 
-[
+$$
 \text{Attention}(Q,K,V) = \text{softmax}(...)V
-]
+$$
 
 ---
 
@@ -199,15 +199,15 @@ Final attention output:
 
 Instead of one attention operation:
 
-[
+$$
 \text{head}_i = \text{Attention}(Q_i, K_i, V_i)
-]
+$$
 
 Concatenate:
 
-[
+$$
 \text{Concat}(\text{head}_1, ..., \text{head}_h) W_O
-]
+$$
 
 Different heads specialize in:
 
@@ -231,9 +231,9 @@ Mechanistic interpretability has identified:
 
 Each token independently passes through:
 
-[
+$$
 \text{MLP}(x) = W_2 \sigma(W_1 x + b_1) + b_2
-]
+$$
 
 Typically:
 
@@ -252,13 +252,13 @@ Function:
 
 Each block adds to the residual:
 
-[
+$$
 H_{l+1} = H_l + \text{Attention}(H_l)
-]
+$$
 
-[
+$$
 H_{l+1} = H_{l+1} + \text{MLP}(H_{l+1})
-]
+$$
 
 This creates:
 
@@ -278,27 +278,27 @@ This residual stream accumulates increasingly abstract representations across la
 
 Final hidden state:
 
-[
+$$
 H_L
-]
+$$
 
 Projected to vocabulary:
 
-[
+$$
 \text{logits} = H_L W_{out}
-]
+$$
 
 Often:
 
-[
+$$
 W_{out} = W_{embed}^T
-]
+$$
 
 Then:
 
-[
+$$
 P(x_t) = \text{softmax}(\text{logits})
-]
+$$
 
 Training optimizes cross-entropy.
 
@@ -314,14 +314,14 @@ During generation:
 4. Repeat
 
 Naively:
-Attention is (O(T^2)).
+Attention is $O(T^2)$.
 
 Optimized via KV caching:
 
 * Store previous K and V
 * Compute attention only for new token
 
-This reduces per-token complexity to (O(T)).
+This reduces per-token complexity to $O(T)$.
 
 ---
 
@@ -329,9 +329,9 @@ This reduces per-token complexity to (O(T)).
 
 Empirical scaling laws show:
 
-[
+$$
 \text{Loss} \propto N^{-\alpha}
-]
+$$
 
 Where:
 

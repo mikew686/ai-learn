@@ -49,27 +49,27 @@ These works provide the theoretical and empirical foundation for modern LLM unde
 
 At the most fundamental level, neural networks approximate parameterized functions:
 
-[
+$$
 f_\theta(x) \approx y
-]
+$$
 
 Where:
 
-* ( x ) = input
-* ( y ) = target output
-* ( \theta ) = weights and biases
+* $x$ = input
+* $y$ = target output
+* $\theta$ = weights and biases
 
 Training minimizes:
 
-[
+$$
 \mathcal{L}(\theta) = \text{Loss}(f_\theta(x), y)
-]
+$$
 
 Using gradient descent:
 
-[
+$$
 \theta \leftarrow \theta - \eta \nabla_\theta \mathcal{L}
-]
+$$
 
 Gradients are computed via backpropagation.
 
@@ -79,15 +79,15 @@ Gradients are computed via backpropagation.
 
 A multilayer perceptron consists of stacked affine transformations and nonlinearities:
 
-[
+$$
 h = \sigma(Wx + b)
-]
+$$
 
 Stacking layers:
 
-[
+$$
 f(x) = W_n \sigma(W_{n-1} \sigma(... \sigma(W_1 x)))
-]
+$$
 
 Key properties:
 
@@ -132,14 +132,14 @@ Discrete tokens must be mapped into continuous space.
 
 Learned embeddings:
 
-[
+$$
 e = E[w]
-]
+$$
 
 Where:
 
-* ( E \in \mathbb{R}^{V \times d} )
-* ( d \ll V )
+* $E \in \mathbb{R}^{V \times d}$
+* $d \ll V$
 
 Result:
 
@@ -154,9 +154,9 @@ Embeddings form the input layer of transformers.
 
 RNN recurrence:
 
-[
+$$
 h_t = \phi(Wx_t + Uh_{t-1})
-]
+$$
 
 Provides sequential memory.
 
@@ -196,13 +196,13 @@ However, limited long-range modeling.
 
 Encoder–decoder models:
 
-[
+$$
 c = \text{Encoder}(x_1...x_n)
-]
+$$
 
-[
+$$
 y_t = \text{Decoder}(c, y_{<t})
-]
+$$
 
 Limitation: Fixed-length context bottleneck.
 
@@ -212,10 +212,10 @@ Limitation: Fixed-length context bottleneck.
 
 Attention computation:
 
-[
+$$
 \text{Attention}(Q,K,V) =
 \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V
-]
+$$
 
 Benefits:
 
@@ -240,9 +240,9 @@ Each transformer block includes:
 
 ## Self-Attention
 
-[
+$$
 Q = XW_Q,\quad K = XW_K,\quad V = XW_V
-]
+$$
 
 Each token attends to all others.
 
@@ -265,9 +265,9 @@ Injects order information:
 
 ## Residual Architecture
 
-[
+$$
 x_{l+1} = x_l + \text{Block}(x_l)
-]
+$$
 
 Enables deep stable training.
 
@@ -277,17 +277,17 @@ Enables deep stable training.
 
 Training objective:
 
-[
+$$
 P(x_t | x_{<t})
-]
+$$
 
 With causal masking.
 
 Loss:
 
-[
+$$
 \mathcal{L} = - \sum_t \log P(x_t | x_{<t})
-]
+$$
 
 Next-token prediction at scale produces emergent capabilities.
 

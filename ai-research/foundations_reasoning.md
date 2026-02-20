@@ -36,9 +36,9 @@ The model generates text step-by-step, and each step conditions future steps. Co
 
 At each token position:
 
-[
+$$
 P(t_i \mid t_{<i})
-]
+$$
 
 The model predicts the most likely continuation.
 

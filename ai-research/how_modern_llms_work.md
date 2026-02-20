@@ -9,9 +9,9 @@ Modern large language models (LLMs) are massively scaled neural networks trained
 
 At heart, an LLM learns:
 
-[
+$$
 P(x_t \mid x_1, x_2, ..., x_{t-1})
-]
+$$
 
 Given prior tokens, predict the next one.
 

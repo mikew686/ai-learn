@@ -46,9 +46,9 @@ These works collectively explain how semantic geometry emerges, how it is search
 
 An embedding is a mapping:
 
-[
+$$
 \text{Object} \rightarrow \mathbb{R}^n
-]
+$$
 
 It converts discrete symbolic objects into continuous vectors in high-dimensional space.
 
@@ -170,9 +170,9 @@ Example:
 
 Example loss:
 
-[
+$$
 \text{Loss} = -\log \frac{\exp(sim(q, d^+))}{\sum \exp(sim(q, d_i))}
-]
+$$
 
 This directly shapes geometric structure.
 
@@ -235,17 +235,17 @@ Pooling strategies:
 
 Given two embeddings:
 
-[
+$$
 v_1, v_2 \in \mathbb{R}^n
-]
+$$
 
 We compute similarity via:
 
 ## Cosine similarity
 
-[
+$$
 \frac{v_1 \cdot v_2}{||v_1|| ||v_2||}
-]
+$$
 
 Range: [-1, 1]
 
@@ -273,7 +273,7 @@ We retrieve the top-k closest vectors.
 Naive search:
 
 * Compute similarity against every vector
-* O(N)
+* $O(N)$
 
 Fine for 1,000 items
 Impossible for 100 million
