@@ -158,6 +158,32 @@ The most important insight is not any single capability — it is how they combi
 
 A modern LLM-based system operates in an iterative loop:
 
+```mermaid
+flowchart TB
+    subgraph context["Context (grows each step)"]
+        C[Prompt + prior outputs + tool results]
+    end
+
+    C --> M[Model: next-token prediction]
+    M --> G[Generate next step]
+    G --> D{Structured step type?}
+    subgraph external["Outside the model"]
+        T[Runtime executes tool]
+        R[Tool result]
+        T --> R
+    end
+    D -->|Tool call| T
+    D -->|Text / plan / code| A2[Append to context]
+    R --> A1[Append to context]
+
+    A1 --> C
+    A2 --> C
+
+    C --> Done{Task complete?}
+    Done -->|No| M
+    Done -->|Yes| OUT((Final output to user))
+```
+
 1. Read context (prompt + prior outputs + tool results)
 2. Generate next structured step (text, plan, code, or tool call)
 3. If a tool call is emitted:
