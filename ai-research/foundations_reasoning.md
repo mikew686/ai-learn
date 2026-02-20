@@ -59,7 +59,7 @@ This decomposition makes reasoning more stable.
 ## Diagram — Reasoning Flow in an LLM
 
 ```mermaid
-flowchart LR
+flowchart TB
 
 A[Input Prompt + Prior Tokens] --> B[Embedding + Positional Encoding]
 B --> C[Transformer Layers]
