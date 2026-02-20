@@ -331,14 +331,14 @@ Tool returns:
 
 ```json
 {
-  "headline": "Kansas City Chiefs win Super Bowl LX",
+  "headline": "Seattle Seahawks win Super Bowl LX",
   "date": "Feb 2026"
 }
 ```
 
 Model integrates:
 
-> "The Kansas City Chiefs won the most recent Super Bowl (February 2026)."
+> "The Seattle Seahawks won the most recent Super Bowl (February 2026)."
 
 Tool calling enables grounding beyond frozen training data.
 
