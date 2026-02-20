@@ -314,31 +314,45 @@ Structured tokens → external execution → context continuation.
 
 **User Prompt**
 
-> "Who won the most recent Super Bowl?"
+> "Who won the most recent Super Bowl? Show your steps including tool calls."
 
-Model emits:
+Model emits (Step 1 — look it up):
 
 ```json
 {
-  "name": "search_news",
+  "name": "web.run",
   "arguments": {
-    "query": "most recent Super Bowl winner"
+    "search_query": "most recent Super Bowl winner",
+    "recency": "30 days"
   }
 }
 ```
 
-Tool returns:
+Tool returns (search results from multiple sources):
 
 ```json
 {
-  "headline": "Seattle Seahawks win Super Bowl LX",
-  "date": "Feb 2026"
+  "results": [
+    {"source": "ESPN", "summary": "Seattle Seahawks win Super Bowl LX, defeat Patriots 29-13"},
+    {"source": "NFL.com", "summary": "Super Bowl LX (Feb 8, 2026): Seahawks 29, Patriots 13"},
+    {"source": "stats site", "summary": "2026 champion: Seattle Seahawks"}
+  ]
 }
 ```
 
-Model integrates:
+Model integrates (steps + answer):
 
-> "The Seattle Seahawks won the most recent Super Bowl (February 2026)."
+> **What I did (with tool calls)**
+>
+> **Step 1 — Look it up on the web**  
+> I ran a web search for "most recent Super Bowl winner".  
+> Tool call: `web.run` with search_query. Queries used: "most recent Super Bowl winner" (recency: 30 days), "Super Bowl 2026 winner", "Super Bowl 2025 winner" (recency: 365 days).
+>
+> **Step 2 — Read and cross-check reputable sources**  
+> From the returned results, multiple reputable outlets and a stats site agree on the same outcome.
+>
+> **Answer**  
+> The most recent Super Bowl was Super Bowl LX (played February 8, 2026), and the Seattle Seahawks won, defeating the New England Patriots 29–13.
 
 Tool calling enables grounding beyond frozen training data.
 
