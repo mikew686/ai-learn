@@ -201,7 +201,7 @@ c = \text{Encoder}(x_1...x_n)
 $$
 
 $$
-y_t = \text{Decoder}(c, y_{<t})
+y_t = \text{Decoder}(c, y_{\text{<}t})
 $$
 
 Limitation: Fixed-length context bottleneck.
