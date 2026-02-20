@@ -101,9 +101,9 @@ Everything is context.
 
 The model computes:
 
-[
+$$
 P(\text{next token} \mid \text{all previous tokens})
-]
+$$
 
 Changing:
 
