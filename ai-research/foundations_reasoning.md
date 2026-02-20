@@ -65,8 +65,8 @@ A[Input Prompt + Prior Tokens] --> B[Embedding + Positional Encoding]
 B --> C[Transformer Layers]
 
 subgraph Transformer Block
-    D[Self-Attention\n(Variable Routing)]
-    E[MLP\n(Feature Transformation)]
+    D[Self-Attention<br/>Variable Routing]
+    E[MLP<br/>Feature Transformation]
     D --> E
     E --> F[Residual Stream Update]
 end
