@@ -105,6 +105,8 @@ $$
 P(\text{next token} \mid \text{all previous tokens})
 $$
 
+*The probability of the next token given everything that came before it.*
+
 Changing:
 
 * wording
