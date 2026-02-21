@@ -1,14 +1,26 @@
 # **Tools for Thoughtful AI Use**
 
-As described in *Accomplishment Hallucination: When the Tool Uses You* (Psychology Today, Feb 2026):
+with references properly cited and aligned to the article and studies it draws from.
+
+---
+
+# **Tools for Thoughtful AI Use**
+
+As described in *Accomplishment Hallucination: When the Tool Uses You* (Psychology Today, February 2026):
 
 > “Accomplishment Hallucination is a cognitive state in which speed feels like competence, output feels like accomplishment, and work feels done when the actual work—the thinking-through, the failure-mode analysis, the sitting with uncertainty until the problem reveals its structure—hasn't happened at all.”
 
-The article explains how fluent, fast AI output can create a powerful sense of productivity and certainty, even when deeper thinking and verification have not occurred. It refers to this experience as **accomplishment hallucination** — confidence that arises from polished output rather than from tested understanding.
+The article explains how fluent, fast AI output can create a powerful sense of productivity and certainty, even when deeper thinking and verification have not occurred (Psychology Today, 2026). It refers to this experience as **accomplishment hallucination** — confidence that arises from polished output rather than from tested understanding.
 
-**Reference:** [*Accomplishment Hallucination: When the Tool Uses You*](https://www.psychologytoday.com/us/blog/experimentations/202602/accomplishment-hallucination-when-the-tool-uses-you), Psychology Today (blog), Feb 2026.
+Related research cited in the article connects this effect to:
 
-The framework below is an attempt to provide practical tools aligned with the article’s suggested countermeasures — simple ways to introduce structure, reflection, and verification into AI use so that fluency supports thinking rather than replacing it.
+* **Automation bias**
+* **Cognitive offloading**
+* **Overconfidence effects**
+* Reduced critical thinking under AI reliance (Gerlich, 2025)
+* Engagement-optimizing design patterns in AI systems (De Freitas et al., 2025)
+
+The framework below is an attempt to provide practical tools aligned with the article’s suggested countermeasures — simple ways to introduce structure, reflection, and verification into AI use so that fluency supports thinking rather than replaces it.
 
 Use what helps. Combine what works.
 
@@ -33,8 +45,8 @@ Set reusable constraints once so you don’t rely on remembering to ask each tim
 ### Why It Helps
 
 * Makes rigor automatic
-* Prevents safeguard skipping
 * Reduces passive acceptance
+* Introduces friction before confidence forms
 
 ---
 
@@ -52,7 +64,7 @@ Set reusable constraints once so you don’t rely on remembering to ask each tim
 
 * Separates definition from solution
 * Surfaces hidden assumptions
-* Adds useful friction
+* Slows premature certainty
 
 ---
 
@@ -62,18 +74,14 @@ Set reusable constraints once so you don’t rely on remembering to ask each tim
 
 > Solve this using these sections: [explicit structure].
 
-Example structure:
-
-> Use sections: Goals, Options, Risks, Trade-offs, Recommendation.
-
 ### Practical Example
 
 > Solve this using sections: Symptoms, Possible Causes, When to Seek Care, Home Remedies, Red Flags: I have recurring headaches.
 
 ### Why It Helps
 
-* Prevents vague answers
-* Forces structured reasoning
+* Forces explicit reasoning
+* Prevents vague generalities
 * Makes evaluation easier
 
 ---
@@ -90,9 +98,9 @@ Example structure:
 
 ### Why It Helps
 
-* Reduces overconfidence
+* Counters overconfidence
 * Surfaces uncertainty
-* Engages adversarial thinking
+* Restores adversarial evaluation
 
 ---
 
@@ -108,9 +116,9 @@ Example structure:
 
 ### Why It Helps
 
-* Moves from plausibility to evidence
-* Exposes weaknesses
-* Anchors advice in real-world feedback
+* Anchors output in real-world outcomes
+* Reduces fluency bias
+* Encourages verification
 
 ---
 
@@ -119,8 +127,6 @@ Example structure:
 ### Use:
 
 > You are a senior [specific role]. Answer from that perspective.
-
-Frame around the real-world job being performed.
 
 ### Practical Examples
 
@@ -144,9 +150,7 @@ Travel:
 
 * Activates domain-relevant reasoning
 * Surfaces common risks and trade-offs
-* Improves depth
-
-Persona shapes reasoning style — it does not create true expertise.
+* Reduces illusion of completeness
 
 ---
 
@@ -164,7 +168,7 @@ Persona shapes reasoning style — it does not create true expertise.
 
 * Prevents silent reinterpretation
 * Clarifies scope
-* Forces alignment
+* Reduces drift
 
 ---
 
@@ -172,9 +176,9 @@ Persona shapes reasoning style — it does not create true expertise.
 
 ### Watch For:
 
-* “That felt surprisingly easy.”
+* “That was easier than expected.”
 * “I feel confident without checking.”
-* “I didn’t think much.”
+* “That sounds done.”
 
 ### Practical Example
 
@@ -182,9 +186,9 @@ Persona shapes reasoning style — it does not create true expertise.
 
 ### Why It Helps
 
-* Restores awareness
-* Detects confidence hallucination in real time
-* Interrupts autopilot
+* Interrupts confidence hallucination
+* Restores metacognitive awareness
+* Reduces cognitive offloading drift (Gerlich, 2025)
 
 ---
 
@@ -201,8 +205,8 @@ Persona shapes reasoning style — it does not create true expertise.
 ### Why It Helps
 
 * Reduces tool misuse
-* Encourages better task fit
-* Prevents blind reliance
+* Encourages task-model fit
+* Counters blind reliance
 
 ---
 
@@ -212,20 +216,17 @@ Persona shapes reasoning style — it does not create true expertise.
 
 > Assume another independent model or expert might disagree. Where would they differ and why?
 
-You can also repeat the task in another LLM and compare outputs directly.
+You may also repeat the task in a second AI system and compare reasoning and conclusions.
 
 ### Practical Example
 
 > Assume another expert or AI might disagree. Where would they differ and why: Is intermittent fasting healthy for most adults?
 
-Or:
-Run the same prompt in a second AI system and compare reasoning and conclusions.
-
 ### Why It Helps
 
-* Reveals uncertainty
+* Exposes uncertainty
+* Counters automation bias
 * Reduces single-model overreliance
-* Increases humility
 
 ---
 
@@ -237,3 +238,16 @@ Use one. Combine several. Increase rigor when stakes rise.
 
 The goal is not to distrust AI —
 it is to use it in a way that strengthens your thinking.
+
+---
+
+# References
+
+De Freitas, J., Oğuz-Uğuralp, Z., & Oğuz-Uğuralp, A. K. (2025). *Emotional manipulation by AI companions*. Harvard Business School Working Paper No. 25-005.
+
+Gerlich, M. (2025). *AI tools in society: Impacts on cognitive offloading and the future of critical thinking*. Societies.
+
+Psychology Today. (2026, February). *Accomplishment Hallucination: When the Tool Uses You*.
+[https://www.psychologytoday.com/us/blog/experimentations/202602/accomplishment-hallucination-when-the-tool-uses-you](https://www.psychologytoday.com/us/blog/experimentations/202602/accomplishment-hallucination-when-the-tool-uses-you)
+
+---
