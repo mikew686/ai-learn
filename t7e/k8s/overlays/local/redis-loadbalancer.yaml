@@ -1,0 +1,16 @@
+# Optional LoadBalancer service for Redis (same pattern as postgres-external).
+# Gets an EXTERNAL-IP when the cluster has a load balancer (e.g. MetalLB, cloud).
+# If EXTERNAL-IP stays <pending>, use port-forward to svc/redis instead.
+# To disable: remove this file from kustomization.yaml resources.
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-external
+spec:
+  type: LoadBalancer
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+      name: redis-external

@@ -1,6 +1,11 @@
-# Base kustomization for t7e (no deployments in base; add in overlays)
+# Base: namespace + app workloads (web, rqworker when added). No Redis/Postgres here.
+# Local overlay adds in-cluster Redis and Postgres for local dev.
+# Cloud overlays (dev, prod) use managed Redis and Postgres; they reference only this base.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# No resources; overlays (e.g. dev, prod) add deployments and services.
-# Local overlay is scaffolding only (no deployments).
+namespace: t7e
+
+resources:
+  - namespace.yaml
+  # Add Deployment/Service for web and rqworker when ready.

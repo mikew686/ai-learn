@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          # Custom image with pgvector (apt). Build: docker build -f t7e/docker/postgres-pgvector.Dockerfile -t t7e/postgres-pgvector:16 .
+          image: t7e/postgres-pgvector:16
+          # Official image: POSTGRES_PASSWORD is required and sets the superuser password at init
+          # (empty data dir only). POSTGRES_USER defaults to postgres; POSTGRES_DB defaults to that.
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: password
+            - name: POSTGRES_DB
+              value: postgres
+          ports:
+            - containerPort: 5432
+              hostPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-data

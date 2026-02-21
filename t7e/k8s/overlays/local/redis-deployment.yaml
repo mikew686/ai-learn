@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: public.ecr.aws/docker/library/redis:7.2-bookworm
+          ports:
+            - containerPort: 6379
+              hostPort: 6379
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          command:
+            - redis-server
+            - --appendonly
+            - "yes"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: redis-data

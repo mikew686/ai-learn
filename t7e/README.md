@@ -18,10 +18,11 @@ Then open http://127.0.0.1:5000/. The index page shows a hello-world message and
 
 ## Kustomize (local overlay)
 
-Scaffolding only, no deployments:
+Redis and PostgreSQL (with pgvector) run in the `t7e` namespace with persistent volumes. See **[docs/k8s_local.md](docs/k8s_local.md)** for how to start, stop, and expose them on standard ports (6379, 5432).
 
 ```bash
 kubectl apply -k t7e/k8s/overlays/local
+# Then port-forward to use Redis and Postgres on this machine (see docs/k8s_local.md).
 ```
 
 ## Docker

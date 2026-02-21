@@ -1,0 +1,13 @@
+# ClusterIP for in-cluster access (pods use postgres:5432). External access via postgres-external (LoadBalancer) or port-forward.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres

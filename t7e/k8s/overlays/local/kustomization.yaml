@@ -1,9 +1,19 @@
-# Local overlay: scaffolding only, no deployments.
-# Use for local dev / placeholder until dev/prod overlays add workloads.
+# Local overlay only: in-cluster Redis and Postgres (with pgvector).
+# Cloud envs (dev/prod) use managed instances; do not include this overlay there.
+# Expose on this machine via port-forward (see docs/k8s_local.md).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: t7e-local
+namespace: t7e
 
-# No resources or bases that add deployments.
-# Add commonLabels or patches here when needed.
+resources:
+  - ../../base
+  - redis-pvc.yaml
+  - redis-deployment.yaml
+  - redis-service.yaml
+  - postgres-pvc.yaml
+  - postgres-secret.yaml
+  - postgres-deployment.yaml
+  - postgres-service.yaml
+  - postgres-loadbalancer.yaml
+  - redis-loadbalancer.yaml
