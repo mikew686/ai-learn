@@ -4,6 +4,15 @@ Self-learning notes to deepen my understanding of LLMs and AI development. Any m
 
 ---
 
+## AI discussion
+
+Reflection and practice on using AI in a way that strengthens thinking.
+
+* [accomplishment_hallucination_article_summary.md](accomplishment_hallucination_article_summary.md) — Summary of “Accomplishment hallucination: when the tool uses you”: when speed feels like competence and output feels like accomplishment without the underlying thinking.
+* [tools_for_thoughtful_ai_use.md](tools_for_thoughtful_ai_use.md) — Practical tools (structure, reflection, verification) so fluency supports thinking rather than replacing it; goal: use AI in a way that strengthens your thinking.
+
+---
+
 ## Overview docs (`how_*`)
 
 High-level explanations of how things work:
