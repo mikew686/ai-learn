@@ -26,40 +26,38 @@
     <header class="mb-12">
       <h1 class="text-4xl font-bold tracking-tight text-stone-800">t7e</h1>
       <p class="mt-2 font-mono text-sm text-stone-500">translate · status</p>
-      {% if running_on_kubernetes %}
-      <p class="mt-2 inline-block rounded bg-sky-100 px-2 py-0.5 font-mono text-xs text-sky-700">kubernetes</p>
-      {% endif %}
+      <p id="k8s-badge" class="mt-2 inline-block rounded bg-sky-100 px-2 py-0.5 font-mono text-xs text-sky-700 {{ '' if running_on_kubernetes else 'hidden' }}">kubernetes</p>
     </header>
 
-    <section>
+    <section id="services">
       <h2 class="mb-4 text-xs font-semibold uppercase tracking-wider text-stone-400">Services</h2>
       <ul class="space-y-3">
         <li>
-          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if redis_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
-            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if redis_enabled else 'bg-stone-300' }}"></span>
+          <div data-service="redis" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if redis_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if redis_enabled else 'bg-stone-300' }}"></span>
             <span class="font-medium">redis</span>
-            <span class="ml-auto font-mono text-sm opacity-80">{{ 'connected' if redis_enabled else 'off' }}</span>
+            <span class="status-value ml-auto font-mono text-sm opacity-80">{{ 'connected' if redis_enabled else 'off' }}</span>
           </div>
         </li>
         <li>
-          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
-            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_enabled else 'bg-stone-300' }}"></span>
+          <div data-service="postgres" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_enabled else 'bg-stone-300' }}"></span>
             <span class="font-medium">postgres</span>
-            <span class="ml-auto font-mono text-sm opacity-80">{{ 'connected' if postgres_enabled else 'off' }}</span>
+            <span class="status-value ml-auto font-mono text-sm opacity-80">{{ 'connected' if postgres_enabled else 'off' }}</span>
           </div>
         </li>
         <li>
-          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_vector_available else 'border-stone-200 bg-stone-50 text-stone-500' }}">
-            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_vector_available else 'bg-stone-300' }}"></span>
+          <div data-service="pgvector" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_vector_available else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_vector_available else 'bg-stone-300' }}"></span>
             <span class="font-medium">pgvector</span>
-            <span class="ml-auto font-mono text-sm opacity-80">{{ 'available' if postgres_vector_available else 'not loaded' }}</span>
+            <span class="status-value ml-auto font-mono text-sm opacity-80">{{ 'available' if postgres_vector_available else 'not loaded' }}</span>
           </div>
         </li>
         <li>
-          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if rq_workers_running else 'border-stone-200 bg-stone-50 text-stone-500' }}">
-            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if rq_workers_running else 'bg-stone-300' }}"></span>
+          <div data-service="rq" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if rq_workers_running else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if rq_workers_running else 'bg-stone-300' }}"></span>
             <span class="font-medium">rq workers</span>
-            <span class="ml-auto font-mono text-sm opacity-80">{{ rq_worker_count }} running</span>
+            <span class="status-value ml-auto font-mono text-sm opacity-80">{{ rq_worker_count }} running</span>
           </div>
         </li>
       </ul>
@@ -69,5 +67,37 @@
       <p class="font-mono text-xs text-stone-400">Flask · Redis · PostgreSQL · RQ</p>
     </footer>
   </div>
+  <script>
+    const CARD_ON = 'flex items-center gap-3 rounded-xl border px-4 py-3 border-emerald-500/50 bg-emerald-500/10 text-emerald-800';
+    const CARD_OFF = 'flex items-center gap-3 rounded-xl border px-4 py-3 border-stone-200 bg-stone-50 text-stone-500';
+    const DOT_ON = 'status-dot h-3 w-3 shrink-0 rounded-full bg-emerald-500';
+    const DOT_OFF = 'status-dot h-3 w-3 shrink-0 rounded-full bg-stone-300';
+
+    function updateCard(service, on, valueText) {
+      const card = document.querySelector('[data-service="' + service + '"]');
+      if (!card) return;
+      card.className = on ? CARD_ON : CARD_OFF;
+      const dot = card.querySelector('.status-dot');
+      if (dot) dot.className = on ? DOT_ON : DOT_OFF;
+      const value = card.querySelector('.status-value');
+      if (value) value.textContent = valueText;
+    }
+
+    function poll() {
+      fetch('/api/status')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          updateCard('redis', data.redis_enabled, data.redis_enabled ? 'connected' : 'off');
+          updateCard('postgres', data.postgres_enabled, data.postgres_enabled ? 'connected' : 'off');
+          updateCard('pgvector', data.postgres_vector_available, data.postgres_vector_available ? 'available' : 'not loaded');
+          updateCard('rq', data.rq_workers_running, data.rq_worker_count + ' running');
+          var badge = document.getElementById('k8s-badge');
+          badge.classList.toggle('hidden', !data.running_on_kubernetes);
+        })
+        .catch(function () {});
+    }
+
+    setInterval(poll, 5000); // Poll every 5 seconds
+  </script>
 </body>
 </html>
