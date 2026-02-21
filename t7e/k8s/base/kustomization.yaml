@@ -1,0 +1,6 @@
+# Base kustomization for t7e (no deployments in base; add in overlays)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# No resources; overlays (e.g. dev, prod) add deployments and services.
+# Local overlay is scaffolding only (no deployments).

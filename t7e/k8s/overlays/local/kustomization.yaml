@@ -1,0 +1,9 @@
+# Local overlay: scaffolding only, no deployments.
+# Use for local dev / placeholder until dev/prod overlays add workloads.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: t7e-local
+
+# No resources or bases that add deployments.
+# Add commonLabels or patches here when needed.

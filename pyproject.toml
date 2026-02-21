@@ -21,10 +21,16 @@ dependencies = [
     "sqlalchemy>=2.0",  # 2.x API (create_engine, text(), conn.execute); pg_user.md examples
     "psycopg2-binary",  # Postgres driver for SQLAlchemy; used by pg_sanity_test.py
     "pgvector",  # pgvector type for psycopg2; used by db.utils and pg_vector_search
+    # t7e app (Flask, RQ, migrations)
+    "flask>=3.0",
+    "gunicorn>=22.0",
+    "alembic>=1.13",
+    "redis>=5.0",
+    "rq>=1.16",
 ]
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = {"" = "t7e/src"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["t7e/src"]
