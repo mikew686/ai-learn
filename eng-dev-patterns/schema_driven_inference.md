@@ -799,7 +799,7 @@ response = client.chat.completions.create(
 )
 
 # Handle tool calls and get final structured response
-# ... (see full example in src/examples/schema_driven_translation.py)
+# ... (see full example in src/scripts/examples/schema_driven_translation.py)
 ```
 
 ### Example 2: Document Analysis
@@ -959,7 +959,7 @@ tool = {
 
 ### Learning path
 
-Schema-Driven Inference is Pattern 5 in the [learning progression](./learning_progression.md). Learn it after **Understanding Models**, **Prompt Engineering**, **Structured Output**, and **Function Calling**; then combine them (e.g. in [schema_driven_translation.py](../src/examples/schema_driven_translation.py)) for minimal prompts and validated, tool-augmented outputs. Embeddings (Pattern 6) follows.
+Schema-Driven Inference is Pattern 5 in the [learning progression](./learning_progression.md). Learn it after **Understanding Models**, **Prompt Engineering**, **Structured Output**, and **Function Calling**; then combine them (e.g. in [schema_driven_translation.py](../src/scripts/examples/schema_driven_translation.py)) for minimal prompts and validated, tool-augmented outputs. Embeddings (Pattern 6) follows.
 
 ## Key Points
 

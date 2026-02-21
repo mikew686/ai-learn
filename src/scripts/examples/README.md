@@ -15,7 +15,7 @@ When you run these examples, a **`data/`** directory may be created for:
 
 ## Runnable examples
 
-Run from the project root with `python -m src.examples.<module>`.
+Run from the project root with `python -m src.scripts.examples.<module>`.
 
 ### Understanding model demos (interactive)
 
@@ -28,9 +28,9 @@ Interactive chats that illustrate how different model types behave; each has an 
 | `understand_embedding_models` | Embedding-based context: retrieve similar past turns instead of full history. |
 
 ```bash
-python -m src.examples.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]
-python -m src.examples.understand_reasoning_model [--model MODEL] [--temperature T] [--max-tokens N]
-python -m src.examples.understand_embedding_models [--model MODEL] [--embedding-model EMB] [--retrieve-after N] [--retrieve-k K]
+python -m src.scripts.examples.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]
+python -m src.scripts.examples.understand_reasoning_model [--model MODEL] [--temperature T] [--max-tokens N]
+python -m src.scripts.examples.understand_embedding_models [--model MODEL] [--embedding-model EMB] [--retrieve-after N] [--retrieve-k K]
 ```
 
 ### Pattern examples (learning progression)
@@ -47,12 +47,12 @@ Examples that map to the [learning progression](../../eng-dev-patterns/learning_
 | `pg_vector_search` | Embeddings / vector search | Postgres + pgvector; translation_targets + translations; exact-prompt embedding; cost/token tracking. |
 
 ```bash
-python -m src.examples.system_prompt_example [--model MODEL]
-python -m src.examples.language_assessment_structured_output [--model MODEL] [--prompt PHRASE] [--example-phrases]
-python -m src.examples.tool_use_patterns [--model MODEL] [--mode sequential|parallel|interleaved] [--target LANG] [--prompt PHRASE]
-python -m src.examples.schema_driven_translation [--model MODEL] [--prompt TEXT] [--target LANG]
-python -m src.examples.embeddings_vector_search [--model MODEL] [--embedding-model EMB] [--db PATH] [--top-k N]
-python -m src.examples.pg_vector_search [--model MODEL] [--embedding-model EMB] [--db-url URL] [--top-k N]
+python -m src.scripts.examples.system_prompt_example [--model MODEL]
+python -m src.scripts.examples.language_assessment_structured_output [--model MODEL] [--prompt PHRASE] [--example-phrases]
+python -m src.scripts.examples.tool_use_patterns [--model MODEL] [--mode sequential|parallel|interleaved] [--target LANG] [--prompt PHRASE]
+python -m src.scripts.examples.schema_driven_translation [--model MODEL] [--prompt TEXT] [--target LANG]
+python -m src.scripts.examples.embeddings_vector_search [--model MODEL] [--embedding-model EMB] [--db PATH] [--top-k N]
+python -m src.scripts.examples.pg_vector_search [--model MODEL] [--embedding-model EMB] [--db-url URL] [--top-k N]
 ```
 
 ---

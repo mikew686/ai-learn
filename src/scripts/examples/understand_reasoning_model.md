@@ -3,7 +3,7 @@
 This document walks through **what is happening** in the `understand_reasoning_model` example: chat completions with a **reasoning model** (e.g. o1, o3-mini) that can return both **reasoning text** and **tool calls** in the same response. Run the example with:
 
 ```bash
-python -m src.examples.understand_reasoning_model [--model MODEL] [--temperature T] [--max-tokens N]
+python -m src.scripts.examples.understand_reasoning_model [--model MODEL] [--temperature T] [--max-tokens N]
 ```
 
 ---
