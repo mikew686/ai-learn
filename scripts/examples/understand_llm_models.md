@@ -3,7 +3,7 @@
 This document walks through **what is happening** in the `understand_llm_models` example: chat completions, tool use, and the turn loop. Run the example with:
 
 ```bash
-python -m src.scripts.examples.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]
+python -m scripts.examples.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]
 ```
 
 ---

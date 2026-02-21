@@ -10,7 +10,7 @@ This progression demonstrates a learning approach where patterns build on each o
 - **Add incrementally**: Introduce new services/patterns only when needed
 - **Build on previous**: Each pattern leverages earlier concepts
 - **Best practices**: Use industry-standard, accessible technologies
-- **Refinement through examples**: Where an example script exists in `src/scripts/examples/`, the pattern section links to it
+- **Refinement through examples**: Where an example script exists in `scripts/examples/`, the pattern section links to it
 
 ### Preferred learning order
 
@@ -49,9 +49,9 @@ Throughout this progression, **translation** is used as the example use case. Ch
 - Call an embeddings API for text vectors
 - Compare chat vs. reasoning model behavior for the same prompt
 
-**Example**: [understand_llm_models.py](../src/scripts/examples/understand_llm_models.py)
+**Example**: [understand_llm_models.py](../scripts/examples/understand_llm_models.py)
 
-**Related**: [understand_embedding_models.py](../src/scripts/examples/understand_embedding_models.py), [understand_reasoning_model.py](../src/scripts/examples/understand_reasoning_model.py)
+**Related**: [understand_embedding_models.py](../scripts/examples/understand_embedding_models.py), [understand_reasoning_model.py](../scripts/examples/understand_reasoning_model.py)
 
 ---
 
@@ -77,9 +77,9 @@ Throughout this progression, **translation** is used as the example use case. Ch
 - User message with source text and target language
 - Optional few-shot examples in the prompt
 
-**Example**: [system_prompt_example.py](../src/scripts/examples/system_prompt_example.py)
+**Example**: [system_prompt_example.py](../scripts/examples/system_prompt_example.py)
 
-**Related**: [schema_driven_translation.py](../src/scripts/examples/schema_driven_translation.py), [tool_use_patterns.py](../src/scripts/examples/tool_use_patterns.py), [embeddings_vector_search.py](../src/scripts/examples/embeddings_vector_search.py)
+**Related**: [schema_driven_translation.py](../scripts/examples/schema_driven_translation.py), [tool_use_patterns.py](../scripts/examples/tool_use_patterns.py), [embeddings_vector_search.py](../scripts/examples/embeddings_vector_search.py)
 
 ---
 
@@ -106,9 +106,9 @@ Throughout this progression, **translation** is used as the example use case. Ch
 - Use `client.beta.chat.completions.parse()` with `response_format=YourModel`
 - Handle validation errors
 
-**Example**: [language_assessment_structured_output.py](../src/scripts/examples/language_assessment_structured_output.py)
+**Example**: [language_assessment_structured_output.py](../scripts/examples/language_assessment_structured_output.py)
 
-**Related**: [schema_driven_translation.py](../src/scripts/examples/schema_driven_translation.py), [embeddings_vector_search.py](../src/scripts/examples/embeddings_vector_search.py)
+**Related**: [schema_driven_translation.py](../scripts/examples/schema_driven_translation.py), [embeddings_vector_search.py](../scripts/examples/embeddings_vector_search.py)
 
 ---
 
@@ -134,9 +134,9 @@ Throughout this progression, **translation** is used as the example use case. Ch
 - Pass `tools` and `tool_choice` to chat completion
 - Handle `message.tool_calls`, execute functions, append tool results, continue conversation
 
-**Example**: [tool_use_patterns.py](../src/scripts/examples/tool_use_patterns.py)
+**Example**: [tool_use_patterns.py](../scripts/examples/tool_use_patterns.py)
 
-**Related**: [schema_driven_translation.py](../src/scripts/examples/schema_driven_translation.py)
+**Related**: [schema_driven_translation.py](../scripts/examples/schema_driven_translation.py)
 
 ---
 
@@ -162,9 +162,9 @@ Throughout this progression, **translation** is used as the example use case. Ch
 - Use a short system/user prompt; let schemas communicate requirements
 - Combine tool calls and structured output in one flow
 
-**Example**: [schema_driven_translation.py](../src/scripts/examples/schema_driven_translation.py)
+**Example**: [schema_driven_translation.py](../scripts/examples/schema_driven_translation.py)
 
-**Related**: [tool_use_patterns.py](../src/scripts/examples/tool_use_patterns.py) (descriptive tool schemas)
+**Related**: [tool_use_patterns.py](../scripts/examples/tool_use_patterns.py) (descriptive tool schemas)
 
 ---
 
@@ -191,7 +191,7 @@ Throughout this progression, **translation** is used as the example use case. Ch
 - On new phrase: embed query, filter by target language, rank by cosine similarity × dialect weight, take top-K
 - Inject top-K as few-shot examples into the translation prompt
 
-**Example**: [embeddings_vector_search.py](../src/scripts/examples/embeddings_vector_search.py)
+**Example**: [embeddings_vector_search.py](../scripts/examples/embeddings_vector_search.py)
 
 ---
 
@@ -212,7 +212,7 @@ Throughout this progression, **translation** is used as the example use case. Ch
 
 **Example Implementation**:
 - Simple few-shot prompts with translation examples
-- Dynamic example selection based on language pair or embedding similarity (as in [embeddings_vector_search.py](../src/scripts/examples/embeddings_vector_search.py))
+- Dynamic example selection based on language pair or embedding similarity (as in [embeddings_vector_search.py](../scripts/examples/embeddings_vector_search.py))
 - Template-based few-shot prompt construction for different translation styles
 
 ---
@@ -513,7 +513,7 @@ Each pattern builds on previous concepts. Choose a use case that interests you a
 ## Notes
 
 - **Core before combination**: Learn model overview, prompts, schemas, tools, and schema-driven inference before embeddings and patterns that depend on vector search (few-shot retrieval, RAG).
-- **Example and Related**: **Example** is the primary script that best demonstrates the pattern (one per pattern). **Related** lists any other `src/scripts/examples/` scripts that use this pattern as a secondary technology. Use Example to learn the pattern; Related to see it in context elsewhere.
+- **Example and Related**: **Example** is the primary script that best demonstrates the pattern (one per pattern). **Related** lists any other `scripts/examples/` scripts that use this pattern as a secondary technology. Use Example to learn the pattern; Related to see it in context elsewhere.
 - **Choose your own use case**: Translation is the running example; apply the same order to your use case.
 - **Best practices**: Use industry-standard, accessible technologies. Incremental complexity; add services only when needed.
 

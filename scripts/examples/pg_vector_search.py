@@ -25,7 +25,7 @@ Target normalization (translation_targets table):
     and then store the new target for future lookups.
 
 Usage:
-    python -m src.scripts.examples.pg_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db-url URL] [--top-k N] [--temperature T] [--max-tokens N]
+    python -m scripts.examples.pg_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db-url URL] [--top-k N] [--temperature T] [--max-tokens N]
 """
 
 import argparse

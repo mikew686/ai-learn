@@ -74,7 +74,7 @@ Use the string that matches how you called the API.
 ## File and structure
 
 - **Module docstring** – State which patterns the example demonstrates (examples may show more than one); list them explicitly. Include use case. Include a short “Usage” or “Example settings” section if helpful.
-- **Run as module** – Scripts are run as `python -m src.scripts.examples.<script_name>`. Imports from this directory use `from utils import ...` (no `src.scripts.examples.` prefix when inside `src/scripts/examples/`).
+- **Run as module** – Scripts are run as `python -m scripts.examples.<script_name>`. Imports from this directory use `from utils import ...` (no `scripts.examples.` prefix when inside `scripts/examples/`).
 - **main()** – Parse args, create client, resolve model, then call one or more example functions. Each example that is a separate message train should create its own `OpenAILog`, register its calls, and call `print_summary()`.
 
 ## Example skeleton

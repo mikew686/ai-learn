@@ -188,7 +188,7 @@ The user types a free-form target such as “French (Quebec)”, “spanish mexi
 
 The database grows over time; later runs get better few-shot context and, with a target store, fewer normalization calls.
 
-**Examples**: [embeddings_vector_search.py](../src/scripts/examples/embeddings_vector_search.py) (SQLite, dialect weighting); [pg_vector_search.py](../src/scripts/examples/pg_vector_search.py) (Postgres + pgvector, target normalization via translation_targets, exact-prompt embedding, cost/token tracking).
+**Examples**: [embeddings_vector_search.py](../scripts/examples/embeddings_vector_search.py) (SQLite, dialect weighting); [pg_vector_search.py](../scripts/examples/pg_vector_search.py) (Postgres + pgvector, target normalization via translation_targets, exact-prompt embedding, cost/token tracking).
 
 ## Best practices
 
@@ -212,7 +212,7 @@ The database grows over time; later runs get better few-shot context and, with a
 
 - **Start**: Use **SQLite + BLOB** (or Chroma) for development and small datasets. Implement cosine similarity in your app (e.g. NumPy). No extra infrastructure.
 - **Scale up**: Add **FAISS** for higher QPS when the index fits in memory and you can build/update in batch; or move to a **vector DB** (Pinecone, Qdrant, Weaviate, pgvector) when you need filtering, persistence, or shared access.
-- **Filter-then-rank**: When your store supports metadata (e.g. language), filter first, then rank by similarity (and optional weights). See the [Translation example](#translation-example-few-shot-from-vector-search) and [embeddings_vector_search.py](../src/scripts/examples/embeddings_vector_search.py).
+- **Filter-then-rank**: When your store supports metadata (e.g. language), filter first, then rank by similarity (and optional weights). See the [Translation example](#translation-example-few-shot-from-vector-search) and [embeddings_vector_search.py](../scripts/examples/embeddings_vector_search.py).
 - **In the progression**: This is Pattern 6 in the [learning progression](./learning_progression.md); it builds on Understanding Models, Prompts, Structured Output, Tools, and Schema-Driven Inference, and leads into Few-Shot and RAG (Pattern 8).
 
 ## Related patterns
