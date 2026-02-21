@@ -4,9 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>t7e</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
 </head>
-<body>
-  <h1>Hello, world</h1>
-  <p>Caller IP: <strong>{{ caller_ip }}</strong></p>
+<body class="min-h-screen bg-gradient-to-br from-stone-100 via-white to-amber-50/40 font-sans antialiased">
+  <div class="mx-auto max-w-2xl px-6 py-16">
+    <header class="mb-12">
+      <h1 class="text-4xl font-bold tracking-tight text-stone-800">t7e</h1>
+      <p class="mt-2 font-mono text-sm text-stone-500">translate · status</p>
+      {% if running_on_kubernetes %}
+      <p class="mt-2 inline-block rounded bg-sky-100 px-2 py-0.5 font-mono text-xs text-sky-700">kubernetes</p>
+      {% endif %}
+    </header>
+
+    <section>
+      <h2 class="mb-4 text-xs font-semibold uppercase tracking-wider text-stone-400">Services</h2>
+      <ul class="space-y-3">
+        <li>
+          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if redis_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if redis_enabled else 'bg-stone-300' }}"></span>
+            <span class="font-medium">redis</span>
+            <span class="ml-auto font-mono text-sm opacity-80">{{ 'connected' if redis_enabled else 'off' }}</span>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_enabled else 'bg-stone-300' }}"></span>
+            <span class="font-medium">postgres</span>
+            <span class="ml-auto font-mono text-sm opacity-80">{{ 'connected' if postgres_enabled else 'off' }}</span>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_vector_available else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_vector_available else 'bg-stone-300' }}"></span>
+            <span class="font-medium">pgvector</span>
+            <span class="ml-auto font-mono text-sm opacity-80">{{ 'available' if postgres_vector_available else 'not loaded' }}</span>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if rq_workers_running else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+            <span class="h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if rq_workers_running else 'bg-stone-300' }}"></span>
+            <span class="font-medium">rq workers</span>
+            <span class="ml-auto font-mono text-sm opacity-80">{{ rq_worker_count }} running</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="mt-16 border-t border-stone-200 pt-8">
+      <p class="font-mono text-xs text-stone-400">Flask · Redis · PostgreSQL · RQ</p>
+    </footer>
+  </div>
 </body>
 </html>

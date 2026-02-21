@@ -1,1 +1,1 @@
-# RQ worker entrypoint (to be implemented)
+# RQ worker entrypoint. Run with: python -m rqworker

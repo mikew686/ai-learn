@@ -55,12 +55,12 @@ If you started port-forwards in the background, stop them with `kill %1 %2` (or 
 After port-forward (or LoadBalancer EXTERNAL-IP), you can connect from your machine:
 
 - **Redis:** `redis-cli` (connects to localhost:6379). Or URL: `redis://localhost:6379/0`
-- **Postgres:** `psql -h localhost -d postgres -U postgres` (password: `t7e-dev`).
+- **Postgres:** `psql -h localhost -d postgres -U postgres` (password: `localdev`).
 
 | Service   | Host (port-forward) | Port | Notes |
 |-----------|---------------------|------|--------|
 | Redis     | localhost           | 6379 | `redis-cli` |
-| Postgres  | localhost           | 5432 | `psql -h localhost -d postgres -U postgres`, password `t7e-dev` |
+| Postgres  | localhost           | 5432 | `psql -h localhost -d postgres -U postgres`, password `localdev` |
 
 ### Building the Postgres image
 
