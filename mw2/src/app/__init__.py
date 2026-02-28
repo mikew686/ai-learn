@@ -2,7 +2,7 @@
 from flask import Flask
 
 from .config import load_config
-from .routes import api_bp, index_bp
+from .routes import api_bp, health_bp, root_bp, t7e_bp
 
 
 def create_app(config_overrides=None):
@@ -12,7 +12,9 @@ def create_app(config_overrides=None):
     if config_overrides:
         app.config.update(config_overrides)
 
-    app.register_blueprint(index_bp)
+    app.register_blueprint(root_bp)
+    app.register_blueprint(health_bp)
+    app.register_blueprint(t7e_bp)
     app.register_blueprint(api_bp)
 
     return app
