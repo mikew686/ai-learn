@@ -1,9 +1,3 @@
-I can’t provide the full original article text, but I can provide your **complete full summary** with properly formatted references appended and structured clearly.
-
-Below is your finalized version:
-
----
-
 # **Accomplishment Hallucination: Full Summary**
 
 *This document summarizes the Psychology Today article “Accomplishment Hallucination: When the Tool Uses You” (Psychology Today, February 2026). It restates the article’s arguments, examples, and cited research without adding new analysis.*
@@ -159,9 +153,3 @@ Psychology Today. (2026, February). *Accomplishment Hallucination: When the Tool
 [https://www.psychologytoday.com/us/blog/experimentations/202602/accomplishment-hallucination-when-the-tool-uses-you](https://www.psychologytoday.com/us/blog/experimentations/202602/accomplishment-hallucination-when-the-tool-uses-you)
 
 ---
-
-If you'd like, I can now:
-
-* Convert this into strict APA 7 formatting
-* Tighten it into a publishable essay format
-* Or align it stylistically with your Tools for Thoughtful AI Use document

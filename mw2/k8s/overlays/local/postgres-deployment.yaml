@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: postgres
-          # Custom image with pgvector (apt). Build: docker build -f t7e/docker/postgres-pgvector.Dockerfile -t t7e/postgres-pgvector:16 .
-          image: t7e/postgres-pgvector:16
+          # Custom image with pgvector (apt). Build: docker build -f mw2/docker/postgres-pgvector.Dockerfile -t mw2/postgres-pgvector:16 .
+          image: mw2/postgres-pgvector:16
           # Official image: POSTGRES_PASSWORD is required and sets the superuser password at init
           # (empty data dir only). POSTGRES_USER defaults to postgres; POSTGRES_DB defaults to that.
           env:

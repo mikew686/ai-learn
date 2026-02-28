@@ -1,11 +1,5 @@
 # **Tools for Thoughtful AI Use**
 
-with references properly cited and aligned to the article and studies it draws from.
-
----
-
-# **Tools for Thoughtful AI Use**
-
 As described in *Accomplishment Hallucination: When the Tool Uses You* (Psychology Today, February 2026):
 
 > “Accomplishment Hallucination is a cognitive state in which speed feels like competence, output feels like accomplishment, and work feels done when the actual work—the thinking-through, the failure-mode analysis, the sitting with uncertainty until the problem reveals its structure—hasn't happened at all.”
