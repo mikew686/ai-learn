@@ -1,29 +1,8 @@
 """
-Pattern 6: Embeddings / Vector Search
-
-Use case: Interactive translator that asks once for target language (with optional
-region or dialect), normalizes it via one LLM call to canonical language + region,
-then translates phrases with notes. Uses a local SQLite-backed vector store to
-retrieve similar past translations for few-shot prompting (semantic search).
-
-Patterns shown:
-  - **Embedding generation**: OpenAI embeddings API for source phrases.
-  - **Vector similarity**: Cosine similarity (numpy) to find similar stored examples.
-  - **Local vector storage**: SQLite table stores (source, translation, notes, embedding blob).
-  - **Dynamic few-shot**: Top-K similar translations for the current target/dialect
-    are injected into the prompt so the model can mimic style and reuse phrasing.
-  - **Translation with notes**: Each result includes translation and brief
-    cultural/contextual notes (like schema_driven_translation).
-
-Details:
-  - DB path: data/embeddings_vector_search.db (ephemeral; create data/ if missing).
-  - Embeddings: text-embedding-3-small (or OPENROUTER default). Dimension stored per row.
-  - No tools; single chat completion per phrase with optional structured output.
-
-See eng-dev-patterns/learning_progression.md (Pattern 6) and understanding_models.md.
-
-Usage:
-    python -m src.embeddings_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db PATH] [--top-k N] [--temperature T] [--max-tokens N]
+Interactive translator: target language normalized once, then phrases translated
+with notes. Uses a SQLite vector store to retrieve similar past translations and
+inject them as few-shot examples (cosine similarity). Related: eng-dev-patterns
+README — Embeddings / Vector Search, Few-Shot / In-Context Learning.
 """
 
 import argparse

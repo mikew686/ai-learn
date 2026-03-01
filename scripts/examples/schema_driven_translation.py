@@ -1,25 +1,8 @@
 """
-Pattern 5: Schema-Driven Inference
-
-Use case: Translation with tools and structured output — minimal prompt; the model
-uses tool schemas and Pydantic field descriptions to infer what to do and how to format it.
-
-Patterns shown:
-  - **Schema-driven inference (primary)**: Minimal prompt; tool schema descriptions
-    and Pydantic field descriptions act as implicit instructions.
-  - **Function calling / tool use**: Tools for language lookup and cultural context;
-    model calls tools then produces a final answer.
-  - **Structured output**: Pydantic TranslationResult via
-    client.beta.chat.completions.parse(); validated translation and metadata.
-
-Details:
-  - One user message; model may call tools, then we send tool results and request
-    structured output. Single OpenAILog for the run.
-  - Reduces prompt verbosity while keeping validated outputs. See
-    eng-dev-patterns/schema_driven_inference.md and structured_output.md.
-
-Usage:
-    python -m src.schema_driven_translation [--model MODEL] [--prompt TEXT] [--target LANG] [--temperature T] [--max-tokens N]
+Translation with a minimal prompt: tool schemas and Pydantic field descriptions
+tell the model what to do and how to format the result. Uses tools (e.g. language
+lookup) and structured output (.parse()). Related: eng-dev-patterns README —
+Schema-Driven Inference, Function Calling / Tool Use, Structured Output.
 """
 
 import argparse

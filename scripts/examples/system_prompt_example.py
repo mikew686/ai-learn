@@ -1,23 +1,7 @@
 """
-Pattern 2: Prompt Engineering
-
-Use case: Translation with system role optimization — compare token use and
-behavior when instructions live in the system message vs repeated in each user message.
-
-Patterns shown:
-  - **Prompt engineering (primary)**: System vs user prompts; role-setting and
-    constraint injection in the system message.
-  - **Stateless vs stateful**: Example A repeats instructions per user message;
-    Example B sets the system prompt once and reuses it across two user messages.
-  - **Token efficiency**: Same two phrases translated both ways; total tokens
-    and timing illustrate the cost of repeating the system prompt.
-
-Details:
-  - Two separate runs (Example A stateless, Example B stateful), each with its
-    own OpenAILog. Output: translations plus per-request and summary logs.
-
-Usage:
-    python -m src.system_prompt_example [--model MODEL] [--temperature T] [--max-tokens N]
+Translates two phrases twice: once with instructions in every user message (stateless),
+once with a single system prompt reused (stateful). Compares token use and behavior.
+Related: eng-dev-patterns README — Prompt Engineering.
 """
 
 import argparse

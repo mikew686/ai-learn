@@ -1,36 +1,7 @@
 """
-Interactive demo: Chat / conversational LLM models with tool use
-
-Use case: Step through a conversation where the model can call a fetch_url tool;
-see assistant messages, tool calls, and tool results. Type "done" to exit.
-
-Patterns shown:
-  - **Chat completions with tools (primary)**: Single conversation; model may
-    return content or tool_calls (chat models usually return one or the other per turn).
-  - **Tool execution loop**: We run the tool, append the result, and call the API
-    again until the model returns a final text response.
-  - **Logging**: One OpenAILog for the session; each turn registered with
-    log.start_call() and log.register().
-
-Details:
-  - Uses a simple fetch_url tool. We check tool_calls first, then content.
-  - Session is stateful; messages accumulate until you type "done".
-
-Example settings (omit any flag to use API default):
-
-  # Deterministic (best for tool use, extraction)
-  python -m src.understand_llm_models --temperature 0
-
-  # Balanced or more creative
-  python -m src.understand_llm_models --temperature 0.7
-  python -m src.understand_llm_models --temperature 1.0
-
-  # Shorter or longer responses
-  python -m src.understand_llm_models --max-tokens 256
-  python -m src.understand_llm_models --max-tokens 4096
-
-Usage:
-    python -m src.understand_llm_models [--model MODEL] [--temperature T] [--max-tokens N]
+Interactive chat with a tool-calling model (fetch_url). Demonstrates message flow,
+tool calls, and the tool-result loop. Related: eng-dev-patterns README — Understanding
+Models (chat/conversational), Function Calling / Tool Use.
 """
 
 import argparse

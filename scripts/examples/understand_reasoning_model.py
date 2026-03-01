@@ -1,36 +1,8 @@
 """
-Interactive demo: Reasoning models (o1, o3, etc.) with tool use
-
-Use case: Step through a conversation with a reasoning model that can show
-chain-of-thought and call a fetch_url tool. Type "done" to exit.
-
-Patterns shown:
-  - **Reasoning models (primary)**: Model may return both content (reasoning)
-    and tool_calls in the same response; we print content first, then tool
-    calls and results. System prompt encourages "Think step by step."
-  - **Chat completions with tools**: Same tool-execution loop as chat models;
-    one OpenAILog for the session.
-  - **Tuning**: Many reasoning models ignore or fix temperature; max_tokens
-    is the main lever for length and cost.
-
-Details:
-  - Uses a simple fetch_url tool. Reasoning (when present) appears before
-    tool call blocks. Session is stateful until you type "done".
-
-Example settings (omit any flag to use API default):
-
-  # Full reasoning chains (complex problems)
-  python -m src.understand_reasoning_model --max-tokens 8192
-
-  # Shorter (faster, cheaper)
-  python -m src.understand_reasoning_model --max-tokens 2048
-  python -m src.understand_reasoning_model --max-tokens 16384
-
-  # Lower temperature if supported
-  python -m src.understand_reasoning_model --temperature 0.2 --max-tokens 4096
-
-Usage:
-    python -m src.understand_reasoning_model [--model MODEL] [--temperature T] [--max-tokens N]
+Interactive chat with a reasoning model (e.g. o3-mini) that can show
+chain-of-thought and call tools. Demonstrates reasoning-in-content and tool-use
+in one response. Related: eng-dev-patterns README — Understanding Models (reasoning),
+Function Calling / Tool Use, Chain-of-Thought / Multi-Step Reasoning.
 """
 
 import argparse

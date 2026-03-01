@@ -1,25 +1,8 @@
 """
-Pattern 4: Function Calling / Tool Use
-
-Use case: Translation with language analysis tools — model uses a tool to
-identify the source language (and optionally cultural context), then translates.
-
-Patterns shown:
-  - **Tool use (primary)**: Tool schema (JSON Schema), model selects tools and
-    arguments; we execute tools and send results back; final response from model.
-  - **Sequential tool use**: One tool call, then one final response (default mode).
-  - **Parallel tool use**: Model may call multiple tools in one response; we run
-    them and send all results back; one final response.
-  - **Interleaved tool use**: For reasoning models (e.g. o3-mini); multiple
-    tool-call rounds with reasoning between; supports multi-step workflows.
-
-Details:
-  - Modes: --mode sequential (default), parallel, or interleaved. One OpenAILog
-    per run. Nested assess_lang calls (for the analyze_language tool) use the same log.
-  - See eng-dev-patterns/function_calling_tool_use.md.
-
-Usage:
-    python -m src.tool_use_patterns [--model MODEL] [--mode sequential|parallel|interleaved] [--target LANG] [--prompt PHRASE] [--example-phrases] [--temperature T] [--max-tokens N]
+Translation with a language-analysis tool: the model calls a tool to identify
+source language (and optionally context), then translates. Modes: sequential,
+parallel, or interleaved tool calls. Related: eng-dev-patterns README — Function
+Calling / Tool Use.
 """
 
 import argparse

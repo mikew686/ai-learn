@@ -1,43 +1,9 @@
 """
-Interactive demo: Embedding models for efficient conversation context
-
-Use case: Same interactive chat as the other understand_* demos, but when the
-conversation gets long we use an embedding model to select the most relevant
-past turns instead of sending the full history. Reduces tokens and keeps
-context focused on what matters for the current query (see understanding_models.md).
-
-Patterns shown:
-  - **Embedding models (primary)**: Generate embeddings for the current user
-    message and for each past turn; use cosine similarity to retrieve the
-    most relevant turns. Send only those + current message to the chat model.
-  - **RAG over conversation history**: Conversation turns are the "documents";
-    the current user message is the query; we retrieve top-K turns and use
-    them as context for the next chat completion.
-  - **Chat completions**: Same interactive loop as understand_llm_models but
-    with a context window built via retrieval instead of full history.
-  - **Logging**: One OpenAILog for the session (chat only); embedding calls
-    are not logged.
-
-Details:
-  - No tools; simple multi-turn chat. After --retrieve-after turns we switch
-    to retrieval: only the top --retrieve-k turns by similarity (plus current)
-    are sent. First N turns always sent in full.
-  - Embedding model and chat model are separate (e.g. text-embedding-3-small
-    + gpt-4o-mini). See eng-dev-patterns/understanding_models.md (Embedding Models).
-
-Example settings:
-
-  # Default: retrieval after 8 turns, keep 6 most relevant
-  python -m src.understand_embedding_models
-
-  # Use retrieval earlier (after 4 turns)
-  python -m src.understand_embedding_models --retrieve-after 4 --retrieve-k 4
-
-  # Disable retrieval (send full history every time, like other understand_ demos)
-  python -m src.understand_embedding_models --retrieve-after 999
-
-Usage:
-    python -m src.understand_embedding_models [--model CHAT_MODEL] [--embedding-model EMB_MODEL] [--retrieve-after N] [--retrieve-k K] [--temperature T] [--max-tokens N]
+Interactive chat that uses embeddings to retrieve the most relevant past turns
+instead of sending full history once the conversation is long. Demonstrates
+embedding-based context selection and cosine similarity. Related: eng-dev-patterns
+README — Understanding Models (embedding models), Embeddings / Vector Search,
+Few-Shot (retrieved turns as context), RAG (conversation as “documents”).
 """
 
 import argparse

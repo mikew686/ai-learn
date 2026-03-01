@@ -1,35 +1,16 @@
 """
-Pattern 6: Embeddings / Vector Search (Postgres + pgvector)
-
-Same approach as embeddings_vector_search but using a Postgres database with
-the pgvector extension for vector similarity (cosine distance in-database).
-
-Uses db.utils.PgVectorHelper for database creation and connections.
-See pg_user.md and postgres_pgvector_notes.md for setup.
-
-Embedding approach (exact-prompt embedding):
-  - We embed the exact user-message prompt sent to the model, e.g.
-    "Translate to French (Quebec French): <phrase>". Query and stored embeddings
-    use the same wording (language_name + dialect_description), so retrieval
-    matches "same task + similar phrase" and stays consistent with prompt wording.
-  - Retrieval filters by language_name only (no dialect filter). Ranking is
-    purely by cosine distance. The database schema uses language_name, region_code
-    (and dialect_description) for display and analytics.
-
-Target normalization (translation_targets table):
-  - The user's raw target (e.g. "French (Quebec)") is embedded and compared to
-    stored targets. If the nearest row has cosine distance below a threshold
-    (TARGET_MATCH_DISTANCE_THRESHOLD, default 0.2), we use that row's
-    (language_name, language_code, region_code, dialect_description) and skip
-    the LLM parse. Otherwise we call the LLM (with similar targets as few-shot)
-    and then store the new target for future lookups.
-
-Usage:
-    python -m scripts.examples.pg_vector_search [--model MODEL] [--embedding-model EMB_MODEL] [--db-url URL] [--top-k N] [--temperature T] [--max-tokens N]
+Same translation + few-shot flow as embeddings_vector_search but with Postgres
+and pgvector: exact-prompt embedding, cosine-distance retrieval, and optional
+vector-backed target normalization (reuse stored target if within threshold).
+Related: eng-dev-patterns README — Embeddings / Vector Search, Few-Shot.
+Note: requires a Postgres database with the pgvector extension installed 
+(user name and database name must match). See db/pg_user.md for setup.
 """
 
 import argparse
 import os
+import types
+import unicodedata
 
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -44,13 +25,13 @@ DEFAULT_EMBEDDING_DIM = 1536
 
 
 class TranslationWithNotes(BaseModel):
-    """Translation plus English phonetic spelling and brief notes (cultural/contextual)."""
+    """Translation plus ARPABET phonetic transcription and brief notes (cultural/contextual)."""
 
     translated_text: str = Field(
         description="The translated text in the target language and dialect"
     )
     phonetic_spelling: str = Field(
-        description="English phonetic spelling of the translation (how to pronounce it, e.g. IPA or respelling)"
+        description="ARPABET transcription of the translation: space-separated 2-letter phoneme codes (AA, AE, B, CH, etc.) with stress digits 0/1/2 after vowels. See https://en.wikipedia.org/wiki/ARPABET"
     )
     notes: str = Field(
         description="Brief cultural or contextual notes about the translation (in English)"
@@ -150,6 +131,28 @@ def store_target(
 
 # Cosine distance below this: use top-1 from translation_targets to fill fields without calling LLM.
 TARGET_MATCH_DISTANCE_THRESHOLD = 0.2
+
+# Similarity >= this: reuse top-1 translation directly, skip LLM call.
+EXACT_MATCH_SIMILARITY_THRESHOLD = 0.9999
+
+# Similarity (1 - distance) to interpretation. Ordered high-to-low; first match wins.
+SIMILARITY_INTERPRETATION: list[tuple[float, str]] = [
+    (1.00, "Exact match"),
+    (0.95, "Near-identical"),
+    (0.90, "Very similar"),
+    (0.85, "Similar"),
+    (0.80, "Related"),
+    (0.70, "Loosely related"),
+    (0.0, "Weak match"),
+]
+
+
+def _similarity_interpretation(similarity: float) -> str:
+    """Return interpretation label for a similarity score (1 - cosine distance)."""
+    for threshold, label in SIMILARITY_INTERPRETATION:
+        if similarity >= threshold:
+            return label
+    return "Weak match"
 
 
 def parse_language_region(
@@ -262,18 +265,27 @@ def get_embedding(
     return response.data[0].embedding, response
 
 
+def _normalize_for_embedding(text: str) -> str:
+    """Normalize text for embedding/retrieval only. Case and whitespace variations (e.g. buddY vs buddy) match better."""
+    s = unicodedata.normalize("NFC", text.strip().lower())
+    return " ".join(s.split())
+
+
 def _embedding_text(phrase: str, language_name: str, dialect_description: str) -> str:
-    """Build the string to embed: use the exact prompt wording sent to the model so retrieval matches same task + phrase."""
+    """Build the string to embed: use the exact prompt wording sent to the model so retrieval matches same task + phrase. Normalizes phrase for embedding so variations like buddY/buddy retrieve the same few-shots."""
+    norm = _normalize_for_embedding(phrase)
     if (dialect_description or "").strip():
-        return f"Translate to {language_name} ({dialect_description.strip()}): {phrase}"
-    return f"Translate to {language_name}: {phrase}"
+        return f"Translate to {language_name} ({dialect_description.strip()}): {norm}"
+    return f"Translate to {language_name}: {norm}"
 
 
 def _print_db_summary(helper: PgVectorHelper) -> None:
     """Print summary of both tables: totals by language/dialect, then total tokens and cost for entire DB per table."""
     with helper.connect() as conn:
         print()
-        print("--- Vector store summary (Postgres + pgvector) ---")
+        print("=" * 60)
+        print("Vector store summary (Postgres + pgvector)")
+        print("=" * 60)
 
         for table, label in [
             ("translations", "translations"),
@@ -304,7 +316,7 @@ def _print_db_summary(helper: PgVectorHelper) -> None:
                 print(
                     f"    Total tokens: {total_tokens:,}  Total cost: ${total_cost:.6f}"
                 )
-        print("--------------------------------------------------")
+        print("=" * 60)
         print()
 
 
@@ -365,17 +377,18 @@ def get_similar_translations(
     target_language: str,
     query_embedding: list[float],
     top_k: int,
-) -> list[tuple[str, str, str, str, str, str]]:
+) -> list[tuple[float, str, str, str, str, str, str]]:
     """
     Return up to top_k past translations for the given target language,
     ranked by pgvector cosine distance only. Each row is
-    (source_text, translated_text, notes, phonetic_spelling, language_name, dialect_description)
+    (distance, source_text, translated_text, notes, phonetic_spelling, language_name, dialect_description)
     so few-shot prompts use the same wording as the original prompts (stored language_name and dialect_description, not codes).
     """
     with helper.connect() as conn:
         rows = conn.execute(
             text("""
-                SELECT source_text, translated_text, notes, phonetic_spelling, language_name, dialect_description
+                SELECT embedding <=> :query AS dist,
+                       source_text, translated_text, notes, phonetic_spelling, language_name, dialect_description
                 FROM translations
                 WHERE language_name = :lang
                 ORDER BY embedding <=> :query
@@ -383,7 +396,7 @@ def get_similar_translations(
                 """),
             {"lang": target_language, "query": Vector(query_embedding), "limit": top_k},
         ).fetchall()
-    return [(r[0], r[1], r[2], r[3], r[4], r[5]) for r in rows]
+    return [(float(r[0]), r[1], r[2], r[3], r[4], r[5], r[6]) for r in rows]
 
 
 def _target_label(language_name: str, dialect_description: str) -> str:
@@ -412,11 +425,12 @@ def translate_phrase(
     tgt_spec = (target_spec or target_language).strip()
     system = (
         f"You are a translator into {tgt_spec}. "
-        "For each phrase, provide: (1) the translation, (2) an English phonetic spelling (how to pronounce it, e.g. IPA or respelling), "
+        "For each phrase, provide: (1) the translation, (2) ARPABET transcription (space-separated 2-letter codes like AA, AE, B, CH; stress 0/1/2 after vowels; approximate target-language sounds with nearest ARPABET phonemes), "
         "and (3) brief cultural or contextual notes in English."
     )
     messages = [{"role": "system", "content": system}]
     for (
+        _dist,
         src,
         trans,
         notes,
@@ -596,78 +610,115 @@ def main() -> None:
     print('Enter a phrase to translate, or "done" to exit.')
     print()
 
-    while True:
-        try:
-            phrase = input("Phrase: ").strip()
-        except (EOFError, KeyboardInterrupt):
-            break
-        if not phrase:
-            continue
-        if phrase.lower() == "done":
-            break
+    try:
+        while True:
+            try:
+                phrase = input("Phrase: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                break
+            if not phrase:
+                continue
+            if phrase.lower() == "done":
+                break
 
-        text_to_embed = _embedding_text(phrase, target_language, dialect_description)
-        query_embedding, emb_response = get_embedding(
-            client, embedding_model, text_to_embed, log=log_embeddings
-        )
-        emb_usage = getattr(emb_response, "usage", None)
-        embedding_cost = _cost_from_usage(emb_usage)
-        emb_in, emb_out = _tokens_from_usage(emb_usage)
-        similar = get_similar_translations(
-            helper, target_language, query_embedding, args.top_k
-        )
-
-        log_translations.start_call()
-        try:
-            result, response, messages_sent = translate_phrase(
-                client,
-                chat_model,
-                target_language,
-                phrase,
-                similar,
-                target_spec=target_spec,
-                temperature=args.temperature,
-                max_tokens=args.max_tokens,
+            text_to_embed = _embedding_text(phrase, target_language, dialect_description)
+            query_embedding, emb_response = get_embedding(
+                client, embedding_model, text_to_embed, log=log_embeddings
             )
-        except Exception:
-            log_translations.print_summary()
-            raise
-        log_translations.register(
-            "beta.chat.completions.parse", messages_sent, response
-        )
-        prompt_usage = getattr(response, "usage", None)
-        prompt_cost = _cost_from_usage(prompt_usage)
-        prompt_in, prompt_out = _tokens_from_usage(prompt_usage)
+            emb_usage = getattr(emb_response, "usage", None)
+            embedding_cost = _cost_from_usage(emb_usage)
+            emb_in, emb_out = _tokens_from_usage(emb_usage)
+            similar = get_similar_translations(
+                helper, target_language, query_embedding, args.top_k
+            )
 
-        store_translation(
-            helper,
-            target_language,
-            target_language_code,
-            target_dialect,
-            dialect_description,
-            phrase,
-            result.translated_text,
-            result.phonetic_spelling,
-            result.notes,
-            query_embedding,
-            embedding_model=embedding_model,
-            embedding_cost=embedding_cost,
-            embedding_input_tokens=emb_in,
-            embedding_output_tokens=emb_out,
-            prompt_model=chat_model,
-            prompt_cost=prompt_cost,
-            prompt_input_tokens=prompt_in,
-            prompt_output_tokens=prompt_out,
-        )
+            few_shots_lines = []
+            for dist, src, _trans, _notes, _phonetic, lang_name, dialect_desc in similar:
+                sim = 1 - dist
+                phrase_label = f"{_target_label(lang_name, dialect_desc)}: {src}"
+                few_shots_lines.append(f"{sim:.4f} - {_similarity_interpretation(sim)} - {phrase_label}")
 
-        if similar:
-            print("  [Few-shot: used", len(similar), "similar past translation(s)]")
-        print_indented(
-            "  Translation", result.translated_text, indent=4, max_length=2000
-        )
-        print_indented("  Phonetic", result.phonetic_spelling, indent=4, max_length=500)
-        print_indented("  Notes", result.notes, indent=4, max_length=1000)
-        print()
+            exact_match = (
+                similar
+                and (1 - similar[0][0]) >= EXACT_MATCH_SIMILARITY_THRESHOLD
+            )
+            if exact_match:
+                dist, src, trans, notes, phonetic, ln, dd = similar[0]
+                result = TranslationWithNotes(
+                    translated_text=trans,
+                    phonetic_spelling=phonetic,
+                    notes=notes or "",
+                )
+                log_translations.start_call()
+                _fake_usage = types.SimpleNamespace(
+                    prompt_tokens=0, completion_tokens=0, total_tokens=0, cost=0.0
+                )
+                _fake_response = types.SimpleNamespace(model="", usage=_fake_usage)
+                log_translations.register(
+                    "beta.chat.completions.parse",
+                    [{"role": "system", "content": "Exact match found"}],
+                    _fake_response,
+                    few_shots=few_shots_lines,
+                )
+                prompt_cost = 0.0
+                prompt_in, prompt_out = 0, 0
+            else:
+                log_translations.start_call()
+                try:
+                    result, response, messages_sent = translate_phrase(
+                        client,
+                        chat_model,
+                        target_language,
+                        phrase,
+                        similar,
+                        target_spec=target_spec,
+                        temperature=args.temperature,
+                        max_tokens=args.max_tokens,
+                    )
+                except Exception:
+                    log_translations.print_summary()
+                    raise
+                log_translations.register(
+                    "beta.chat.completions.parse",
+                    messages_sent,
+                    response,
+                    few_shots=few_shots_lines,
+                )
+                prompt_usage = getattr(response, "usage", None)
+                prompt_cost = _cost_from_usage(prompt_usage)
+                prompt_in, prompt_out = _tokens_from_usage(prompt_usage)
+
+            if not exact_match:
+                store_translation(
+                    helper,
+                    target_language,
+                    target_language_code,
+                    target_dialect,
+                    dialect_description,
+                    phrase,
+                    result.translated_text,
+                    result.phonetic_spelling,
+                    result.notes,
+                    query_embedding,
+                    embedding_model=embedding_model,
+                    embedding_cost=embedding_cost,
+                    embedding_input_tokens=emb_in,
+                    embedding_output_tokens=emb_out,
+                    prompt_model=chat_model,
+                    prompt_cost=prompt_cost,
+                    prompt_input_tokens=prompt_in,
+                    prompt_output_tokens=prompt_out,
+                )
+
+            print_indented(
+                "  Translation", result.translated_text, indent=4, max_length=2000
+            )
+            print_indented("  Phonetic", result.phonetic_spelling, indent=4, max_length=500)
+            print_indented("  Notes", result.notes, indent=4, max_length=1000)
+            print()
+
+    except KeyboardInterrupt:
+        pass
 
     _print_db_summary(helper)
     log_language.print_summary()

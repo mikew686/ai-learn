@@ -361,6 +361,7 @@ class OpenAILog:
         response,
         *,
         label: str | None = None,
+        few_shots: list[str] | None = None,
     ) -> None:
         """
         Register one OpenAI request/response and print a formatted log entry.
@@ -375,6 +376,8 @@ class OpenAILog:
             messages: The messages list sent in the request (for summary).
             response: The API response object (must have .usage and .choices).
             label: Optional short label (e.g. "Initial (with tools)", "Final").
+            few_shots: Optional list of "similarity_score - few_shot_prompt" strings; when
+                provided, replaces the Response section with "Few-shots:" and one per line.
         """
         start = self._call_start
         elapsed_time = (time.time() - start) if start is not None else None
@@ -410,6 +413,7 @@ class OpenAILog:
             "cost": cost,
             "elapsed_time": elapsed_time,
             "label": label,
+            "few_shots": few_shots,
             "_running_prompt_tokens": self._running_prompt_tokens,
             "_running_completion_tokens": self._running_completion_tokens,
             "_running_cost": self._running_cost,
@@ -465,9 +469,11 @@ class OpenAILog:
         msg_summary = _message_summary(messages, self.max_message_length)
         print(f"{indent_str}Message:")
         _print_indented_block(indent_str, msg_summary, self.width)
-        resp_summary = _response_summary(response, self.max_response_length)
-        print(f"{indent_str}Response:")
-        _print_indented_block(indent_str, resp_summary, self.width)
+        few_shots = entry.get("few_shots")
+        if few_shots is not None:
+            print(f"{indent_str}Few-shots:")
+            for line in few_shots:
+                _print_indented_block(indent_str, line, self.width)
         print(
             f"{indent_str}Token usage - Prompt: {prompt_tokens}, Completion: {completion_tokens}, "
             f"Total: {total_tokens} (running: {run_prompt} in, {run_completion} out)"
