@@ -1,32 +1,52 @@
 # AI Technology Engineering Patterns
 
-This document outlines key AI engineering patterns and techniques for building production systems using established models and services. These patterns focus on application-level engineering rather than model training or fine-tuning.
+This is an AI-generated summary of common AI engineering technologies. It covers application-level patterns and techniques used with established models and services, not model training or fine-tuning.
 
-## Learning Progression
+## Overview
 
-📚 [Learning Progression Guide](./learning_progression.md) – A self-learning progression that demonstrates how these patterns build on each other through a consistent use case.
+**Core principles**
+- Understanding Models
+- Prompts
+- Schemas
+- Tools
+- Schema-Driven Inference
 
-**Recommended order**: Cover **core principles first** (1. Understanding Models, 2. Prompts, 3. Schemas, 4. Tools, 5. Schema-Driven Inference), then **tying together** (6. Embeddings, 7. Few-Shot, 8. RAG, 9. Chain-of-Thought), then production patterns (Streaming, Caching, Memory, Guardrails, Agents, Orchestration, Evaluation, Advanced). See [learning_progression.md](./learning_progression.md) for the full order and example script links.
+**Technology concepts**
+- Embeddings
+- Few-Shot
+- Caching
+- Memory
+- Streaming
+- Guardrails
+
+**Bring it together**
+- RAG
+- Chain-of-Thought
+- Tree-of-Thought
+- Agents
+- Multi-Agent
+- Orchestration
+- Evaluation and advanced patterns
 
 ---
 
 ## Understanding Models
 
-Understanding model capabilities helps you select the right model for your use case. Models available through OpenRouter and similar services can be categorized into general classes:
+Model capabilities vary by class; OpenRouter and similar services expose models that fall into these general categories:
 
-**Chat/Conversational Models**: General-purpose models optimized for dialogue and text generation. Support function calling, structured outputs, and streaming. Best for most application patterns.
+**Chat/Conversational Models**: General-purpose models for dialogue and text generation, with function calling, structured outputs, and streaming. Commonly used for application patterns.
 - **OpenAI**: GPT-4, GPT-4 Turbo, GPT-3.5-turbo
 - **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku
 - **Google**: Gemini Pro, Gemini Ultra
 - **Other Vendors**: Meta Llama 3, Mistral Large, Cohere Command, DeepSeek Chat, xAI Grok
 
-**Reasoning Models**: Models designed for explicit step-by-step reasoning. Better for complex problem-solving, multi-step analysis, and tasks requiring logical deduction.
+**Reasoning Models**: Models built for explicit step-by-step reasoning, suited to complex problem-solving, multi-step analysis, and logical deduction.
 - **OpenAI**: o1-preview, o1-mini, o3-mini
 - **Anthropic**: Claude 3.5 Sonnet (with reasoning capabilities)
 - **Google**: Gemini Pro (with chain-of-thought prompting)
 - **Other Vendors**: DeepSeek R1, Meta Llama 3 (with CoT prompting)
 
-**Fast/Cheap Models**: Lightweight models optimized for speed and cost. Suitable for simple tasks, high-volume operations, and when latency is critical.
+**Fast/Cheap Models**: Lightweight models tuned for speed and cost, used for simple tasks, high-volume workloads, and latency-sensitive use cases.
 - **OpenAI**: GPT-3.5-turbo, GPT-4o-mini
 - **Anthropic**: Claude 3 Haiku
 - **Google**: Gemini Flash
@@ -38,7 +58,7 @@ Understanding model capabilities helps you select the right model for your use c
 - **Google**: text-embedding-004, textembedding-gecko
 - **Other Vendors**: Cohere Embed, Mistral Embed, Voyage AI, Nomic Embed
 
-**Code Models**: Optimized for code generation and understanding. Better at code completion, debugging, and code explanation tasks.
+**Code Models**: Tuned for code generation and understanding, including completion, debugging, and explanation.
 - **OpenAI**: GPT-4 (code capabilities), GPT-3.5-turbo (code)
 - **Anthropic**: Claude 3.5 Sonnet (strong code capabilities)
 - **Google**: Gemini Pro (code generation)
@@ -50,9 +70,15 @@ Understanding model capabilities helps you select the right model for your use c
 - **Google**: Gemini Pro Vision, Gemini Ultra (multimodal)
 - **Other Vendors**: Meta Llama 3.1 (vision), Mistral Large (multimodal), Cohere Command R+ (multimodal)
 
-📖 [Detailed Documentation](./understanding_models.md) - Comprehensive guide to model capabilities, selection criteria, and use case mapping.
+📖 [Detailed Documentation](./understanding_models.md) — Model capabilities, selection criteria, and use case mapping.
 
-📖 [LLM vs. Reasoning Problems](./llm_vs_reasoning_problems.md) - Problem types that suit chat models vs. reasoning models, with examples and selection guidelines.
+📖 [LLM vs. Reasoning Problems](./llm_vs_reasoning_problems.md) — Problem types suited to chat models vs. reasoning models, with examples.
+
+**Related Patterns**:
+- **Prompt Engineering**: Model choice influences prompt design and which techniques apply
+- **Embeddings / Vector Search**: Embedding models produce vectors for semantic search and RAG
+- **RAG**: Often uses embedding models for document and query encoding
+- **Function Calling / Tool Use**: Chat models with tool support enable agentic and tool-augmented flows
 
 ---
 
@@ -60,7 +86,7 @@ Understanding model capabilities helps you select the right model for your use c
 
 📖 [Detailed Documentation](./prompt_engineering.md)
 
-**Description**: The art and science of designing effective prompts to guide LLM behavior and achieve desired outputs. Involves structuring instructions, providing context, and using various techniques to improve response quality.
+**Description**: Designing prompts to steer LLM behavior and shape outputs. Involves structuring instructions, adding context, and applying techniques that improve response quality.
 
 **Key Techniques**:
 - Template-based prompts with variable substitution
@@ -76,12 +102,12 @@ Understanding model capabilities helps you select the right model for your use c
 - **PromptLayer**: Prompt versioning and management
 - **Weights & Biases Prompts**: Prompt tracking and optimization
 
-**Best Practices**:
-- Use clear, specific instructions
-- Provide examples for complex tasks
-- Separate system prompts from user prompts
-- Version control your prompts
-- Test prompts systematically
+**Common practices**:
+- Clear, specific instructions
+- Examples included for complex tasks
+- System prompts separated from user prompts
+- Prompt versioning
+- Systematic prompt testing
 
 **Use Cases**:
 - Content generation
@@ -89,6 +115,12 @@ Understanding model capabilities helps you select the right model for your use c
 - Code generation
 - Question answering
 - Translation
+
+**Related Patterns**:
+- **Few-Shot / In-Context Learning**: Examples in prompts complement prompt engineering
+- **Structured Output**: Prompts often specify or constrain output format
+- **Schema-Driven Inference**: Minimal prompts work when schemas carry implicit instructions
+- **RAG**: Retrieved context is injected into prompts
 
 ---
 
@@ -106,20 +138,17 @@ Understanding model capabilities helps you select the right model for your use c
 - Response integration
 
 **Popular Solutions**:
-- **AWS Bedrock Agents**: Managed agents with native tool/function calling support
-- **AWS Lambda**: Serverless functions for tool execution
-- **OpenAI Function Calling**: Native support in GPT models
-- **Anthropic Tool Use**: Claude's tool calling API
+- **OpenAI Function Calling** / **Anthropic Tool Use**: Native support in GPT and Claude
 - **LangChain Tools**: Tool abstraction framework
-- **AutoGPT**: Agent framework with tool use
+- **AWS Bedrock Agents**: Managed agents with native tool calling
 - **CrewAI**: Multi-agent framework with tools
 
-**Best Practices**:
-- Define clear, specific function schemas
-- Validate inputs before execution
-- Handle errors gracefully
-- Use tool descriptions effectively
-- Implement retry logic
+**Common practices**:
+- Clear, specific function schemas
+- Input validation before execution
+- Graceful error handling
+- Descriptive tool descriptions
+- Retry logic
 
 **Use Cases**:
 - API integrations
@@ -128,6 +157,12 @@ Understanding model capabilities helps you select the right model for your use c
 - Web scraping
 - Calculator tools
 - Code execution
+
+**Related Patterns**:
+- **Structured Output**: Tool parameters and responses often use structured schemas
+- **Schema-Driven Inference**: Tool schemas act as implicit prompts for the model
+- **Agentic Systems**: Agents rely on tools for planning and execution
+- **Orchestration**: Workflows coordinate tool calls across steps
 
 ---
 
@@ -145,17 +180,16 @@ Understanding model capabilities helps you select the right model for your use c
 
 **Popular Solutions**:
 - **Pydantic**: Python data validation (used with OpenAI `.parse()`)
+- **Structured Outputs (OpenAI)**: Native structured output support
 - **JSON Schema**: Standard schema format
 - **Zod**: TypeScript schema validation
-- **Structured Outputs (OpenAI)**: Native structured output support
-- **Outlines**: Structured generation library
 
-**Best Practices**:
-- Define strict schemas
-- Handle parsing errors gracefully
-- Provide fallback mechanisms
-- Validate all outputs
-- Use type-safe languages when possible
+**Common practices**:
+- Strict schemas
+- Graceful parsing error handling
+- Fallback mechanisms
+- Output validation
+- Type-safe languages where applicable
 
 **Use Cases**:
 - Data extraction
@@ -163,6 +197,11 @@ Understanding model capabilities helps you select the right model for your use c
 - Database record creation
 - Configuration generation
 - Form filling
+
+**Related Patterns**:
+- **Function Calling / Tool Use**: Tool definitions use JSON Schema; outputs can be structured
+- **Schema-Driven Inference**: Pydantic and schemas reduce need for verbose prompts
+- **Prompt Engineering**: Schemas complement explicit instructions
 
 ---
 
@@ -179,12 +218,12 @@ Understanding model capabilities helps you select the right model for your use c
 - Model infers details from schema metadata
 - Reduced prompt complexity with maintained quality
 
-**Best Practices**:
-- Write clear, descriptive tool function descriptions
-- Use detailed Pydantic Field descriptions
-- Let schemas communicate requirements implicitly
-- Keep prompts minimal when schemas provide context
-- Combine with explicit prompts only when necessary
+**Common practices**:
+- Clear, descriptive tool function descriptions
+- Detailed Pydantic Field descriptions
+- Schemas used to communicate requirements implicitly
+- Minimal prompts when schemas supply context
+- Explicit prompts combined only when needed
 
 **Use Cases**:
 - Translation with language detection and cultural context
@@ -200,228 +239,46 @@ Understanding model capabilities helps you select the right model for your use c
 
 ---
 
-## RAG (Retrieval-Augmented Generation)
-
-**Description**: Augmenting LLM inputs with relevant context retrieved from external knowledge bases or vector databases. Combines the power of semantic search with generative capabilities.
-
-**Key Components**:
-- Vector embeddings of documents
-- Vector database for storage and retrieval
-- Retrieval mechanism (semantic search)
-- Context injection into prompts
-
-**Popular Solutions**:
-- **AWS Bedrock Knowledge Bases**: Managed RAG with vector search and data sources
-- **Amazon Kendra**: Enterprise search service with AI-powered semantic search
-- **Amazon OpenSearch Serverless**: Vector search and hybrid search capabilities
-- **Pinecone**: Managed vector database
-- **Weaviate**: Open-source vector database
-- **Chroma**: Embedded vector database
-- **Qdrant**: High-performance vector search
-- **Milvus**: Scalable vector database
-- **LangChain Vector Stores**: Abstraction layer for multiple backends
-- **LlamaIndex**: Data framework for LLM applications
-
-**Best Practices**:
-- Chunk documents appropriately (200-500 tokens)
-- Use metadata filtering for precision
-- Implement hybrid search (keyword + semantic)
-- Re-rank results for better relevance
-- Monitor retrieval quality
-
-**Use Cases**:
-- Document Q&A systems
-- Knowledge base assistants
-- Research tools
-- Customer support chatbots
-- Legal document analysis
-
----
-
-## Chain-of-Thought / Multi-Step Reasoning
-
-**Description**: Encouraging LLMs to show explicit step-by-step reasoning processes. Improves accuracy on complex problems requiring logical reasoning.
-
-**Key Techniques**:
-- Explicit reasoning prompts ("Let's think step by step")
-- Intermediate reasoning steps
-- Self-verification
-- Decomposition of complex problems
-
-**Popular Solutions**:
-- **Chain-of-Thought Prompting**: Original technique
-- **ReAct (Reasoning + Acting)**: Combines reasoning with tool use
-- **Self-Consistency**: Multiple reasoning paths
-- **Tree of Thoughts**: Search-based reasoning
-- **LangChain Chains**: Multi-step reasoning workflows
-
-**Best Practices**:
-- Break complex problems into steps
-- Encourage explicit reasoning
-- Verify intermediate results
-- Use multiple reasoning paths for critical decisions
-- Monitor reasoning quality
-
-**Use Cases**:
-- Mathematical problem solving
-- Logical reasoning tasks
-- Multi-step planning
-- Code debugging
-- Scientific analysis
-
----
-
-## Agentic Systems
-
-**Description**: Autonomous systems that can plan, execute actions, and adapt based on results. Agents use tools, memory, and reasoning to achieve goals.
-
-**Key Components**:
-- Planning capabilities
-- Tool/action execution
-- Memory/state management
-- Goal tracking
-- Reflection and adaptation
-
-**Popular Solutions**:
-- **AWS Strands Agents**: Open-source AI agents SDK with model-driven approach, supports Amazon Bedrock, Anthropic, Ollama, Meta, and other providers via LiteLLM. Used in production by Amazon Q Developer, AWS Glue, and VPC Reachability Analyzer. [GitHub](https://github.com/aws/strands-agents) | [AWS Blog](https://aws.amazon.com/blogs/opensource/introducing-strands-agents-an-open-source-ai-agents-sdk/)
-- **AWS Bedrock Agents**: Managed agent service with tool use and knowledge bases
-- **AWS Step Functions**: Workflow orchestration for agent systems
-- **AutoGPT**: Early autonomous agent framework
-- **LangGraph**: State machine for agent workflows
-- **CrewAI**: Multi-agent orchestration
-- **AutoGen**: Multi-agent conversation framework
-- **Semantic Kernel**: Microsoft's agent framework
-- **LlamaIndex Agents**: Agent framework with RAG
-
-**Best Practices**:
-- Define clear goals and constraints
-- Implement safety limits (max steps, timeouts)
-- Monitor agent behavior
-- Use structured memory
-- Implement human-in-the-loop for critical actions
-- Leverage model-native capabilities (reasoning, tool use) rather than complex orchestration
-- Use semantic search for tool selection when dealing with large tool sets (1000+ tools)
-
-**Use Cases**:
-- Research assistants
-- Task automation
-- Code generation and testing
-- Data analysis workflows
-- Customer service automation
-
----
-
-## Orchestration / Workflow Management
-
-**Description**: Coordinating multi-step LLM workflows with proper error handling, state management, and retry logic. Ensures reliable execution of complex processes.
-
-**Key Features**:
-- Sequential and parallel execution
-- Error handling and recovery
-- State persistence
-- Conditional branching
-- Retry mechanisms
-
-**Popular Solutions**:
-- **AWS Step Functions**: Serverless workflow orchestration with LLM integration
-- **AWS Bedrock**: Managed LLM service with orchestration capabilities
-- **AWS Lambda**: Serverless functions for workflow steps
-- **Amazon EventBridge**: Event-driven orchestration
-- **LangChain**: Comprehensive orchestration framework
-- **LlamaIndex**: Data and workflow orchestration
-- **Prefect**: Workflow orchestration platform
-- **Temporal**: Durable execution engine
-- **Airflow**: Workflow management (can integrate LLMs)
-- **Dagster**: Data orchestration with LLM support
-
-**Best Practices**:
-- Design idempotent workflows
-- Implement comprehensive error handling
-- Use state checkpoints
-- Monitor workflow execution
-- Design for failure recovery
-
-**Use Cases**:
-- Multi-step content generation
-- Data processing pipelines
-- ETL with LLM steps
-- Approval workflows
-- Batch processing
-
----
-
-## LLM-as-a-Judge (Evaluation)
-
-**Description**: Using LLMs to evaluate the quality, correctness, or alignment of outputs. Enables automated quality assessment at scale.
-
-**Key Approaches**:
-- Rubric-based evaluation
-- Comparative evaluation
-- Fact-checking
-- Alignment checking
-- Quality scoring
-
-**Popular Solutions**:
-- **LangSmith**: LLM observability with evaluation
-- **Weights & Biases**: Experiment tracking and evaluation
-- **TruLens**: LLM evaluation framework
-- **RAGAS**: RAG-specific evaluation metrics
-- **DeepEval**: LLM evaluation framework
-- **LangChain Evaluators**: Built-in evaluation tools
-
-**Best Practices**:
-- Use separate judge models for objectivity
-- Define clear evaluation criteria
-- Use structured evaluation outputs
-- Combine multiple evaluation dimensions
-- Validate judge consistency
-
-**Use Cases**:
-- Output quality assessment
-- Hallucination detection
-- Alignment verification
-- A/B testing evaluation
-- Automated testing
-
----
-
 ## Embeddings / Vector Search
 
 📖 [Detailed Documentation](./embeddings_and_vector_search.md)
 
-**Description**: Converting text into dense vector representations (embeddings) and using similarity search to find relevant content. Foundation for semantic search and RAG.
+**Description**: Using dense vector representations (embeddings) and similarity search to find relevant content. This pattern is the foundation for semantic search, RAG, and dynamic few-shot selection. It covers embedding generation, vector storage, similarity metrics (e.g. cosine similarity), and combining them—for example, storing examples and retrieving the most similar ones to build few-shot prompts.
 
 **Key Concepts**:
-- Embedding models
-- Vector similarity metrics (cosine, dot product)
-- Approximate nearest neighbor search
-- Dimensionality considerations
+- **Embedding generation**: Call an embeddings API to convert text into fixed-length vectors that capture semantic meaning
+- **Vector similarity**: Cosine similarity or dot product (often with normalized vectors) to rank by relevance
+- **Vector storage**: From simple (SQLite BLOB, in-memory) to scaled (FAISS, vector DBs) for persistence and throughput
+- **Dynamic few-shot**: Use the current input’s embedding to select the most relevant stored examples and inject them into the prompt
+- **Exact-prompt embedding**: Embed the same text that will appear in the user message so query and stored items align
+- **Target normalization (vector-backed)**: Embed free-form user input (e.g. “French Quebec”), search a small target store; if nearest row is within a distance threshold, reuse it and skip the LLM
 
 **Popular Solutions**:
-- **AWS Bedrock Titan Embeddings**: Amazon's embedding models (multimodal support)
-- **Amazon OpenSearch Serverless**: Vector search with embedding support
-- **AWS Bedrock Knowledge Bases**: Integrated embedding and vector search
-- **OpenAI Embeddings**: text-embedding-ada-002, text-embedding-3-small/large
-- **Cohere Embeddings**: multilingual and domain-specific
-- **Sentence Transformers**: Open-source embedding models
-- **Voyage AI**: High-quality embeddings
-- **Anthropic Embeddings**: Claude-based embeddings
-- **FAISS**: Facebook's similarity search library
-- **Annoy**: Approximate nearest neighbors
+- **OpenAI Embeddings** / **Cohere Embed**: Widely used embedding APIs
+- **Chroma**: Lightweight embedded vector store
+- **Postgres + pgvector**: Vector search in PostgreSQL
+- **Pinecone**: Managed vector database
+- **LangChain Vector Stores** / **LlamaIndex**: Abstraction over multiple backends
 
-**Best Practices**:
-- Choose appropriate embedding models for your domain
-- Normalize vectors for cosine similarity
-- Use appropriate dimensions (balance quality vs. cost)
-- Consider multilingual models for global apps
-- Monitor embedding quality
+**Common practices**:
+- Normalized vectors for cosine similarity (or APIs that return normalized vectors)
+- Batched embedding calls; embedding dimension stored when switching models is likely
+- Metadata weighting (e.g. language/dialect) so retrieval respects context
+- Simple storage first; FAISS or a vector DB as scale or latency demands
+- Exact-prompt embedding when retrieving few-shot examples for chat flows
 
 **Use Cases**:
-- Semantic search
-- Document similarity
-- Recommendation systems
-- Clustering
-- Anomaly detection
+- Semantic search over owned content (documents, translations, support answers)
+- Dynamic few-shot or example selection for prompts
+- RAG: embed documents and query, retrieve, then generate with context
+- Clustering, deduplication, or recommendation when items have a text component
+- **Semantic caching**: Same machinery (embed query, similarity search)—reuse cached LLM responses for similar queries; see **Caching / Optimization**
+
+**Related Patterns**:
+- **RAG**: Uses embeddings and vector search to retrieve context before generation
+- **Few-Shot / In-Context Learning**: Vector search often selects which few-shot examples to include
+- **Prompt Engineering**: Retrieved content is injected into prompts
+- **Understanding Models – Embedding Models**: Technical details on embedding APIs and similarity
 
 ---
 
@@ -439,15 +296,15 @@ Understanding model capabilities helps you select the right model for your use c
 **Popular Solutions**:
 - **LangChain FewShotPromptTemplate**: Template for few-shot prompts
 - **Example Selectors**: Dynamic example selection
-- **Semantic Similarity Example Selection**: Choose examples by similarity
+- **Semantic Similarity Example Selection**: Selects examples by similarity
 - **Custom Example Stores**: Store and retrieve examples
 
-**Best Practices**:
-- Select diverse, representative examples
-- Order examples strategically
-- Match example format to desired output
-- Use 2-5 examples typically
-- Update examples based on performance
+**Common practices**:
+- Diverse, representative examples
+- Strategic example ordering
+- Example format matched to desired output
+- Typically 2-5 examples
+- Examples updated based on performance
 
 **Use Cases**:
 - Style transfer
@@ -456,39 +313,53 @@ Understanding model capabilities helps you select the right model for your use c
 - Domain adaptation
 - Custom output formats
 
+**Related Patterns**:
+- **Embeddings / Vector Search**: Dynamic few-shot uses vector similarity to select examples
+- **Prompt Engineering**: Few-shot examples are part of prompt design
+- **RAG**: Retrieved passages act as in-context knowledge; similar to few-shot retrieval
+- **Schema-Driven Inference**: Examples can illustrate schema expectations
+
 ---
 
-## Multi-Agent Systems
+## Caching / Optimization
 
-**Description**: Systems with multiple specialized agents that collaborate, communicate, and coordinate to solve complex tasks. Each agent has specific roles and capabilities.
+**Description**: Caching LLM responses, embeddings, or intermediate results to reduce latency, costs, and improve performance. **Semantic caching** (cache hits for semantically similar queries) uses **embeddings and vector search**: embed the query, find nearest cached query, return cached response—same pattern as in Embeddings / Vector Search.
 
-**Key Concepts**:
-- Agent specialization
-- Inter-agent communication
-- Coordination mechanisms
-- Shared memory/state
-- Conflict resolution
+**Key Strategies**:
+- Response caching (exact key, e.g. Redis)
+- Embedding caching (store embedding API outputs to avoid re-calls)
+- Prompt caching (provider-side repeated prefix)
+- **Semantic caching**: Embeddings + vector similarity to reuse responses for similar queries
+- Result memoization
 
 **Popular Solutions**:
-- **CrewAI**: Multi-agent orchestration framework
-- **AutoGen**: Multi-agent conversation framework
-- **LangGraph Multi-Agent**: Multi-agent state machines
-- **Semantic Kernel**: Multi-agent orchestration
-- **Swarm**: Decentralized agent networks
+- **Redis** (e.g. ElastiCache): Response and session caching
+- **GPTCache**: Semantic cache for LLM responses
+- **LangChain Cache**: Multiple caching backends
+- **DynamoDB**: Caching with TTL
+- **SQLite**: Lightweight local cache
 
-**Best Practices**:
-- Define clear agent roles
-- Establish communication protocols
-- Implement conflict resolution
-- Monitor agent interactions
-- Design for scalability
+**Common practices**:
+- Caching of expensive operations
+- Semantic caching for similar queries
+- Cache invalidation strategies
+- Cache hit rate monitoring
+- Tradeoff between freshness and performance
 
 **Use Cases**:
-- Complex research tasks
-- Software development teams
-- Content creation workflows
-- Data analysis pipelines
-- Customer service teams
+- Cost reduction
+- Latency improvement
+- Rate limit management
+- Repeated queries
+- Batch processing
+
+**Semantic caching (detail)**: Query is embedded and compared to cached (query_embedding, response) pairs via vector similarity; cached response returned if within threshold. Involves similarity thresholds, high-quality embeddings, and cache warming. Solutions: **GPTCache**, **LangChain Semantic Cache**, custom vector cache, **Redis with Embeddings**. Applied when cache hits for *similar* queries are desired, not only exact repeats.
+
+**Related Patterns**:
+- **Embeddings / Vector Search**: Same machinery (embed + similarity search) for semantic cache keys and lookup
+- **Orchestration**: Cache workflow or step results for idempotency
+- **Streaming**: Cache streamed responses or segments when appropriate
+- **RAG**: Semantic caches often store RAG-style query/response pairs
 
 ---
 
@@ -503,21 +374,18 @@ Understanding model capabilities helps you select the right model for your use c
 - Semantic memory (facts and knowledge)
 
 **Popular Solutions**:
-- **Amazon DynamoDB**: NoSQL database for state and memory storage
-- **Amazon ElastiCache (Redis)**: Fast in-memory storage for session memory
-- **Amazon RDS (PostgreSQL)**: Persistent relational storage for long-term memory
-- **Amazon MemoryDB**: Redis-compatible with persistence
-- **LangChain Memory**: Various memory types
-- **LlamaIndex Memory**: Persistent memory for agents
-- **Vector Store Memory**: Semantic memory storage
-- **Zep**: Long-term memory for AI applications
+- **LangChain Memory** / **LlamaIndex Memory**: Multiple memory types and persistence
+- **Redis** (e.g. ElastiCache): Session and short-term memory
+- **Vector Store Memory**: Semantic/long-term memory
+- **DynamoDB** / **PostgreSQL**: Durable state storage
+- **Zep**: Long-term memory for chat
 
-**Best Practices**:
-- Separate short-term and long-term memory
-- Implement memory summarization
-- Use vector search for semantic memory
-- Implement memory pruning
-- Respect privacy and data retention policies
+**Common practices**:
+- Separation of short-term and long-term memory
+- Memory summarization
+- Vector search for semantic memory
+- Memory pruning
+- Privacy and data retention policies
 
 **Use Cases**:
 - Conversational AI
@@ -526,43 +394,11 @@ Understanding model capabilities helps you select the right model for your use c
 - Learning systems
 - Context-aware applications
 
----
-
-## Guardrails / Safety
-
-**Description**: Content filtering, output validation, and safety checks to prevent harmful, biased, or inappropriate outputs. Critical for production deployments.
-
-**Key Areas**:
-- Content moderation
-- Toxicity detection
-- PII detection and redaction
-- Output validation
-- Rate limiting
-
-**Popular Solutions**:
-- **Amazon Comprehend**: Content moderation, PII detection, and toxicity analysis
-- **AWS Bedrock Guardrails**: Built-in content filtering and safety controls
-- **Amazon Macie**: PII and sensitive data detection
-- **NVIDIA NeMo Guardrails**: Open-source guardrails framework
-- **Azure Content Safety**: Microsoft's content moderation
-- **OpenAI Moderation API**: Content moderation service
-- **Perspective API**: Toxicity detection
-- **Presidio**: PII detection and anonymization
-- **LangChain Guardrails**: Safety integrations
-
-**Best Practices**:
-- Implement multiple layers of safety
-- Validate all user inputs
-- Monitor outputs continuously
-- Use human review for sensitive content
-- Keep safety rules updated
-
-**Use Cases**:
-- Public-facing applications
-- Educational platforms
-- Healthcare applications
-- Financial services
-- Content moderation
+**Related Patterns**:
+- **Embeddings / Vector Search**: Semantic memory often uses vector stores
+- **RAG**: Long-term knowledge can be stored and retrieved via RAG
+- **Agentic Systems**: Agents need memory for context across turns and tasks
+- **Orchestration**: Workflows persist state across steps
 
 ---
 
@@ -584,12 +420,11 @@ Understanding model capabilities helps you select the right model for your use c
 - **FastAPI Streaming**: Server-side streaming
 - **Server-Sent Events**: HTTP-based streaming
 
-**Best Practices**:
-- Implement proper error handling
-- Support cancellation
-- Handle partial responses gracefully
-- Provide loading indicators
-- Optimize for low latency
+**Common practices**:
+- Error handling and cancellation support
+- Graceful handling of partial responses
+- Loading indicators
+- Low-latency optimization
 
 **Use Cases**:
 - Real-time chatbots
@@ -598,41 +433,126 @@ Understanding model capabilities helps you select the right model for your use c
 - Code generation
 - Translation services
 
+**Related Patterns**:
+- **Prompt Engineering**: Streaming delivers prompt-driven generation incrementally
+- **Caching**: Cache streamed responses or segments when appropriate
+- **Orchestration**: Workflows can stream steps or final output
+
 ---
 
-## Caching / Optimization
+## Guardrails / Safety
 
-**Description**: Caching LLM responses, embeddings, or intermediate results to reduce latency, costs, and improve performance.
+**Description**: Content filtering, output validation, and safety checks to prevent harmful, biased, or inappropriate outputs. Critical for production deployments.
 
-**Key Strategies**:
-- Response caching
-- Embedding caching
-- Prompt caching
-- Semantic caching
-- Result memoization
+**Key Areas**:
+- Content moderation
+- Toxicity detection
+- PII detection and redaction
+- Output validation
+- Rate limiting
 
 **Popular Solutions**:
-- **Amazon ElastiCache (Redis/Memcached)**: Managed caching service
-- **Amazon DynamoDB**: Fast NoSQL caching with TTL support
-- **Amazon CloudFront**: CDN caching for API responses
-- **GPTCache**: Semantic cache for LLM responses
-- **LangChain Cache**: Multiple caching backends
-- **SQLite**: Lightweight local cache
-- **Vector Cache**: Semantic similarity caching
+- **OpenAI Moderation API**: Content moderation
+- **AWS Bedrock Guardrails**: Built-in content filtering
+- **NVIDIA NeMo Guardrails**: Open-source guardrails framework
+- **Presidio**: PII detection and anonymization
+- **LangChain Guardrails**: Safety integrations
 
-**Best Practices**:
-- Cache expensive operations
-- Use semantic caching for similar queries
-- Implement cache invalidation strategies
-- Monitor cache hit rates
-- Balance freshness vs. performance
+**Common practices**:
+- Multiple layers of safety
+- User input validation
+- Continuous output monitoring
+- Human review for sensitive content
+- Updated safety rules
 
 **Use Cases**:
-- Cost reduction
-- Latency improvement
-- Rate limit management
-- Repeated queries
-- Batch processing
+- Public-facing applications
+- Educational platforms
+- Healthcare applications
+- Financial services
+- Content moderation
+
+**Related Patterns**:
+- **Structured Output**: Validate outputs against schemas as a guardrail
+- **LLM-as-a-Judge**: Evaluate content for safety and alignment
+- **Prompt Engineering**: System prompts can encode safety and behavior constraints
+
+---
+
+## RAG (Retrieval-Augmented Generation)
+
+**Description**: Augmenting LLM inputs with relevant context retrieved from external knowledge bases or vector databases. Combines the power of semantic search with generative capabilities.
+
+**Key Components**:
+- Vector embeddings of documents
+- Vector database for storage and retrieval
+- Retrieval mechanism (semantic search)
+- Context injection into prompts
+
+**Popular Solutions**:
+- **LangChain Vector Stores** / **LlamaIndex**: Data frameworks and abstraction over vector backends
+- **AWS Bedrock Knowledge Bases**: Managed RAG with vector search
+- **Pinecone**: Managed vector database
+- **Chroma**: Embedded vector database
+- **Weaviate** / **Qdrant**: Open-source vector databases
+
+**Common practices**:
+- Document chunking (e.g. 200-500 tokens)
+- Metadata filtering for precision
+- Hybrid search (keyword + semantic)
+- Re-ranking for relevance
+- Retrieval quality monitoring
+
+**Use Cases**:
+- Document Q&A systems
+- Knowledge base assistants
+- Research tools
+- Customer support chatbots
+- Legal document analysis
+
+**Related Patterns**:
+- **Embeddings / Vector Search**: Foundation for encoding documents and queries; vector DBs store and retrieve context
+- **Few-Shot / In-Context Learning**: Retrieved chunks are often used as in-context examples
+- **Prompt Engineering**: Retrieved context is injected into prompts
+- **Hybrid Search**: Combines keyword and semantic search for better RAG retrieval
+
+---
+
+## Chain-of-Thought / Multi-Step Reasoning
+
+**Description**: Encouraging LLMs to show explicit step-by-step reasoning processes. Improves accuracy on complex problems requiring logical reasoning.
+
+**Key Techniques**:
+- Explicit reasoning prompts ("Let's think step by step")
+- Intermediate reasoning steps
+- Self-verification
+- Decomposition of complex problems
+
+**Popular Solutions**:
+- **Chain-of-Thought Prompting**: "Let's think step by step" and variants
+- **ReAct**: Reasoning + tool use
+- **LangChain Chains**: Multi-step reasoning workflows
+- **Tree of Thoughts**: Search-based reasoning
+
+**Common practices**:
+- Decomposition of complex problems into steps
+- Explicit reasoning in outputs
+- Verification of intermediate results
+- Multiple reasoning paths for critical decisions
+- Reasoning quality monitoring
+
+**Use Cases**:
+- Mathematical problem solving
+- Logical reasoning tasks
+- Multi-step planning
+- Code debugging
+- Scientific analysis
+
+**Related Patterns**:
+- **Function Calling / Tool Use**: ReAct and similar approaches combine reasoning with tool use
+- **Tree-of-Thought / Search-Based Reasoning**: Explores multiple reasoning paths; extends CoT with search
+- **Agentic Systems**: Agents use reasoning for planning and reflection
+- **LLM-as-a-Judge**: Evaluate reasoning quality and step correctness
 
 ---
 
@@ -652,12 +572,12 @@ Understanding model capabilities helps you select the right model for your use c
 - **Custom Search Algorithms**: Implement search logic
 - **Beam Search**: Explores top-k paths
 
-**Best Practices**:
-- Limit search space for performance
-- Use heuristics to guide search
-- Evaluate paths efficiently
-- Implement pruning strategies
-- Balance exploration vs. exploitation
+**Common practices**:
+- Bounded search space for performance
+- Heuristics to guide search
+- Efficient path evaluation
+- Pruning strategies
+- Balance of exploration and exploitation
 
 **Use Cases**:
 - Complex problem solving
@@ -666,37 +586,173 @@ Understanding model capabilities helps you select the right model for your use c
 - Mathematical proofs
 - Strategic decision making
 
+**Related Patterns**:
+- **Chain-of-Thought**: Tree-of-Thought extends CoT with multiple branches and search
+- **Agentic Systems**: Search over plans or actions fits agentic loops
+- **LLM-as-a-Judge**: Evaluate and score reasoning paths
+- **Orchestration**: Coordinate search steps and backtracking
+
 ---
 
-## Semantic Caching
+## Agentic Systems
 
-**Description**: Caching based on semantic similarity rather than exact matches. Returns cached results for semantically similar queries.
+**Description**: Autonomous systems that can plan, execute actions, and adapt based on results. Agents use tools, memory, and reasoning to achieve goals.
 
-**Key Features**:
-- Semantic similarity matching
-- Embedding-based comparison
-- Similarity thresholds
-- Cache key generation from embeddings
+**Key Components**:
+- Planning capabilities
+- Tool/action execution
+- Memory/state management
+- Goal tracking
+- Reflection and adaptation
 
 **Popular Solutions**:
-- **GPTCache**: Semantic cache implementation
-- **LangChain Semantic Cache**: Semantic caching support
-- **Custom Vector Cache**: Build with vector DBs
-- **Redis with Embeddings**: Vector similarity in Redis
+- **LangGraph**: State machine for agent workflows
+- **AWS Bedrock Agents** / **AWS Strands Agents**: Managed and open-source agent SDKs ([Strands](https://github.com/aws/strands-agents))
+- **CrewAI**: Multi-agent orchestration
+- **AutoGen**: Multi-agent conversation framework
+- **LlamaIndex Agents**: Agent framework with RAG
 
-**Best Practices**:
-- Set appropriate similarity thresholds
-- Use high-quality embeddings
-- Monitor cache quality
-- Implement cache warming
-- Balance precision vs. recall
+**Common practices**:
+- Clear goals and constraints
+- Safety limits (max steps, timeouts)
+- Agent behavior monitoring
+- Structured memory
+- Human-in-the-loop for critical actions
+- Reliance on model-native capabilities (reasoning, tool use) over complex orchestration
+- Semantic search for tool selection with large tool sets (1000+ tools)
 
 **Use Cases**:
-- Similar query handling
-- Cost reduction
-- Latency improvement
-- User experience enhancement
-- API rate limit management
+- Research assistants
+- Task automation
+- Code generation and testing
+- Data analysis workflows
+- Customer service automation
+
+**Related Patterns**:
+- **Function Calling / Tool Use**: Agents invoke tools; tool schemas define actions
+- **Orchestration**: Workflows coordinate agent steps and handle failures
+- **Memory / State Management**: Agents need context and state across steps
+- **RAG**: Agents often use retrieval for knowledge-grounded actions
+- **Multi-Agent Systems**: Multiple agents collaborate within or across workflows
+
+---
+
+## Multi-Agent Systems
+
+**Description**: Systems with multiple specialized agents that collaborate, communicate, and coordinate to solve complex tasks. Each agent has specific roles and capabilities.
+
+**Key Concepts**:
+- Agent specialization
+- Inter-agent communication
+- Coordination mechanisms
+- Shared memory/state
+- Conflict resolution
+
+**Popular Solutions**:
+- **CrewAI**: Multi-agent orchestration framework
+- **AutoGen**: Multi-agent conversation framework
+- **LangGraph Multi-Agent**: Multi-agent state machines
+- **Semantic Kernel**: Multi-agent orchestration
+- **Swarm**: Decentralized agent networks
+
+**Common practices**:
+- Clear agent roles
+- Communication protocols
+- Conflict resolution
+- Agent interaction monitoring
+- Scalability-oriented design
+
+**Use Cases**:
+- Complex research tasks
+- Software development teams
+- Content creation workflows
+- Data analysis pipelines
+- Customer service teams
+
+**Related Patterns**:
+- **Agentic Systems**: Multi-agent systems extend single-agent patterns with coordination
+- **Orchestration**: Coordinates agents and workflows
+- **Memory / State Management**: Shared or per-agent memory for context
+- **Function Calling / Tool Use**: Agents use tools; inter-agent communication can be tool-based
+
+---
+
+## Orchestration / Workflow Management
+
+**Description**: Coordinating multi-step LLM workflows with proper error handling, state management, and retry logic. Ensures reliable execution of complex processes.
+
+**Key Features**:
+- Sequential and parallel execution
+- Error handling and recovery
+- State persistence
+- Conditional branching
+- Retry mechanisms
+
+**Popular Solutions**:
+- **LangChain**: Orchestration and chains
+- **AWS Step Functions**: Serverless workflow with LLM integration
+- **Temporal**: Durable execution engine
+- **Prefect** / **Airflow**: Workflow orchestration
+
+**Common practices**:
+- Idempotent workflows
+- Comprehensive error handling
+- State checkpoints
+- Workflow execution monitoring
+- Failure recovery design
+
+**Use Cases**:
+- Multi-step content generation
+- Data processing pipelines
+- ETL with LLM steps
+- Approval workflows
+- Batch processing
+
+**Related Patterns**:
+- **Agentic Systems**: Orchestration runs agent workflows and step functions
+- **Function Calling / Tool Use**: Workflow steps often call tools or APIs
+- **Structured Output**: Evaluation and routing benefit from structured judge outputs
+- **Caching**: Cache step results for idempotency and cost reduction
+
+---
+
+## LLM-as-a-Judge (Evaluation)
+
+**Description**: Using LLMs to evaluate the quality, correctness, or alignment of outputs. Enables automated quality assessment at scale.
+
+**Key Approaches**:
+- Rubric-based evaluation
+- Comparative evaluation
+- Fact-checking
+- Alignment checking
+- Quality scoring
+
+**Popular Solutions**:
+- **LangSmith**: LLM observability and evaluation
+- **TruLens**: LLM evaluation framework
+- **RAGAS**: RAG-specific evaluation metrics
+- **LangChain Evaluators**: Built-in evaluation tools
+- **Weights & Biases**: Experiment tracking
+
+**Common practices**:
+- Separate judge models for objectivity
+- Clear evaluation criteria
+- Structured evaluation outputs
+- Multiple evaluation dimensions
+- Judge consistency validation
+
+**Use Cases**:
+- Output quality assessment
+- Hallucination detection
+- Alignment verification
+- A/B testing evaluation
+- Automated testing
+
+**Related Patterns**:
+- **Structured Output**: Use schemas for rubric-based or comparative evaluation
+- **Prompt Engineering**: Judge prompts define criteria and rubrics
+- **RAG**: RAGAS and similar metrics evaluate retrieval-augmented systems
+- **Chain-of-Thought**: Evaluate reasoning steps and correctness
 
 ---
 
@@ -711,21 +767,17 @@ Understanding model capabilities helps you select the right model for your use c
 - Weighted combination
 
 **Popular Solutions**:
-- **Amazon OpenSearch Serverless**: Hybrid search with BM25 and vector capabilities
-- **Amazon Kendra**: Enterprise search with hybrid keyword and semantic search
-- **AWS Bedrock Knowledge Bases**: Integrated hybrid search
-- **Weaviate Hybrid Search**: Native hybrid search
-- **Pinecone Hybrid Search**: Keyword + vector
-- **Elasticsearch**: BM25 + vector search
-- **Qdrant Hybrid Search**: Combined search
-- **Vespa**: Hybrid search engine
+- **Elasticsearch** / **OpenSearch**: BM25 + vector search
+- **Weaviate** / **Pinecone**: Native hybrid search
+- **Qdrant**: Hybrid search with metadata filters
+- **AWS Bedrock Knowledge Bases**: Managed hybrid RAG
 
-**Best Practices**:
-- Tune keyword/semantic weights
-- Use appropriate reranking
-- Combine results effectively
-- Monitor search quality
-- A/B test configurations
+**Common practices**:
+- Tuned keyword/semantic weights
+- Appropriate reranking
+- Effective result combination
+- Search quality monitoring
+- A/B-tested configurations
 
 **Use Cases**:
 - Document search
@@ -733,6 +785,11 @@ Understanding model capabilities helps you select the right model for your use c
 - Knowledge base search
 - Content discovery
 - RAG systems
+
+**Related Patterns**:
+- **Embeddings / Vector Search**: Vector search is the semantic side of hybrid
+- **RAG**: Hybrid search improves retrieval for RAG pipelines
+- **Caching / Optimization**: Semantic caching uses embeddings; hybrid can support cache matching
 
 ---
 
@@ -751,14 +808,14 @@ Understanding model capabilities helps you select the right model for your use c
 - **LLMLingua**: Prompt compression library
 - **LongLLMLingua**: Long context compression
 - **Custom Summarization**: Summarize context
-- **Selective Context**: Choose relevant parts
+- **Selective Context**: Selects relevant parts
 
-**Best Practices**:
-- Preserve critical information
-- Test compressed prompts
-- Monitor quality after compression
-- Use compression selectively
-- Balance size vs. quality
+**Common practices**:
+- Preservation of critical information
+- Testing of compressed prompts
+- Quality monitoring after compression
+- Selective use of compression
+- Balance of size and quality
 
 **Use Cases**:
 - Long context management
@@ -766,6 +823,11 @@ Understanding model capabilities helps you select the right model for your use c
 - Token limit optimization
 - Performance improvement
 - Batch processing
+
+**Related Patterns**:
+- **Prompt Engineering**: Compression preserves essential prompt content
+- **RAG**: Compress retrieved context before injection
+- **Caching**: Compressed prompts can reduce cache key size or enable longer cached context
 
 ---
 
@@ -781,21 +843,18 @@ Understanding model capabilities helps you select the right model for your use c
 - Fallback chains
 
 **Popular Solutions**:
-- **AWS Bedrock**: Access to multiple foundation models (Claude, Llama, Titan, etc.)
-- **Amazon Bedrock Model Selection**: Route requests to different models
-- **AWS Lambda**: Custom routing logic and model selection
-- **OpenRouter**: Model routing service
-- **LangChain Router Chains**: Route to different models
-- **Custom Routing Logic**: Build routing systems
-- **Model Ensembling**: Combine multiple models
-- **Fallback Chains**: Automatic model switching
+- **OpenRouter**: Multi-model routing and fallbacks
+- **AWS Bedrock**: Multiple foundation models and model selection
+- **LangChain Router Chains**: Route by task or metadata
+- **Custom routing** (e.g. Lambda): Task-based or cost-based routing
+- **Fallback chains**: Automatic model switching on errors
 
-**Best Practices**:
-- Define clear routing criteria
-- Monitor routing decisions
-- Implement fallback mechanisms
-- Test all routes
-- Optimize for cost and performance
+**Common practices**:
+- Clear routing criteria
+- Routing decision monitoring
+- Fallback mechanisms
+- Testing of all routes
+- Cost and performance optimization
 
 **Use Cases**:
 - Cost optimization
@@ -803,6 +862,12 @@ Understanding model capabilities helps you select the right model for your use c
 - Specialized task handling
 - Reliability improvement
 - Multi-model systems
+
+**Related Patterns**:
+- **Understanding Models**: Routing chooses among model types and capabilities
+- **LLM-as-a-Judge**: Judge model can be routed separately from production model
+- **Custom Model Training**: Fine-tuned models are often used in routing or fallback chains
+- **Structured Output**: Routing criteria can use structured outputs from classifiers
 
 ---
 
@@ -818,29 +883,23 @@ Understanding model capabilities helps you select the right model for your use c
 - Domain adaptation: Specializing models for specific domains
 
 **Popular Solutions**:
-- **Base10**: Custom model training and fine-tuning platform
-- **AWS Bedrock Custom Models**: Fine-tune foundation models with your data
-- **Amazon SageMaker**: End-to-end ML platform for model training and deployment
-- **Hugging Face Transformers**: Open-source library with training utilities
-- **OpenAI Fine-tuning API**: Fine-tune GPT models on custom datasets
-- **Anthropic Fine-tuning**: Customize Claude models for specific tasks
-- **LoRA (Low-Rank Adaptation)**: Efficient fine-tuning method
-- **QLoRA**: Quantized LoRA for memory-efficient fine-tuning
-- **PEFT (Parameter-Efficient Fine-Tuning)**: Hugging Face library for efficient fine-tuning
-- **Weights & Biases**: Experiment tracking for model training
-- **MLflow**: Model lifecycle management and tracking
+- **OpenAI Fine-tuning API** / **Anthropic Fine-tuning**: Vendor fine-tuning for GPT and Claude
+- **Hugging Face** (Transformers, PEFT): Open-source training and LoRA/QLoRA
+- **AWS Bedrock Custom Models** / **SageMaker**: Fine-tune on AWS
+- **LoRA / QLoRA**: Parameter-efficient fine-tuning
+- **Weights & Biases** / **MLflow**: Experiment tracking
 
-**Best Practices**:
-- Start with high-quality, representative training data
-- Use parameter-efficient methods (LoRA) when possible to reduce costs
-- Validate data quality and diversity before training
-- Implement proper train/validation/test splits
-- Monitor for overfitting and model degradation
-- Version control datasets and model checkpoints
-- Evaluate on held-out test sets
-- Consider domain-specific evaluation metrics
-- Implement data augmentation when appropriate
-- Use transfer learning from strong foundation models
+**Common practices**:
+- High-quality, representative training data
+- Parameter-efficient methods (e.g. LoRA) to reduce costs
+- Data quality and diversity validation before training
+- Train/validation/test splits
+- Monitoring for overfitting and degradation
+- Versioned datasets and model checkpoints
+- Evaluation on held-out test sets
+- Domain-specific evaluation metrics
+- Data augmentation where appropriate
+- Transfer learning from strong foundation models
 
 **Use Cases**:
 - Domain-specific language models (legal, medical, technical)
@@ -852,35 +911,37 @@ Understanding model capabilities helps you select the right model for your use c
 - Industry-specific assistants
 - Brand voice alignment
 
+**Related Patterns**:
+- **Understanding Models**: Fine-tuned models extend or specialize base model capabilities
+- **Model Routing / Ensemble**: Custom models are often used in routing or ensemble setups
+- **Structured Output**: Training data and evaluation use structured formats
+- **LLM-as-a-Judge**: Evaluate fine-tuned model outputs and drift
+
 ---
 
 ## Implementation Considerations
 
-### Choosing the Right Techniques
+### Technique selection
 
-1. **Start Simple**: Begin with prompt engineering and structured outputs
-2. **Add Complexity Gradually**: Introduce RAG, function calling, and orchestration as needed
-3. **Measure Impact**: Track metrics for each technique you implement
-4. **Consider Costs**: Balance functionality with API costs
-5. **Plan for Scale**: Design systems that can handle growth
+Common progression: prompt engineering and structured outputs first; RAG, function calling, and orchestration added as needed. Metrics are tracked per technique, functionality is balanced with API cost, and systems are designed for scale.
 
-### Common Patterns
+### Common pattern combinations
 
-- **RAG + Function Calling**: Combine knowledge retrieval with tool use
-- **Orchestration + Caching**: Coordinate workflows with performance optimization
+- **RAG + Function Calling**: Knowledge retrieval with tool use
+- **Orchestration + Caching**: Workflow coordination with performance optimization
 - **Prompt Engineering + Structured Output**: Reliable, validated outputs
 - **Function Calling + Structured Output + Schema-Driven Inference**: Tools gather data, schemas guide output, minimal prompts
 - **Multi-Agent + Memory**: Collaborative systems with context retention
 
-### Best Practices Across All Techniques
+### Cross-cutting concerns
 
-- **Observability**: Monitor all LLM interactions
-- **Error Handling**: Implement comprehensive error handling
-- **Testing**: Test each component thoroughly
-- **Documentation**: Document your implementations
-- **Version Control**: Version prompts, schemas, and configurations
-- **Security**: Implement proper authentication and authorization
-- **Cost Management**: Monitor and optimize costs continuously
+- **Observability**: LLM interaction monitoring
+- **Error handling**: Comprehensive error handling
+- **Testing**: Per-component testing
+- **Documentation**: Implementation documentation
+- **Version control**: Prompts, schemas, and configurations
+- **Security**: Authentication and authorization
+- **Cost management**: Cost monitoring and optimization
 
 ---
 
