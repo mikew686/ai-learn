@@ -22,7 +22,7 @@ Redis and PostgreSQL (with pgvector) run in the `mw2` namespace with persistent 
 
 ```bash
 # Build the local pgvector Postgres image first (required for the local overlay):
-mw2/k8s/scripts/build-postgres-image.sh
+mw2/scripts/build-postgres-image.sh
 
 kubectl apply -k mw2/k8s/overlays/local
 # Then port-forward to use Redis and Postgres on this machine (see docs/k8s_local.md).

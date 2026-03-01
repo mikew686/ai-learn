@@ -67,7 +67,7 @@ After port-forward (or LoadBalancer EXTERNAL-IP), you can connect from your mach
 The overlay expects the image `t7e/postgres-pgvector:16`. Build it once (from anywhere in the repo):
 
 ```bash
-mw2/k8s/scripts/build-postgres-image.sh
+mw2/scripts/build-postgres-image.sh
 ```
 
 Or from the ai-learn repo root: `docker build -f t7e/docker/postgres-pgvector.Dockerfile -t t7e/postgres-pgvector:16 .`
