@@ -7,7 +7,7 @@ Postgres 16 (Debian Bookworm) with the **pgvector** extension installed via apt 
 **Build** (from anywhere in the repo):
 
 ```bash
-t7e/k8s/scripts/build-postgres-image.sh
+mw2/k8s/scripts/build-postgres-image.sh
 ```
 
 Or from repo root: `docker build -f t7e/docker/postgres-pgvector.Dockerfile -t t7e/postgres-pgvector:16 .`

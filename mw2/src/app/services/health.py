@@ -1,10 +1,10 @@
 """Shared health-check logic for health page and API."""
 import os
 
-import redis
-from flask import current_app
 from rq import Worker
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
+from utils.pgd import get_database_connection
+from utils.redis import get_redis_connection
 
 
 def running_on_kubernetes():
@@ -15,8 +15,7 @@ def running_on_kubernetes():
 def redis_available():
     """Ping Redis; return True if reachable."""
     try:
-        r = redis.from_url(current_app.config["REDIS_URL"])
-        r.ping()
+        get_redis_connection().ping()
         return True
     except Exception:
         return False
@@ -25,7 +24,7 @@ def redis_available():
 def rq_workers_count():
     """Return number of RQ workers currently registered (0 if Redis unreachable or no workers)."""
     try:
-        conn = redis.from_url(current_app.config["REDIS_URL"])
+        conn = get_redis_connection()
         workers = Worker.all(connection=conn)
         return len(workers)
     except Exception:
@@ -33,13 +32,14 @@ def rq_workers_count():
 
 
 def postgres_status():
-    """Connect to Postgres, ensure vector extension exists, return (connected, vector_available)."""
+    """Connect to Postgres, ensure vector extension exists, return (connected, vector_available).
+    Returns (False, False) on connection failure or if the DB is not Postgres (SQL is Postgres-specific).
+    """
     try:
-        engine = create_engine(current_app.config["DATABASE_URL"])
-        with engine.connect() as conn:
+        with get_database_connection() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             conn.commit()
-            result = conn.execute(text("SELECT 1 FROM pg_extension WHERE extname = 'vector'"))
+            result = conn.execute(text("SELECT 1 FROM pg_catalog.pg_extension WHERE extname = 'vector'"))
             vector_available = result.scalar() is not None
         return True, vector_available
     except Exception:

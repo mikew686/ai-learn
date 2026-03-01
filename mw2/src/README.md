@@ -24,4 +24,3 @@ With Redis running:
 python -m rqworker
 ```
 
-Ensure Redis is available (e.g. `REDIS_URL=redis://localhost:6379/0`). The `rqworker` package is currently a stub; implement its entrypoint to start the worker (e.g. `rq worker` with the app’s worker. Alternative: `rq worker --url redis://localhost:6379/0` with optional queue names.

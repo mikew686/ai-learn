@@ -11,6 +11,13 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "openai>=1.48.0",  # Required for beta.chat.completions.parse() and structured outputs
     "numpy",
@@ -27,10 +34,11 @@ dependencies = [
     "alembic>=1.13",
     "redis>=5.0",
     "rq>=1.16",
+    "python-dotenv>=1.0",
 ]
 
 [tool.setuptools]
-package-dir = {"" = "t7e/src"}
+package-dir = {"" = "mw2/src"}
 
 [tool.setuptools.packages.find]
-where = ["t7e/src"]
+where = ["mw2/src"]
