@@ -74,6 +74,20 @@ Or from the ai-learn repo root: `docker build -f t7e/docker/postgres-pgvector.Do
 
 Docker Desktop Kubernetes uses images from the local Docker daemon. For other clusters (e.g. kind), load the image after building (see `t7e/docker/README.md`). Create the pgvector extension manually if needed: `psql -h localhost -U postgres -d postgres -c "CREATE EXTENSION IF NOT EXISTS vector;"`
 
+### App and RQ worker (local overlay)
+
+The local overlay also deploys the **mw2 app** (gunicorn) and **rqworker**. They use the secret `mw2-app-env` with `DATABASE_URL` (Postgres `mw2_user` / `mw2_database`) and `REDIS_URL` (in-cluster `redis:6379`).
+
+1. **Build the mw2 image** (from anywhere in the repo): `mw2/scripts/build-postgres-image.sh` for Postgres; then `mw2/scripts/build-mw2.sh` for the app image.
+2. **Create DB user and database** (once): run `mw2/scripts/postgres-init.sh` with port-forward to Postgres so `mw2_user` and `mw2_database` exist (see script for `PGHOST`/`PGPORT`).
+3. **Apply the overlay** (includes app and rqworker): `kubectl apply -k mw2/k8s/overlays/local`.
+4. **Port-forward the app** to use it from your machine: `kubectl port-forward -n mw2 svc/app 8000:8000`. Then open http://localhost:8000.
+
+| Workload  | Image       | Env from secret   |
+|-----------|-------------|-------------------|
+| app       | mw2:latest  | mw2-app-env       |
+| rqworker  | mw2:latest  | mw2-app-env       |
+
 ## Stop the services
 
 1. **If you used manual port-forwards**, stop them (Ctrl+C in those terminals).

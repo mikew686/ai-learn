@@ -1,0 +1,15 @@
+# Optional LoadBalancer for the app (same pattern as postgres-external, redis-external).
+# Exposes app on port 9009; use EXTERNAL-IP:9009 or, with hostPort, localhost:9009.
+# If EXTERNAL-IP stays <pending>, use port-forward to svc/app instead.
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-external
+spec:
+  type: LoadBalancer
+  selector:
+    app: app
+  ports:
+    - port: 9009
+      targetPort: 8000
+      name: http

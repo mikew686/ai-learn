@@ -36,4 +36,5 @@ ENV GUNICORN_CMD_ARGS="--workers $GUNICORN_WORKERS --bind $GUNICORN_BIND --timeo
 
 # dumb-init forwards signals to child; CMD is overridden for rqworker (no --entrypoint needed)
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["gunicorn", "app:create_app"]
+# App factory: call create_app() so gunicorn gets the Flask app instance, not the factory
+CMD ["gunicorn", "app:create_app()"]

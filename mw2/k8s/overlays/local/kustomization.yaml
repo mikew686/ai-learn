@@ -17,3 +17,8 @@ resources:
   - postgres-service.yaml
   - postgres-loadbalancer.yaml
   - redis-loadbalancer.yaml
+  - mw2-app-secret.yaml
+  - app-deployment.yaml
+  - app-service.yaml
+  - app-loadbalancer.yaml
+  - rqworker-deployment.yaml
