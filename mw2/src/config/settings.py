@@ -41,6 +41,7 @@ def load_config():
     redis_health_check_interval = _int_env("REDIS_HEALTH_CHECK_INTERVAL", 30)
 
     rq_debug = os.environ.get("RQ_DEBUG", "").lower() in ("1", "true", "yes")
+    openrouter_api_key = os.environ.get("OPENROUTER_API_KEY")
 
     return {
         "SECRET_KEY": os.environ.get("SECRET_KEY", "dev-secret-change-in-production"),
@@ -54,4 +55,5 @@ def load_config():
         "REDIS_SOCKET_TIMEOUT": redis_socket_timeout,
         "REDIS_SOCKET_CONNECT_TIMEOUT": redis_socket_connect_timeout,
         "REDIS_HEALTH_CHECK_INTERVAL": redis_health_check_interval,
+        "OPENROUTER_API_KEY": openrouter_api_key,
     }

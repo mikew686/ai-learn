@@ -3,7 +3,7 @@
 {% block title %}Health – (mw)²{% endblock %}
 
 {% block page_subheading %}
-  <p class="mt-2 font-mono text-sm text-stone-500">System status</p>
+  <p class="mt-2 font-mono text-sm text-stone-500">service status</p>
   <p id="k8s-badge" class="mt-2 inline-block rounded bg-sky-100 px-2 py-0.5 font-mono text-xs text-sky-700 {{ '' if running_on_kubernetes else 'hidden' }}">kubernetes</p>
 {% endblock %}
 
@@ -15,14 +15,14 @@
         <div data-service="redis" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if redis_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
           <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if redis_enabled else 'bg-stone-300' }}"></span>
           <span class="font-medium">redis</span>
-          <span class="status-value ml-auto font-mono text-sm opacity-80">{{ 'connected' if redis_enabled else 'off' }}</span>
+          <span class="status-value ml-auto font-mono text-sm opacity-80">{{ redis_key_count }} keys</span>
         </div>
       </li>
       <li>
         <div data-service="postgres" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if postgres_enabled else 'border-stone-200 bg-stone-50 text-stone-500' }}">
           <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if postgres_enabled else 'bg-stone-300' }}"></span>
           <span class="font-medium">postgres</span>
-          <span class="status-value ml-auto font-mono text-sm opacity-80">{{ 'connected' if postgres_enabled else 'off' }}</span>
+          <span class="status-value ml-auto font-mono text-sm opacity-80">{{ postgres_table_count }} tables</span>
         </div>
       </li>
       <li>
@@ -37,6 +37,13 @@
           <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if rq_workers_running else 'bg-stone-300' }}"></span>
           <span class="font-medium">rq workers</span>
           <span class="status-value ml-auto font-mono text-sm opacity-80">{{ rq_worker_count }} running</span>
+        </div>
+      </li>
+      <li>
+        <div data-service="ai" class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ 'border-emerald-500/50 bg-emerald-500/10 text-emerald-800' if ai_available else 'border-stone-200 bg-stone-50 text-stone-500' }}">
+          <span class="status-dot h-3 w-3 shrink-0 rounded-full {{ 'bg-emerald-500' if ai_available else 'bg-stone-300' }}"></span>
+          <span class="font-medium">ai</span>
+          <span class="status-value ml-auto font-mono text-sm opacity-80">{{ ai_model_count }} models</span>
         </div>
       </li>
     </ul>

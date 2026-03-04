@@ -21,15 +21,16 @@
     fetch('/api/status')
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        updateCard('redis', data.redis_enabled, data.redis_enabled ? 'connected' : 'off');
-        updateCard('postgres', data.postgres_enabled, data.postgres_enabled ? 'connected' : 'off');
+        updateCard('redis', data.redis_enabled, data.redis_key_count + ' keys');
+        updateCard('postgres', data.postgres_enabled, data.postgres_table_count + ' tables');
         updateCard('pgvector', data.postgres_vector_available, data.postgres_vector_available ? 'available' : 'not loaded');
         updateCard('rq', data.rq_workers_running, data.rq_worker_count + ' running');
+        updateCard('ai', data.ai_available, data.ai_model_count + ' models');
         const badge = document.getElementById('k8s-badge');
         if (badge) badge.classList.toggle('hidden', !data.running_on_kubernetes);
       })
       .catch(function () {});
   }
 
-  setInterval(poll, 5000);
+  setInterval(poll, 10000);
 })();
