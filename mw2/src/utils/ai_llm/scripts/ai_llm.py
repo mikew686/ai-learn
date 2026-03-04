@@ -2,7 +2,7 @@
 """
 AI LLM CLI. Run with: python -m utils.ai_llm.scripts.ai_llm <command> [options]
 
-Commands: models, chat.
+Commands: models, chat, lang_example, lang_analyze, translate.
 
 Recommended models for translation (fast, inexpensive, works with openai/text-embedding-3-small):
   google/gemini-3.1-flash-lite-preview  2026-03-03  (default)
@@ -13,6 +13,7 @@ Recommended models for translation (fast, inexpensive, works with openai/text-em
 
 import argparse
 import json
+import textwrap
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -23,6 +24,29 @@ from pydantic import BaseModel, Field
 from utils.ai_llm import AIClient, ChatRequest, DictToolProvider
 
 DATA_AI_LLM_DIR = Path(__file__).resolve().parent / "data" / "ai_llm"
+
+
+def print_indented(
+    label: str,
+    content: str,
+    indent: int = 2,
+    width: int = 120,
+    max_length: int | None = None,
+) -> None:
+    """Print a label followed by indented multiline content with text wrapping."""
+    if max_length is not None and len(content) > max_length:
+        content = content[:max_length] + "\n... [truncated]"
+    if label:
+        print(f"{label}:")
+    indent_str = " " * indent
+    available_width = width - indent
+    sections = content.split("\n")
+    for section in sections:
+        if section.strip():
+            for line in textwrap.wrap(section, width=available_width):
+                print(f"{indent_str}{line}")
+        else:
+            print()
 
 
 class LanguageDetails(BaseModel):
@@ -56,6 +80,20 @@ class LanguageDetails(BaseModel):
     )
 
 
+class TranslationWithNotes(BaseModel):
+    """Translation plus ARPABET phonetic transcription and brief notes (cultural/contextual)."""
+
+    translated_text: str = Field(
+        description="The translation in the target language and dialect. Use natural, idiomatic phrasing."
+    )
+    phonetic_spelling: str = Field(
+        description="ARPABET transcription of the translation: space-separated 2-letter phoneme codes (AA, AE, B, CH, etc.) with stress digits 0/1/2 after vowels. See https://en.wikipedia.org/wiki/ARPABET"
+    )
+    notes: str = Field(
+        description="Brief cultural or contextual notes about the translation (in English)"
+    )
+
+
 EXTRACT_LANGUAGE_DETAILS_TOOL = {
     "type": "function",
     "function": {
@@ -79,6 +117,42 @@ EXTRACT_LANGUAGE_DETAILS_TOOL = {
 }
 
 
+def _run_extract_language_details(
+    client: AIClient,
+    model: str,
+    *,
+    reference: str | None = None,
+    example: str | None = None,
+    log_chat_completion=None,
+) -> dict:
+    """Extract LanguageDetails from reference or example. Exactly one of reference/example required."""
+    has_ref = reference and reference.strip()
+    has_ex = example and example.strip()
+    if has_ref == has_ex:  # both or neither
+        return {"error": "Exactly one of reference or example is required."}
+
+    text = (reference if has_ref else example).strip()
+    system = (
+        "Parse this language specification into structured details. Extract language, dialect, region, audience, and cultural context from the description."
+        if has_ref
+        else "Identify the language of this phrase and extract structured details. Infer dialect, region, register, and cultural context from the text."
+    )
+    req = ChatRequest(
+        model=model,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": text},
+        ],
+        response_format=LanguageDetails,
+        temperature=0,
+        log_chat_completion=log_chat_completion,
+    )
+    result, _ = client.run_turn(req)
+    if result is None:
+        return {"error": "Failed to extract language details"}
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+
 def make_extract_language_details_handler(
     client: AIClient,
     model: str,
@@ -93,32 +167,12 @@ def make_extract_language_details_handler(
         print(
             f"  [tool] extract_language_details(reference={reference!r}, example={example!r})"
         )
-        has_ref = reference and reference.strip()
-        has_ex = example and example.strip()
-        if has_ref == has_ex:  # both or neither
-            return {"error": "Exactly one of reference or example is required."}
-
-        text = (reference if has_ref else example).strip()
-        system = (
-            "Parse this language specification into structured details. Extract language, dialect, region, audience, and cultural context from the description."
-            if has_ref
-            else "Identify the language of this phrase and extract structured details. Infer dialect, region, register, and cultural context from the text."
-        )
-        req = ChatRequest(
-            model=model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": text},
-            ],
-            response_format=LanguageDetails,
-            temperature=0,
+        return _run_extract_language_details(
+            client,
+            model,
+            reference=reference,
+            example=example,
             log_chat_completion=log_chat_completion,
-        )
-        result, _ = client.run_turn(req)
-        if result is None:
-            return {"error": "Failed to extract language details"}
-        return (
-            result.model_dump(mode="json") if hasattr(result, "model_dump") else result
         )
 
     return extract_language_details
@@ -267,10 +321,166 @@ def cmd_chat(client: AIClient, args: argparse.Namespace) -> None:
         result, _ = client.run_turn(req)
 
         if result:
-            print(f"\nAssistant: {result}\n")
+            print()
+            print_indented("Assistant", str(result))
+            print()
             messages.append({"role": "assistant", "content": result})
         else:
             print("\nAssistant: (no text)\n")
+
+    print("Goodbye.")
+
+
+def cmd_lang_example(client: AIClient, args: argparse.Namespace) -> None:
+    """Interactive loop: extract language details from phrases."""
+    log_cb = None if getattr(args, "no_log", False) else log_chat_completion
+    print(f"Model: {args.model}")
+    print('Type "done" to exit.\n')
+    while True:
+        try:
+            phrase = input("language example > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not phrase:
+            continue
+        if phrase.lower() == "done":
+            break
+        result = _run_extract_language_details(
+            client, args.model, example=phrase, log_chat_completion=log_cb
+        )
+        if "error" in result:
+            print(result["error"])
+        else:
+            print_indented("Language details", _format_language_details(result))
+        print()
+    print("Goodbye.")
+
+
+def cmd_lang_analyze(client: AIClient, args: argparse.Namespace) -> None:
+    """Interactive loop: extract language details from references."""
+    log_cb = None if getattr(args, "no_log", False) else log_chat_completion
+    print(f"Model: {args.model}")
+    print('Type "done" to exit.\n')
+    while True:
+        try:
+            reference = input("language to analyze > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not reference:
+            continue
+        if reference.lower() == "done":
+            break
+        result = _run_extract_language_details(
+            client, args.model, reference=reference, log_chat_completion=log_cb
+        )
+        if "error" in result:
+            print(result["error"])
+        else:
+            print_indented("Language details", _format_language_details(result))
+        print()
+    print("Goodbye.")
+
+
+def _format_language_details(d: dict) -> str:
+    """Format LanguageDetails dict for user display."""
+    lines = []
+    if d.get("language_name"):
+        code = d.get("language_code", "")
+        lines.append(f"Language: {d['language_name']}" + (f" ({code})" if code else ""))
+    if d.get("dialect_name"):
+        lines.append(f"Dialect: {d['dialect_name']}")
+    if d.get("region_code"):
+        lines.append(f"Region: {d['region_code']}")
+    if d.get("audience_name"):
+        lines.append(f"Audience: {d['audience_name']}")
+    if d.get("canonical_name"):
+        lines.append(f"Canonical: {d['canonical_name']}")
+    if d.get("language_notes"):
+        lines.append(f"Notes: {d['language_notes']}")
+    return "\n".join(lines)
+
+
+def _language_details_to_system_prompt(d: dict) -> str:
+    """Build translator system prompt from LanguageDetails dict."""
+    parts = [
+        "You are a translator. Translate into the following target language. "
+        "Provide the translation, an ARPABET phonetic transcription, and brief cultural/contextual notes."
+    ]
+    parts.append(
+        f"Language: {d.get('language_name', '')} ({d.get('language_code', '')})"
+    )
+    if d.get("dialect_name"):
+        parts.append(f"Dialect: {d['dialect_name']}")
+    if d.get("region_code"):
+        parts.append(f"Region: {d['region_code']}")
+    if d.get("audience_name"):
+        parts.append(f"Audience: {d['audience_name']}")
+    if d.get("canonical_name"):
+        parts.append(f"Canonical target: {d['canonical_name']}")
+    if d.get("language_notes"):
+        parts.append(f"Notes: {d['language_notes']}")
+    return "\n".join(parts)
+
+
+def cmd_translate(client: AIClient, args: argparse.Namespace) -> None:
+    """Interactive translation: first set target language, then translate phrases."""
+    log_cb = None if getattr(args, "no_log", False) else log_chat_completion
+    print(f"Model: {args.model}")
+    try:
+        lang_input = input("language to translate to > ").strip()
+    except (EOFError, KeyboardInterrupt):
+        return
+    if not lang_input:
+        print("No language specified.")
+        return
+
+    lang_result = _run_extract_language_details(
+        client, args.model, reference=lang_input, log_chat_completion=log_cb
+    )
+    if "error" in lang_result:
+        print(lang_result["error"])
+        return
+
+    print_indented("Language details", _format_language_details(lang_result))
+    print()
+    canonical = lang_result.get("canonical_name") or lang_result.get(
+        "language_name", "target language"
+    )
+    system_prompt = _language_details_to_system_prompt(lang_result)
+    print(f"Target: {canonical}\n")
+    print('Type "done" to exit.\n')
+
+    while True:
+        try:
+            phrase = input("phrase to translate > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not phrase:
+            continue
+        if phrase.lower() == "done":
+            break
+
+        req = ChatRequest(
+            model=args.model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Translate to {canonical}: {phrase}"},
+            ],
+            response_format=TranslationWithNotes,
+            log_chat_completion=log_cb,
+            temperature=0,
+        )
+        result, _ = client.run_turn(req)
+        if result:
+            r = result.model_dump() if hasattr(result, "model_dump") else result
+            print_indented("Translation", r.get("translated_text", ""))
+            if r.get("phonetic_spelling"):
+                print_indented("Phonetics", r["phonetic_spelling"])
+            if r.get("notes"):
+                print_indented("Notes", r["notes"])
+            print()
+        else:
+            print("(no translation)\n")
 
     print("Goodbye.")
 
@@ -318,6 +528,47 @@ def main() -> None:
         help="Disable logging to data/ai_llm/",
     )
 
+    lang_example_parser = subparsers.add_parser(
+        "lang_example", help="Interactive: extract language details from phrases"
+    )
+    lang_example_parser.add_argument(
+        "--model", default="google/gemini-3.1-flash-lite-preview", help="Model"
+    )
+    lang_example_parser.add_argument(
+        "--no-log",
+        action="store_true",
+        dest="no_log",
+        help="Disable logging to data/ai_llm/",
+    )
+
+    lang_analyze_parser = subparsers.add_parser(
+        "lang_analyze",
+        help="Interactive: extract language details from references",
+    )
+    lang_analyze_parser.add_argument(
+        "--model", default="google/gemini-3.1-flash-lite-preview", help="Model"
+    )
+    lang_analyze_parser.add_argument(
+        "--no-log",
+        action="store_true",
+        dest="no_log",
+        help="Disable logging to data/ai_llm/",
+    )
+
+    translate_parser = subparsers.add_parser(
+        "translate",
+        help="Interactive: translate phrases to a target language",
+    )
+    translate_parser.add_argument(
+        "--model", default="google/gemini-3.1-flash-lite-preview", help="Model"
+    )
+    translate_parser.add_argument(
+        "--no-log",
+        action="store_true",
+        dest="no_log",
+        help="Disable logging to data/ai_llm/",
+    )
+
     args = parser.parse_args()
     kwargs = {}
     if args.client_retries is not None:
@@ -328,6 +579,12 @@ def main() -> None:
         cmd_models(client, args)
     elif args.command == "chat":
         cmd_chat(client, args)
+    elif args.command == "lang_example":
+        cmd_lang_example(client, args)
+    elif args.command == "lang_analyze":
+        cmd_lang_analyze(client, args)
+    elif args.command == "translate":
+        cmd_translate(client, args)
     else:
         parser.error(f"Unknown command: {args.command}")
 
