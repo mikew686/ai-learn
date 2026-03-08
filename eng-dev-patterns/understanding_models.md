@@ -48,4 +48,4 @@ vector = embed_response.data[0].embedding  # store or compare for few-shot retri
 print(len(vector))  # e.g. 1536
 ```
 
-Switching the chat `model` (e.g. to a reasoning model) changes behavior and cost; for simple translation, a chat or fast model is typical. See [llm_vs_reasoning_problems.md](./llm_vs_reasoning_problems.md) for when to use chat vs. reasoning models.
+Switching the chat `model` (e.g. to a reasoning model) changes behavior and cost; for simple translation, a chat or fast model is typical. See the section on LLM vs. reasoning problems for when to use chat vs. reasoning models.

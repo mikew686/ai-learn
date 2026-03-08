@@ -1,4 +1,5 @@
 """Flask app factory; registers blueprints only."""
+
 from flask import Flask
 
 from .config import load_config

@@ -1,4 +1,5 @@
 """Postgres database connection utility. Uses config for URL and connection defaults."""
+
 from contextlib import contextmanager
 from typing import Generator
 

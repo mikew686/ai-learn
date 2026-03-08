@@ -1,4 +1,5 @@
 """Load config from environment. Used by Flask app and RQ worker."""
+
 import os
 from pathlib import Path
 
@@ -7,6 +8,7 @@ _mw2_root = Path(__file__).resolve().parent.parent.parent
 _dotenv_path = _mw2_root / ".env"
 if _dotenv_path.is_file():
     from dotenv import load_dotenv
+
     load_dotenv(_dotenv_path, override=False)
 
 
@@ -30,7 +32,9 @@ def load_config():
         pg_user = os.environ.get("PGUSER", "postgres")
         pg_password = os.environ.get("PGPASSWORD", "localdev")
         pg_database = os.environ.get("PGDATABASE", "postgres")
-        database_url = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+        database_url = (
+            f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+        )
 
     database_connect_timeout = _int_env("DATABASE_CONNECT_TIMEOUT", 5)
     database_pool_recycle = _int_env("DATABASE_POOL_RECYCLE", 300)

@@ -1,4 +1,5 @@
 """Route blueprints; register in app factory."""
+
 from .api import api_bp
 from .health import health_bp
 from .root import root_bp

@@ -1,4 +1,5 @@
 """Run the Flask dev server when executing: python -m app"""
+
 from config import load_config
 
 from . import create_app

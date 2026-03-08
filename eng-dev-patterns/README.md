@@ -1,32 +1,42 @@
 # AI Technology Engineering Patterns
 
+This folder contains some notes based on an overview of current AI engineering (late 2025 to early 2026). There is some high level notes here, and some more in-depth discussion in this folder.
+
+---
+
 This is an AI-generated summary of common AI engineering technologies. It covers application-level patterns and techniques used with established models and services, not model training or fine-tuning.
 
 ## Overview
 
 **Core principles**
 - Understanding Models
-- Prompts
-- Schemas
-- Tools
+- Prompt Engineering
+- Function Calling / Tool Use
+- Structured Output
 - Schema-Driven Inference
 
-**Technology concepts**
-- Embeddings
-- Few-Shot
-- Caching
-- Memory
-- Streaming
-- Guardrails
+**Technology fundamentals**
+- Embeddings / Vector Search
+- Few-Shot / In-Context Learning
+- Caching / Optimization
+- Hybrid Search
+- Memory / State Management
+- Streaming / Progressive Generation
+- Guardrails / Safety
+- Prompt Compression / Optimization
+- Model Routing / Ensemble
 
-**Bring it together**
-- RAG
-- Chain-of-Thought
-- Tree-of-Thought
-- Agents
-- Multi-Agent
-- Orchestration
-- Evaluation and advanced patterns
+**Bring it together** (concepts that depend on fundamentals and core principles)
+- RAG (Retrieval-Augmented Generation)
+- Chain-of-Thought / Multi-Step Reasoning
+- Tree-of-Thought / Search-Based Reasoning
+- Agentic Systems
+- Multi-Agent Systems
+- Orchestration / Workflow Management
+- LLM-as-a-Judge (Evaluation)
+- Custom Model Training
+- Implementation Considerations
+- Resources
 
 ---
 
@@ -70,10 +80,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 - **Google**: Gemini Pro Vision, Gemini Ultra (multimodal)
 - **Other Vendors**: Meta Llama 3.1 (vision), Mistral Large (multimodal), Cohere Command R+ (multimodal)
 
-📖 [Detailed Documentation](./understanding_models.md) — Model capabilities, selection criteria, and use case mapping.
-
-📖 [LLM vs. Reasoning Problems](./llm_vs_reasoning_problems.md) — Problem types suited to chat models vs. reasoning models, with examples.
-
 **Related Patterns**:
 - **Prompt Engineering**: Model choice influences prompt design and which techniques apply
 - **Embeddings / Vector Search**: Embedding models produce vectors for semantic search and RAG
@@ -83,8 +89,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 ---
 
 ## Prompt Engineering
-
-📖 [Detailed Documentation](./prompt_engineering.md)
 
 **Description**: Designing prompts to steer LLM behavior and shape outputs. Involves structuring instructions, adding context, and applying techniques that improve response quality.
 
@@ -126,8 +130,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 
 ## Function Calling / Tool Use
 
-📖 [Detailed Documentation](./function_calling_tool_use.md)
-
 **Description**: Enabling LLMs to call external functions, APIs, or tools through structured interfaces. Allows models to interact with the real world beyond text generation.
 
 **Key Concepts**:
@@ -168,8 +170,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 
 ## Structured Output
 
-📖 [Detailed Documentation](./structured_output.md)
-
 **Description**: Enforcing structured, validated responses from LLMs using schemas. Ensures outputs conform to expected formats and can be reliably parsed.
 
 **Key Approaches**:
@@ -207,8 +207,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 
 ## Schema-Driven Inference
 
-📖 [Detailed Documentation](./schema_driven_inference.md)
-
 **Description**: Using structured definitions (tool schemas, Pydantic field descriptions, JSON Schema) as implicit prompts that allow the model to infer behavior and requirements without verbose explicit instructions. Reduces prompt verbosity while maintaining high-quality, validated outputs.
 
 **Key Concepts**:
@@ -240,8 +238,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 ---
 
 ## Embeddings / Vector Search
-
-📖 [Detailed Documentation](./embeddings_and_vector_search.md)
 
 **Description**: Using dense vector representations (embeddings) and similarity search to find relevant content. This pattern is the foundation for semantic search, RAG, and dynamic few-shot selection. It covers embedding generation, vector storage, similarity metrics (e.g. cosine similarity), and combining them—for example, storing examples and retrieving the most similar ones to build few-shot prompts.
 
@@ -363,6 +359,43 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 
 ---
 
+## Hybrid Search
+
+**Description**: Combining keyword (BM25) and semantic (vector) search for improved retrieval accuracy. Leverages strengths of both approaches.
+
+**Key Components**:
+- Keyword search (BM25, TF-IDF)
+- Semantic search (vector embeddings)
+- Result fusion/reranking
+- Weighted combination
+
+**Popular Solutions**:
+- **Elasticsearch** / **OpenSearch**: BM25 + vector search
+- **Weaviate** / **Pinecone**: Native hybrid search
+- **Qdrant**: Hybrid search with metadata filters
+- **AWS Bedrock Knowledge Bases**: Managed hybrid RAG
+
+**Common practices**:
+- Tuned keyword/semantic weights
+- Appropriate reranking
+- Effective result combination
+- Search quality monitoring
+- A/B-tested configurations
+
+**Use Cases**:
+- Document search
+- E-commerce search
+- Knowledge base search
+- Content discovery
+- RAG systems
+
+**Related Patterns**:
+- **Embeddings / Vector Search**: Vector search is the semantic side of hybrid
+- **RAG**: Hybrid search improves retrieval for RAG pipelines
+- **Caching / Optimization**: Semantic caching uses embeddings; hybrid can support cache matching
+
+---
+
 ## Memory / State Management
 
 **Description**: Persisting context, conversation history, and state across LLM interactions. Enables long-term memory and context retention.
@@ -476,6 +509,84 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 - **Structured Output**: Validate outputs against schemas as a guardrail
 - **LLM-as-a-Judge**: Evaluate content for safety and alignment
 - **Prompt Engineering**: System prompts can encode safety and behavior constraints
+
+---
+
+## Prompt Compression / Optimization
+
+**Description**: Reducing prompt size while preserving essential information. Improves efficiency, reduces costs, and enables longer context windows.
+
+**Key Techniques**:
+- Summarization
+- Key information extraction
+- Template optimization
+- Context pruning
+- Token reduction
+
+**Popular Solutions**:
+- **LLMLingua**: Prompt compression library
+- **LongLLMLingua**: Long context compression
+- **Custom Summarization**: Summarize context
+- **Selective Context**: Selects relevant parts
+
+**Common practices**:
+- Preservation of critical information
+- Testing of compressed prompts
+- Quality monitoring after compression
+- Selective use of compression
+- Balance of size and quality
+
+**Use Cases**:
+- Long context management
+- Cost reduction
+- Token limit optimization
+- Performance improvement
+- Batch processing
+
+**Related Patterns**:
+- **Prompt Engineering**: Compression preserves essential prompt content
+- **RAG**: Compress retrieved context before injection
+- **Caching**: Compressed prompts can reduce cache key size or enable longer cached context
+
+---
+
+## Model Routing / Ensemble
+
+**Description**: Selecting or combining multiple models based on task characteristics, cost, or performance requirements. Optimizes for different use cases.
+
+**Key Strategies**:
+- Task-based routing
+- Cost-based routing
+- Performance-based routing
+- Model ensembling
+- Fallback chains
+
+**Popular Solutions**:
+- **OpenRouter**: Multi-model routing and fallbacks
+- **AWS Bedrock**: Multiple foundation models and model selection
+- **LangChain Router Chains**: Route by task or metadata
+- **Custom routing** (e.g. Lambda): Task-based or cost-based routing
+- **Fallback chains**: Automatic model switching on errors
+
+**Common practices**:
+- Clear routing criteria
+- Routing decision monitoring
+- Fallback mechanisms
+- Testing of all routes
+- Cost and performance optimization
+
+**Use Cases**:
+- Cost optimization
+- Performance optimization
+- Specialized task handling
+- Reliability improvement
+- Multi-model systems
+
+**Related Patterns**:
+- **Understanding Models**: Routing chooses among model types and capabilities
+- **LLM-as-a-Judge**: Judge model can be routed separately from production model
+- **Custom Model Training**: Fine-tuned models are often used in routing or fallback chains
+- **Structured Output**: Routing criteria can use structured outputs from classifiers
 
 ---
 
@@ -756,121 +867,6 @@ Model capabilities vary by class; OpenRouter and similar services expose models 
 
 ---
 
-## Hybrid Search
-
-**Description**: Combining keyword (BM25) and semantic (vector) search for improved retrieval accuracy. Leverages strengths of both approaches.
-
-**Key Components**:
-- Keyword search (BM25, TF-IDF)
-- Semantic search (vector embeddings)
-- Result fusion/reranking
-- Weighted combination
-
-**Popular Solutions**:
-- **Elasticsearch** / **OpenSearch**: BM25 + vector search
-- **Weaviate** / **Pinecone**: Native hybrid search
-- **Qdrant**: Hybrid search with metadata filters
-- **AWS Bedrock Knowledge Bases**: Managed hybrid RAG
-
-**Common practices**:
-- Tuned keyword/semantic weights
-- Appropriate reranking
-- Effective result combination
-- Search quality monitoring
-- A/B-tested configurations
-
-**Use Cases**:
-- Document search
-- E-commerce search
-- Knowledge base search
-- Content discovery
-- RAG systems
-
-**Related Patterns**:
-- **Embeddings / Vector Search**: Vector search is the semantic side of hybrid
-- **RAG**: Hybrid search improves retrieval for RAG pipelines
-- **Caching / Optimization**: Semantic caching uses embeddings; hybrid can support cache matching
-
----
-
-## Prompt Compression / Optimization
-
-**Description**: Reducing prompt size while preserving essential information. Improves efficiency, reduces costs, and enables longer context windows.
-
-**Key Techniques**:
-- Summarization
-- Key information extraction
-- Template optimization
-- Context pruning
-- Token reduction
-
-**Popular Solutions**:
-- **LLMLingua**: Prompt compression library
-- **LongLLMLingua**: Long context compression
-- **Custom Summarization**: Summarize context
-- **Selective Context**: Selects relevant parts
-
-**Common practices**:
-- Preservation of critical information
-- Testing of compressed prompts
-- Quality monitoring after compression
-- Selective use of compression
-- Balance of size and quality
-
-**Use Cases**:
-- Long context management
-- Cost reduction
-- Token limit optimization
-- Performance improvement
-- Batch processing
-
-**Related Patterns**:
-- **Prompt Engineering**: Compression preserves essential prompt content
-- **RAG**: Compress retrieved context before injection
-- **Caching**: Compressed prompts can reduce cache key size or enable longer cached context
-
----
-
-## Model Routing / Ensemble
-
-**Description**: Selecting or combining multiple models based on task characteristics, cost, or performance requirements. Optimizes for different use cases.
-
-**Key Strategies**:
-- Task-based routing
-- Cost-based routing
-- Performance-based routing
-- Model ensembling
-- Fallback chains
-
-**Popular Solutions**:
-- **OpenRouter**: Multi-model routing and fallbacks
-- **AWS Bedrock**: Multiple foundation models and model selection
-- **LangChain Router Chains**: Route by task or metadata
-- **Custom routing** (e.g. Lambda): Task-based or cost-based routing
-- **Fallback chains**: Automatic model switching on errors
-
-**Common practices**:
-- Clear routing criteria
-- Routing decision monitoring
-- Fallback mechanisms
-- Testing of all routes
-- Cost and performance optimization
-
-**Use Cases**:
-- Cost optimization
-- Performance optimization
-- Specialized task handling
-- Reliability improvement
-- Multi-model systems
-
-**Related Patterns**:
-- **Understanding Models**: Routing chooses among model types and capabilities
-- **LLM-as-a-Judge**: Judge model can be routed separately from production model
-- **Custom Model Training**: Fine-tuned models are often used in routing or fallback chains
-- **Structured Output**: Routing criteria can use structured outputs from classifiers
-
----
-
 ## Custom Model Training
 
 **Description**: Training or fine-tuning models on custom datasets to achieve domain-specific performance, specialized behavior, or improved accuracy for specific use cases. Involves adapting pre-trained foundation models to particular tasks or domains.
@@ -994,6 +990,3 @@ Common progression: prompt engineering and structured outputs first; RAG, functi
 - **Chain-of-Thought Prompting**: https://arxiv.org/abs/2201.11903
 - **Tree of Thoughts**: https://arxiv.org/abs/2305.10601
 
----
-
-*Last Updated: 2025*

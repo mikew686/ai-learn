@@ -1,9 +1,14 @@
 # DeepLearning.AI Dev Convention 2025  
+
 ### A Software Engineer’s Overview of Themes, Trends, and Technical Directions  
 
 Event link: https://ai-dev.deeplearning.ai/
 
-The DeepLearning.AI Dev Convention 2025 brought together engineers, researchers, platform teams, and AI-tooling companies to examine the rapidly shifting technical landscape shaped by agentic systems, multimodal models, AI-assisted coding, and modern ML infrastructure. Across keynotes, panels, and technical talks, a central theme emerged: **AI capabilities are accelerating faster than the surrounding processes—product development, governance, evaluation, and human feedback loops—can adapt.**
+This folder contains some of my notes after attending the **The DeepLearning.AI Dev Convention 2025**, in New York City. The following are the high level descriptions based on my notes. There are more in-depth notes in this folder.
+
+---
+
+ The convention brought together engineers, researchers, platform teams, and AI-tooling companies to examine the rapidly shifting technical landscape shaped by agentic systems, multimodal models, AI-assisted coding, and modern ML infrastructure. Across keynotes, panels, and technical talks, a central theme emerged: **AI capabilities are accelerating faster than the surrounding processes—product development, governance, evaluation, and human feedback loops—can adapt.**
 
 ---
 
@@ -35,8 +40,6 @@ Ng noted that inference costs are dropping faster than expected, and **engineeri
 
 Although the keynote was structured around data and broad themes, the tone in the room reflected a deeper underlying tension about what this acceleration means for engineering teams. Ng emphasized that while AI lowers the barrier to writing code, it raises the bar for engineering judgment—developers must think more deeply about architecture, data flows, and product intent. He also noted rising mental fatigue among AI-assisted developers, reflecting insecurity and imposter syndrome as expectations outpace clarity. The audience reacted strongly to his comments on PM bottlenecks, with engineers nodding as he described how prototype velocity now outstrips product feedback cycles. The keynote set a tone of **cautious optimism**: capabilities are skyrocketing, but the human and organizational structures around them have not yet caught up.
 
-
-📄 **[Detailed keynote summary →](./andrew_ng_keynote_summary.md)**
 ---
 
 ## Cross-Convention Themes
@@ -106,8 +109,6 @@ Redis introduced **LangCache**, highlighting how semantic caching supports agent
 **Insights in this section draw from Nitin Kanukolanu’s Redis talk on semantic caching, Jacky Liang’s TigerData session on Postgres hybrid retrieval, and David Loker’s CodeRabbit discussion on context-aware code review.** Each speaker highlighted the importance of controlling what goes into the model’s context window—emphasizing token efficiency, precision, retrieval correctness, and infrastructure-level optimization.
 
 Context windows, token efficiency, and retrieval precision now shape both performance and cost in agent workflows. Context engineering is evolving into a discipline concerned with **how information flows through agents**, not just which documents get retrieved.
-
-📄 **[Detailed context engineering highlights →](./context_engineering_highlights.md)**
 
 Core topics included:
 

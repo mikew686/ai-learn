@@ -1,4 +1,5 @@
 """REST API endpoints."""
+
 from flask import Blueprint, jsonify
 
 from app.services.health import get_health_context

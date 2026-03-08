@@ -1,4 +1,5 @@
 """Shared health-check logic for health page and API."""
+
 import os
 
 from rq import Worker
@@ -53,7 +54,9 @@ def postgres_status():
         with get_database_connection() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             conn.commit()
-            result = conn.execute(text("SELECT 1 FROM pg_catalog.pg_extension WHERE extname = 'vector'"))
+            result = conn.execute(
+                text("SELECT 1 FROM pg_catalog.pg_extension WHERE extname = 'vector'")
+            )
             vector_available = result.scalar() is not None
             table_result = conn.execute(
                 text(
@@ -70,7 +73,9 @@ def postgres_status():
 def get_health_context():
     """Return dict of health status for templates and API."""
     redis_connected, redis_key_count = redis_status()
-    postgres_enabled, postgres_vector_available, postgres_table_count = postgres_status()
+    postgres_enabled, postgres_vector_available, postgres_table_count = (
+        postgres_status()
+    )
     rq_worker_count = rq_workers_count()
     ai_success, ai_model_count = ai_client_status()
     return {

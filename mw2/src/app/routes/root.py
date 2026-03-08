@@ -1,4 +1,5 @@
 """Root (main) page blueprint."""
+
 from flask import Blueprint, render_template
 
 root_bp = Blueprint("root", __name__)

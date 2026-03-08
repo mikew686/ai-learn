@@ -1,6 +1,7 @@
 # Examples
 
-Runnable examples for the [eng-dev-patterns](../../eng-dev-patterns/) documentation. Run from this directory with:
+Runnable examples. Not optimized and designed to illustrate principles.
+Run from this directory with:
 
 ```bash
 python <filename>.py

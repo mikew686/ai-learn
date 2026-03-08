@@ -3,7 +3,7 @@ Same translation + few-shot flow as embeddings_vector_search but with Postgres
 and pgvector: exact-prompt embedding, cosine-distance retrieval, and optional
 vector-backed target normalization (reuse stored target if within threshold).
 Related: eng-dev-patterns README — Embeddings / Vector Search, Few-Shot.
-Note: requires a Postgres database with the pgvector extension installed 
+Note: requires a Postgres database with the pgvector extension installed
 (user name and database name must match). See db/pg_user.md for setup.
 """
 
@@ -621,7 +621,9 @@ def main() -> None:
             if phrase.lower() == "done":
                 break
 
-            text_to_embed = _embedding_text(phrase, target_language, dialect_description)
+            text_to_embed = _embedding_text(
+                phrase, target_language, dialect_description
+            )
             query_embedding, emb_response = get_embedding(
                 client, embedding_model, text_to_embed, log=log_embeddings
             )
@@ -633,14 +635,23 @@ def main() -> None:
             )
 
             few_shots_lines = []
-            for dist, src, _trans, _notes, _phonetic, lang_name, dialect_desc in similar:
+            for (
+                dist,
+                src,
+                _trans,
+                _notes,
+                _phonetic,
+                lang_name,
+                dialect_desc,
+            ) in similar:
                 sim = 1 - dist
                 phrase_label = f"{_target_label(lang_name, dialect_desc)}: {src}"
-                few_shots_lines.append(f"{sim:.4f} - {_similarity_interpretation(sim)} - {phrase_label}")
+                few_shots_lines.append(
+                    f"{sim:.4f} - {_similarity_interpretation(sim)} - {phrase_label}"
+                )
 
             exact_match = (
-                similar
-                and (1 - similar[0][0]) >= EXACT_MATCH_SIMILARITY_THRESHOLD
+                similar and (1 - similar[0][0]) >= EXACT_MATCH_SIMILARITY_THRESHOLD
             )
             if exact_match:
                 dist, src, trans, notes, phonetic, ln, dd = similar[0]
@@ -713,7 +724,9 @@ def main() -> None:
             print_indented(
                 "  Translation", result.translated_text, indent=4, max_length=2000
             )
-            print_indented("  Phonetic", result.phonetic_spelling, indent=4, max_length=500)
+            print_indented(
+                "  Phonetic", result.phonetic_spelling, indent=4, max_length=500
+            )
             print_indented("  Notes", result.notes, indent=4, max_length=1000)
             print()
 

@@ -1,4 +1,5 @@
 """Redis connection utility. Uses config (REDIS_URL and timeout env)."""
+
 from redis import Redis
 
 from config import load_config

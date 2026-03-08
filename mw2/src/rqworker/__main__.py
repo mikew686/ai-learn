@@ -1,4 +1,5 @@
 """Start the RQ worker. Set RQ_DEBUG=1 for debug logging. Handles SIGTERM/SIGINT for graceful shutdown."""
+
 import logging
 import signal
 import sys
@@ -26,7 +27,9 @@ def _signal_handler(signum, frame):
     """Handle shutdown signals: set worker stop flag and send RQ shutdown command."""
     global worker, redis_conn
     name = _signal_name(signum)
-    logger.warning("Received signal %s (%s). Initiating graceful shutdown...", name, signum)
+    logger.warning(
+        "Received signal %s (%s). Initiating graceful shutdown...", name, signum
+    )
     if worker:
         try:
             worker._stop_requested = True
@@ -48,9 +51,13 @@ def main():
     global worker, redis_conn
     config = load_config()
     if config["RQ_DEBUG"]:
-        logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(name)s %(message)s")
+        logging.basicConfig(
+            level=logging.DEBUG, format="%(levelname)s %(name)s %(message)s"
+        )
     else:
-        logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
+        logging.basicConfig(
+            level=logging.INFO, format="%(levelname)s %(name)s %(message)s"
+        )
 
     _setup_signal_handlers()
 

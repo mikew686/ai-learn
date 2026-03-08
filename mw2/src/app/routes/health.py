@@ -1,4 +1,5 @@
 """Health page blueprint: system health status."""
+
 from flask import Blueprint, render_template
 
 from app.services.health import get_health_context

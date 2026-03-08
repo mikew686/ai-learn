@@ -1,4 +1,5 @@
 """T7e (translation example) blueprint."""
+
 from flask import Blueprint, render_template
 
 t7e_bp = Blueprint("t7e", __name__, url_prefix="/t7e")
