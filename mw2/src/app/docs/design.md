@@ -79,7 +79,7 @@ A hand-written semantic utility layer (Pico.css-style), split into separate file
 - **root:** Home page.
 - **health:** Health status page; fragment endpoint for HTMX polling.
 - **t7e:** Translation example; form submission, job creation, SSE stream.
-- **api:** JSON endpoints where needed (e.g. `/api/status` for external consumers).
+- **api:** JSON endpoints under `/mw2/v1` (e.g. `/mw2/v1/status`, `/mw2/v1/health` for external consumers).
 
 ### 4. Services – Business Logic
 

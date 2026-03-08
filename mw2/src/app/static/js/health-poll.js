@@ -1,5 +1,5 @@
 /**
- * Health page: poll /api/status and update service cards.
+ * Health page: poll /mw2/v1/status and update service cards.
  */
 (function () {
   const STYLES = {
@@ -29,7 +29,7 @@
   }
 
   function poll() {
-    fetch('/api/status')
+    fetch('/mw2/v1/status')
       .then(function (r) { return r.json(); })
       .then(function (data) {
         const results = data.health_results || [];
