@@ -1,7 +1,8 @@
-"""Postgres database connection utility. Uses config for URL and connection defaults."""
+"""Postgres database connection utility. Uses environment variables for URL and optional settings."""
 
+import os
 from contextlib import contextmanager
-from typing import Generator
+from typing import Any, Dict, Generator
 
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.engine import Connection
@@ -9,56 +10,171 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from config import load_config
 
-# Defaults (also in config/settings.py); used if config not yet loaded
-DEFAULT_CONNECT_TIMEOUT = 5
-DEFAULT_POOL_RECYCLE = 300
-
 _engine: Engine | None = None
 _SessionLocal: sessionmaker[Session] | None = None
 
 
+def _add_if_set(target: Dict[str, Any], key: str, value: Any):
+    if value is not None:
+        target[key] = value
+
+
+def _parse_int(val: str | None) -> int | None:
+    if val is None:
+        return None
+    try:
+        return int(val)
+    except ValueError:
+        return None
+
+
+def _parse_bool(val: str | None) -> bool | None:
+    if val is None:
+        return None
+    return val.lower() in ("1", "true", "yes")
+
+
+def _get_database_url() -> str:
+    url = os.getenv("DATABASE_URL")
+    if url:
+        return url
+    host = os.getenv("PGHOST", "localhost")
+    port = os.getenv("PGPORT", "5432")
+    user = os.getenv("PGUSER", "postgres")
+    password = os.getenv("PGPASSWORD", "localdev")
+    database = os.getenv("PGDATABASE", "postgres")
+    return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+
+
 def get_database_engine() -> Engine:
     """
-    Return a SQLAlchemy engine using DATABASE_URL and timeout/pool settings from config.
-    Cached so connection and session accessors share one pool.
+    Return a cached SQLAlchemy engine using DATABASE_URL and optional settings.
 
-    Config (env): DATABASE_URL (or PG*); DATABASE_CONNECT_TIMEOUT, DATABASE_POOL_RECYCLE.
+    If DATABASE_URL is unset, builds from PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE
+    (defaults: localhost, 5432, postgres, localdev, postgres). Only parameters explicitly
+    set in environment are passed through.
+
+    Supported environment configuration variables:
+
+    DATABASE_URL (or PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE)
+    DATABASE_CONNECT_TIMEOUT
+    DATABASE_POOL_PRE_PING
+    DATABASE_POOL_RECYCLE
+    DATABASE_POOL_SIZE
+    DATABASE_MAX_OVERFLOW
+    DATABASE_POOL_TIMEOUT
+    DATABASE_POOL_USE_LIFO
+    DATABASE_ECHO
+    DATABASE_ECHO_POOL
+    DATABASE_POOL_RESET_ON_RETURN
+    DATABASE_ISOLATION_LEVEL
+    DATABASE_CLIENT_ENCODING
+    DATABASE_APPLICATION_NAME
     """
+
     global _engine
+
     if _engine is None:
-        cfg = load_config()
-        _engine = create_engine(
-            cfg["DATABASE_URL"],
-            connect_args={"connect_timeout": cfg["DATABASE_CONNECT_TIMEOUT"]},
-            pool_pre_ping=True,
-            pool_recycle=cfg["DATABASE_POOL_RECYCLE"],
+        load_config()
+
+        engine_kwargs: Dict[str, Any] = {}
+        connect_args: Dict[str, Any] = {}
+
+        _add_if_set(
+            connect_args,
+            "connect_timeout",
+            _parse_int(os.getenv("DATABASE_CONNECT_TIMEOUT")),
         )
+        _add_if_set(
+            connect_args, "client_encoding", os.getenv("DATABASE_CLIENT_ENCODING")
+        )
+        _add_if_set(
+            connect_args, "application_name", os.getenv("DATABASE_APPLICATION_NAME")
+        )
+
+        if connect_args:
+            engine_kwargs["connect_args"] = connect_args
+
+        _add_if_set(
+            engine_kwargs,
+            "pool_pre_ping",
+            _parse_bool(os.getenv("DATABASE_POOL_PRE_PING")),
+        )
+        _add_if_set(
+            engine_kwargs,
+            "pool_recycle",
+            _parse_int(os.getenv("DATABASE_POOL_RECYCLE")),
+        )
+        _add_if_set(
+            engine_kwargs, "pool_size", _parse_int(os.getenv("DATABASE_POOL_SIZE"))
+        )
+        _add_if_set(
+            engine_kwargs,
+            "max_overflow",
+            _parse_int(os.getenv("DATABASE_MAX_OVERFLOW")),
+        )
+        _add_if_set(
+            engine_kwargs,
+            "pool_timeout",
+            _parse_int(os.getenv("DATABASE_POOL_TIMEOUT")),
+        )
+        _add_if_set(
+            engine_kwargs,
+            "pool_use_lifo",
+            _parse_bool(os.getenv("DATABASE_POOL_USE_LIFO")),
+        )
+        _add_if_set(engine_kwargs, "echo", _parse_bool(os.getenv("DATABASE_ECHO")))
+        _add_if_set(
+            engine_kwargs, "echo_pool", _parse_bool(os.getenv("DATABASE_ECHO_POOL"))
+        )
+        _add_if_set(
+            engine_kwargs,
+            "pool_reset_on_return",
+            os.getenv("DATABASE_POOL_RESET_ON_RETURN"),
+        )
+        _add_if_set(
+            engine_kwargs, "isolation_level", os.getenv("DATABASE_ISOLATION_LEVEL")
+        )
+
+        _engine = create_engine(_get_database_url(), **engine_kwargs)
+
     return _engine
+
+
+def get_sessionmaker() -> sessionmaker[Session]:
+    """Return a cached SQLAlchemy sessionmaker bound to the shared engine."""
+    global _SessionLocal
+
+    if _SessionLocal is None:
+        _SessionLocal = sessionmaker(
+            bind=get_database_engine(),
+            autoflush=False,
+            autocommit=False,
+            expire_on_commit=False,
+        )
+
+    return _SessionLocal
 
 
 @contextmanager
 def get_database_connection() -> Generator[Connection, None, None]:
-    """Yield a database connection; closes on exit. Uses shared engine.
-    Must be used as a context manager: with get_database_connection() as conn:
-    """
-    with get_database_engine().connect() as conn:
-        yield conn
+    """Yield a database connection from the shared engine."""
+    connection = get_database_engine().connect()
+    try:
+        yield connection
+    finally:
+        connection.close()
 
 
 @contextmanager
 def get_database_session() -> Generator[Session, None, None]:
-    """
-    Yield a SQLAlchemy ORM session; commits on exit, rolls back on exception.
-    Use for ORM models (session.add, session.query, etc.). Uses shared engine.
-    Must be used as a context manager: with get_database_session() as session:
-    """
-    global _SessionLocal
-    if _SessionLocal is None:
-        _SessionLocal = sessionmaker(
-            bind=get_database_engine(),
-            autocommit=False,
-            autoflush=False,
-        )
-    session = _SessionLocal()
-    with session:
+    """Yield a database session from the shared sessionmaker."""
+    session = get_sessionmaker()()
+    try:
         yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()

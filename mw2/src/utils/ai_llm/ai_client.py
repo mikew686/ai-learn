@@ -1,6 +1,7 @@
 """AI client for OpenRouter API with run_turn and tool loop."""
 
 import json
+import os
 import time
 
 from config import load_config
@@ -8,6 +9,24 @@ from openai import OpenAI
 
 from .retrieval_store import RetrievalStore
 from .types import ChatRequest
+
+
+def _parse_float(val: str | None) -> float | None:
+    if val is None:
+        return None
+    try:
+        return float(val)
+    except ValueError:
+        return None
+
+
+def _parse_int(val: str | None) -> int | None:
+    if val is None:
+        return None
+    try:
+        return int(val)
+    except ValueError:
+        return None
 
 
 class OpenRouterKeyMissingError(Exception):
@@ -38,23 +57,33 @@ class AIClient:
     ) -> None:
         """
         Args:
-            api_key: OpenRouter API key. If None, uses config. Raises if not set.
-            base_url: OpenRouter API base URL (default: OpenRouter v1).
-            timeout: Request timeout in seconds. If None, uses SDK default (600s).
-            max_retries: Retries for transient errors. If None, uses SDK default (2).
+            api_key: OpenRouter API key. If None, uses OPENROUTER_API_KEY. Raises if not set.
+            base_url: OpenRouter API base URL. If None, uses OPENROUTER_BASE_URL or default.
+            timeout: Request timeout in seconds. If None, uses OPENROUTER_TIMEOUT or SDK default (600s).
+            max_retries: Retries for transient errors. If None, uses OPENROUTER_MAX_RETRIES or SDK default (2).
         """
-        key = api_key or load_config().get("OPENROUTER_API_KEY")
+        load_config()
+        key = api_key or os.getenv("OPENROUTER_API_KEY")
         if not key:
             raise OpenRouterKeyMissingError()
 
-        kwargs: dict = {
-            "base_url": base_url or self.OPENROUTER_BASE_URL,
-            "api_key": key,
-        }
-        if timeout is not None:
-            kwargs["timeout"] = timeout
-        if max_retries is not None:
-            kwargs["max_retries"] = max_retries
+        base = base_url or os.getenv("OPENROUTER_BASE_URL", self.OPENROUTER_BASE_URL)
+        _timeout = (
+            _parse_float(os.getenv("OPENROUTER_TIMEOUT"))
+            if timeout is None
+            else timeout
+        )
+        _max_retries = (
+            _parse_int(os.getenv("OPENROUTER_MAX_RETRIES"))
+            if max_retries is None
+            else max_retries
+        )
+
+        kwargs: dict = {"base_url": base, "api_key": key}
+        if _timeout is not None:
+            kwargs["timeout"] = _timeout
+        if _max_retries is not None:
+            kwargs["max_retries"] = _max_retries
 
         self._client = OpenAI(**kwargs)
         response = self._client.models.list()
