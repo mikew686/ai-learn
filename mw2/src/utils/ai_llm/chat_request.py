@@ -3,24 +3,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable
+from typing import Any, Callable
 
-if TYPE_CHECKING:
-    from .tool_provider import DictToolProvider
+from .retrieval_store import RetrievalStore
+from .tool_provider import DictToolProvider
 
 
 @dataclass
 class ChatRequest:
     """
     Request container for chat completions.
-    Convention from co-hermes: all params in one object.
     model is required; all other fields are optional.
     """
 
     model: str
     messages: list[dict[str, Any]] = field(default_factory=list)
-    tool_provider: "DictToolProvider | None" = None
-    retrieval_store: "RetrievalStore | None" = None
+    tool_provider: DictToolProvider | None = None
+    retrieval_store: RetrievalStore | None = None
     log_chat_completion: Callable[[float, float, object], None] | None = None
     idempotency_key: str | None = None
     temperature: float | None = None
@@ -33,8 +32,8 @@ class ChatRequest:
         model: str,
         *,
         messages: list[dict[str, Any]] | None = None,
-        tool_provider: "DictToolProvider | None" = None,
-        retrieval_store: "RetrievalStore | None" = None,
+        tool_provider: DictToolProvider | None = None,
+        retrieval_store: RetrievalStore | None = None,
         log_chat_completion: Callable[[float, float, object], None] | None = None,
         idempotency_key: str | None = None,
         temperature: float | None = None,

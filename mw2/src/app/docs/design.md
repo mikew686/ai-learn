@@ -6,7 +6,7 @@ This document describes the high-level design of the (mw)² application: a learn
 
 ### Goals
 
-- **Mobile-first:** Primary target is mobile; desktop is supported. Responsive layout using CSS only.
+- **Browser-first:** Primary target is desktop/browser; mobile supported via responsive fallbacks. Layout designed for large screens with media queries adapting to smaller viewports.
 - **Minimal JavaScript:** Use HTMX for dynamic behavior. No custom JS for polling, streaming, or DOM updates.
 - **Streaming support:** Translation and AI features support streaming input (debounced) and streaming output (token-by-token).
 - **AI engineering principles:** Demonstrate core patterns: async jobs, streaming responses, Redis pub/sub, RQ workers.
@@ -59,14 +59,14 @@ A hand-written semantic utility layer (Pico.css-style), split into separate file
 | File | Purpose |
 |------|---------|
 | `variables.css` | Design tokens: colors, spacing, typography |
-| `layout.css` | Container, grid, responsive breakpoints |
+| `layout.css` | Container, grid; desktop-first layout with mobile breakpoint fallbacks |
 | `components.css` | Reusable UI: `.card`, `.card--on`, `.badge`, `.btn`, `.status-dot` |
 | `utilities.css` | Helpers: `.text-muted`, etc. |
 | `site.css` | Overrides, focus styles, app-specific tweaks |
 
 **Inclusion:** Multiple `<link>` tags in `base.html` in dependency order. Each file has a brief comment block explaining its role.
 
-**Modern look:** Typography (Outfit, JetBrains Mono), CSS variables for theming, `clamp()` for responsive spacing, `transition` for micro-interactions. Status components use `data-status="on"` / `data-status="off"` for state-based styling.
+**Modern look:** Typography (Outfit, JetBrains Mono), CSS variables for theming, `clamp()` for flexible spacing, `transition` for micro-interactions. Layout optimised for desktop; media queries provide mobile fallbacks. Status components use `data-status="on"` / `data-status="off"` for state-based styling.
 
 ### 2. Templates – Jinja Structure
 

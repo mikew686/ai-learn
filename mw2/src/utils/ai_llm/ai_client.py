@@ -7,8 +7,7 @@ import time
 from config import load_config
 from openai import OpenAI
 
-from .retrieval_store import RetrievalStore
-from .types import ChatRequest
+from .chat_request import ChatRequest
 
 
 def _parse_float(val: str | None) -> float | None:

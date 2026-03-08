@@ -1,6 +1,5 @@
 """Load config from environment. Used by Flask app and RQ worker."""
 
-import os
 from pathlib import Path
 
 # Environment override in mw2 project root; app, rqworker, and alembic (run from mw2/) can use it.
