@@ -27,14 +27,18 @@ COPY mw2/src ./src
 
 EXPOSE 8000
 
-# Gunicorn defaults; override at runtime with same env vars or with GUNICORN_CMD_ARGS
+# Gunicorn 25.1 defaults; override at runtime: -e GUNICORN_WORKERS=8 -e GUNICORN_BIND=0.0.0.0:8080 etc.
 ENV GUNICORN_WORKERS=4 \
     GUNICORN_BIND=0.0.0.0:8000 \
     GUNICORN_TIMEOUT=30 \
     GUNICORN_LOG_LEVEL=info
-ENV GUNICORN_CMD_ARGS="--workers $GUNICORN_WORKERS --bind $GUNICORN_BIND --timeout $GUNICORN_TIMEOUT --log-level $GUNICORN_LOG_LEVEL"
 
-# dumb-init forwards signals to child; CMD is overridden for rqworker (no --entrypoint needed)
+# dumb-init forwards signals to child; CMD overridden for rqworker
 ENTRYPOINT ["dumb-init", "--"]
-# App factory: call create_app() so gunicorn gets the Flask app instance, not the factory
-CMD ["gunicorn", "app:create_app()"]
+# Shell form so env vars expand at runtime
+CMD exec gunicorn \
+    --workers "${GUNICORN_WORKERS}" \
+    --bind "${GUNICORN_BIND}" \
+    --timeout "${GUNICORN_TIMEOUT}" \
+    --log-level "${GUNICORN_LOG_LEVEL}" \
+    "app:create_app()"
