@@ -1,0 +1,6 @@
+{% from "health/_macros.html" import service_card %}
+<ul class="service-list">
+  {% for item in health_results %}
+  {{ service_card(item) }}
+  {% endfor %}
+</ul>

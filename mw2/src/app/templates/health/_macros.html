@@ -1,0 +1,9 @@
+{% macro service_card(item) %}
+<li>
+  <div class="card" data-service="{{ item.component_name }}" data-status="{{ item.status }}">
+    <span class="status-dot"></span>
+    <span class="card-label">{{ item.component_name }}</span>
+    <span class="card-value">{{ item.description }}</span>
+  </div>
+</li>
+{% endmacro %}

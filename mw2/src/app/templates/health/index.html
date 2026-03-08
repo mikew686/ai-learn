@@ -3,33 +3,23 @@
 {% block title %}Health – (mw)²{% endblock %}
 
 {% block page_subheading %}
-  <p class="mt-2 font-mono text-sm text-stone-500">service status</p>
+  <p class="text-muted">service status</p>
 {% endblock %}
 
 {% block content %}
   <section id="services">
-    <h2 class="mb-4 text-xs font-semibold uppercase tracking-wider text-stone-400">Services</h2>
-    <ul class="space-y-3">
-      {% for item in health_results %}
-      <li>
-        <div data-service="{{ item.component_name }}"
-          class="flex items-center gap-3 rounded-xl border px-4 py-3
-          {% if item.status == 'pass' %}border-emerald-500/50 bg-emerald-500/10 text-emerald-800
-          {% elif item.status == 'warn' %}border-amber-500/50 bg-amber-500/10 text-amber-800
-          {% else %}border-stone-200 bg-stone-50 text-stone-500{% endif %}">
-          <span class="status-dot h-3 w-3 shrink-0 rounded-full
-            {% if item.status == 'pass' %}bg-emerald-500
-            {% elif item.status == 'warn' %}bg-amber-500
-            {% else %}bg-stone-300{% endif %}"></span>
-          <span class="font-medium">{{ item.component_name }}</span>
-          <span class="status-value ml-auto font-mono text-sm opacity-80">{{ item.description }}</span>
-        </div>
-      </li>
-      {% endfor %}
-    </ul>
+    <h2 class="section-heading">Services</h2>
+    <div
+      hx-get="{{ url_for('health.services_fragment') }}"
+      hx-trigger="every 10s"
+      hx-swap="innerHTML"
+    >
+      {% from "health/_macros.html" import service_card %}
+      <ul class="service-list">
+        {% for item in health_results %}
+        {{ service_card(item) }}
+        {% endfor %}
+      </ul>
+    </div>
   </section>
-{% endblock %}
-
-{% block scripts %}
-  <script src="{{ url_for('static', filename='js/health-poll.js') }}"></script>
 {% endblock %}
