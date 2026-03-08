@@ -47,13 +47,11 @@ def ai_client_status():
 
 
 def postgres_status():
-    """Connect to Postgres, ensure vector extension exists. Return (connected, vector_available, table_count).
+    """Connect to Postgres, check if vector extension exists. Return (connected, vector_available, table_count).
     table_count is from information_schema (public schema, base tables). (False, False, 0) on failure.
     """
     try:
         with get_database_connection() as conn:
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            conn.commit()
             result = conn.execute(
                 text("SELECT 1 FROM pg_catalog.pg_extension WHERE extname = 'vector'")
             )
