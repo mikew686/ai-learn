@@ -6,12 +6,12 @@ This document describes the high-level design of the (mw)² application: a learn
 
 ### Goals
 
-- **Browser-first:** Primary target is desktop/browser; mobile supported via responsive fallbacks. Layout designed for large screens with media queries adapting to smaller viewports.
+- **Mobile-first:** Layout optimized for touch and small screens; scales up for desktop. Responsive across all devices.
 - **Minimal JavaScript:** Use HTMX for dynamic behavior. No custom JS for polling, streaming, or DOM updates.
 - **Streaming support:** Translation and AI features support streaming input (debounced) and streaming output (token-by-token).
 - **AI engineering principles:** Demonstrate core patterns: async jobs, streaming responses, Redis pub/sub, RQ workers.
-- **Modern simplistic design:** Hand-written CSS utilities, no framework. Structure that supports AI-assisted CSS maintenance.
-- **Learning-oriented:** Modular CSS and clear separation of concerns for easier review and understanding.
+- **Minimalistic:** Clean structure, restrained styling. Interesting without being heavy.
+- **Learning-oriented:** Clear separation of concerns for easier review and understanding.
 
 ---
 
@@ -46,44 +46,45 @@ flowchart TB
     RQ --> Redis
 ```
 
-**Stack:** Flask, Jinja2, HTMX, modular CSS, Redis, RQ, Postgres. No JavaScript framework.
+**Stack:** Flask, Jinja2, HTMX, modular CSS, Redis, RQ, Postgres.
 
 ---
 
 ## Component Sections
 
-### 1. CSS – Modular Utility Layer
+### 1. CSS – Implementation Base and Visual Reference
 
-A hand-written semantic utility layer (Pico.css-style), split into separate files for clarity and learning.
+**Implementation base: Pico CSS**
+- Minimal CSS for semantic HTML. Works with pure markup; no JavaScript.
+- Responsive typography and spacing by default. Class-light; few custom classes.
+- Light/dark mode via `prefers-color-scheme` without JavaScript.
+- Over 130 CSS variables for customization. Lean HTML, low specificity.
 
-| File | Purpose |
-|------|---------|
-| `variables.css` | Design tokens: colors, spacing, typography |
-| `layout.css` | Container, grid; desktop-first layout with mobile breakpoint fallbacks |
-| `components.css` | Reusable UI: `.card`, `.card--on`, `.badge`, `.btn`, `.status-dot` |
-| `utilities.css` | Helpers: `.text-muted`, etc. |
-| `site.css` | Overrides, focus styles, app-specific tweaks |
+**Visual reference: [Modern Digital Portfolio – No JS](https://github.com/Sohail7739/web-design-portfolio-no-js)**
+- Aesthetic inspiration: gradients, glassmorphism, hover motion.
+- Built with HTML + CSS only; CSS Grid, Flexbox, CSS custom properties.
+- Mobile-first, responsive, touch-optimized.
 
-**Inclusion:** Multiple `<link>` tags in `base.html` in dependency order. Each file has a brief comment block explaining its role.
+**Approach:** Pico CSS as base. `site.css` for overrides, status components (`.card[data-status="pass"|"warn"|"fail"]`, `.status-dot`, `.badge`), and visual refinements (gradients, glassmorphism, transitions) inspired by the portfolio reference.
 
-**Modern look:** Typography (Outfit, JetBrains Mono), CSS variables for theming, `clamp()` for flexible spacing, `transition` for micro-interactions. Layout optimised for desktop; media queries provide mobile fallbacks. Status components use `data-status="on"` / `data-status="off"` for state-based styling.
+**Look and feel:** See [Look and Feel Requirements](#look-and-feel-requirements) below.
 
 ### 2. Templates – Jinja Structure
 
 - **base.html:** Layout shell, nav, footer, CSS/script includes, `{% block %}` for title, head, content, scripts.
-- **Partials:** `_macros.html` for reusable fragments (e.g. `service_card`). `_services.html` for the services list used by both full page and fragment endpoint.
+- **Partials:** `_macros.html` for `service_card` macro. `_services.html` for the services list. Both used by full page and fragment endpoint. Cards use `data-status="pass"|"warn"|"fail"`.
 - **Inheritance:** Page templates extend `base.html` and fill blocks. Server is the single source of truth for markup.
 
 ### 3. Routes – Flask Blueprints
 
 - **root:** Home page.
-- **health:** Health status page; fragment endpoint for HTMX polling.
+- **health:** Dashboard at `/health/dashboard`; fragment endpoint for HTMX polling.
 - **t7e:** Translation example; form submission, job creation, SSE stream.
-- **api:** JSON endpoints under `/mw2/v1` (e.g. `/mw2/v1/status`, `/mw2/v1/health` for external consumers).
+- **health_api** (prefix `/mw2/v1`): `/mw2/v1/status` (JSON for dashboard polling), `/mw2/v1/health` (IETF health check).
 
 ### 4. Services – Business Logic
 
-- **health:** `get_health_context()`, `get_services_list()` – Redis, Postgres, pgvector, RQ, AI status.
+- **health:** `get_health_context()` from `utils.health.run_checks` – returns `health_results` list of `{component_name, status, description}`. Status: `pass`, `warn`, `fail`. Health checks registered via `@health_check` (redis, postgres, pgvector, rq, ai).
 - **translation:** Job creation, AI client calls, streaming coordination.
 
 ### 5. HTMX – Declarative Interactivity
@@ -98,6 +99,39 @@ A hand-written semantic utility layer (Pico.css-style), split into separate file
 - **Job queue:** Translation requests enqueued; workers process in background.
 - **Redis pub/sub:** Worker publishes tokens to a job-specific channel as AI streams.
 - **Bridge:** Flask SSE endpoint subscribes to Redis and forwards to client.
+
+---
+
+## Look and Feel Requirements
+
+**Typography**
+- Body: Outfit (Google Fonts). Fallback: system-ui, sans-serif.
+- Code/data: JetBrains Mono. Fallback: monospace.
+- Headings: bold, tight tracking.
+- Secondary text: smaller mono, muted colour.
+
+**Colour palette**
+- Neutral palette for text, borders, backgrounds.
+- Status: pass = emerald (borders, bg, text); warn = amber; fail = stone/muted.
+- Accent: sky for badges.
+- Page background: gradient (e.g. stone-100 → white → amber-50). Compatible with light/dark via `prefers-color-scheme`.
+
+**Layout**
+- Mobile-first. Min-height 100vh.
+- Content: max-width ~42rem, centred, responsive padding.
+- CSS Grid and Flexbox for structure. Responsive typography and spacing.
+
+**Components**
+- Cards: rounded, border, padding, flex with gap. Status via `data-status="pass"|"warn"|"fail"`.
+- Status dot: ~12px, rounded-full. Colour by status.
+- Badge: rounded, small padding, mono.
+- Nav links: medium weight, darker on hover.
+
+**Interaction**
+- Focus: 2px outline, 2px offset (accessibility).
+- Transitions for hover/focus. Subtle box-shadow changes.
+- Optional: glassmorphism (backdrop-filter) for cards or overlays.
+- Heading superscript (mw)²: reduced size, super alignment.
 
 ---
 
@@ -142,7 +176,7 @@ User types or starts a job; results appear incrementally as the backend produces
 ```mermaid
 flowchart LR
     subgraph initial [Initial Load]
-        A[GET /health] --> B[render health/index.html]
+        A[GET /health/dashboard] --> B[render health/index.html]
         B --> C[get_health_context]
         C --> D[Full HTML with service cards]
     end
@@ -154,9 +188,9 @@ flowchart LR
     end
 ```
 
-1. **Initial load:** User requests `/health`. Flask renders full page with service cards from `get_health_context()`.
+1. **Initial load:** User requests `/health/dashboard`. Flask renders full page with service cards from `get_health_context()` (returns `health_results`).
 2. **Polling:** A div has `hx-get`, `hx-trigger="every 10s"`, `hx-swap="innerHTML"`. HTMX fetches `/health/fragments/services` every 10 seconds.
-3. **Fragment:** Fragment route renders `_services.html` with current status. Same Jinja partial as initial render.
+3. **Fragment:** Fragment route renders `_services.html` with `health_results` from `get_health_context()`. Same Jinja partial as initial render.
 4. **Swap:** HTMX replaces the div content with the new fragment. No custom JavaScript.
 
 ---

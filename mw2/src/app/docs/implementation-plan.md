@@ -4,110 +4,86 @@ This document maps the target design ([design.md](design.md)) to concrete code c
 
 ---
 
-## Phase 1: CSS – Modular Utility Layer
+## Phase 1: CSS – Pico CSS Base + Visual Refinements
 
-### 1.1 Create modular CSS files
+### 1.1 Approach
 
-**Current state:** `site.css` has ~19 lines of overrides. `base.html` loads Tailwind CDN + `site.css`. All layout/component styles come from Tailwind utility classes in templates.
+- **Implementation base:** [Pico CSS](https://picocss.com/) – minimal CSS for semantic HTML, responsive by default, light/dark via `prefers-color-scheme`, no JavaScript.
+- **Visual reference:** [Modern Digital Portfolio – No JS](https://github.com/Sohail7739/web-design-portfolio-no-js) – gradients, glassmorphism, hover motion, mobile-first.
+- **Customization:** `site.css` for overrides, status components, and refinements.
 
-**Target:** Replace Tailwind with five modular CSS files. Remove CDN dependency.
+### 1.2 Look and feel requirements
 
-| File | Action | Content |
-|------|--------|---------|
-| `static/css/variables.css` | **Create** | `:root` with `--color-*`, `--spacing-*`, `--font-*`. Design tokens for stone/emerald/sky palette, Outfit/JetBrains Mono. |
-| `static/css/layout.css` | **Create** | `.container` (max-width, margin auto, px, py), responsive breakpoints via `@media (max-width: ...)`. Desktop-first: base styles for large viewport; media queries for smaller. |
-| `static/css/components.css` | **Create** | `.card`, `.card[data-status="on"]`, `.card[data-status="off"]`, `.status-dot`, `.badge`, `.btn`. Match current visual: rounded-xl, borders, emerald/stone colours. |
-| `static/css/utilities.css` | **Create** | `.text-muted`, `.font-mono`, etc. |
-| `static/css/site.css` | **Modify** | Keep focus styles (`a:focus-visible`, `button:focus-visible`), `h1 sup` styling. Remove Tailwind-specific comment. |
+Implement the visual design in [design.md](design.md) § Look and Feel Requirements:
 
-**Documentation:** Follow [css-documentation.md](css-documentation.md) for each file. Use human-readable comments: file headers describing purpose, section headings (`---` blocks), inline notes for non-obvious rules. Document variables with one-line descriptions; document components with usage and `data-*` attributes.
+- **Typography:** Outfit (body), JetBrains Mono (code). Override Pico defaults via CSS variables if needed.
+- **Colour:** Stone neutral. Status: pass=emerald, warn=amber, fail=stone. Page gradient. Light/dark compatible.
+- **Layout:** Mobile-first. Max-width ~42rem, centred. CSS Grid and Flexbox.
+- **Components:** Status cards (`.card[data-status]`), status dot, badge. Optional glassmorphism.
+- **Interaction:** Focus outline, transitions, hover effects.
 
-### 1.2 Update base.html
+### 1.3 Add Pico CSS and site overrides
 
-**Remove:**
-- Tailwind CDN `<script src="https://cdn.tailwindcss.com">`
-- Tailwind config `<script> tailwind.config = {...} </script>`
+**Add Pico CSS:**
+- Option A: CDN `<link href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" rel="stylesheet">`
+- Option B: npm `@picocss/pico`, copy to `static/css/pico.min.css`, link via `url_for`
 
-**Add:** Five `<link>` tags in order:
+**Add `site.css` after Pico:**
+- Focus styles (`a:focus-visible`, `button:focus-visible`)
+- Heading superscript (mw)²
+- Status components: `.card[data-status="pass"|"warn"|"fail"]`, `.status-dot`, `.badge`
+- Page gradient background
+- Optional: glassmorphism, hover transitions
+- Override Pico variables for typography (Outfit, JetBrains Mono) and colours if needed
 
-```html
-<link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
-```
+**base.html:** Link Pico first, then `site.css`. Use semantic HTML; Pico styles elements by default. Add custom classes only where needed (status cards, badge).
 
-**Update body/main/header/nav/footer:** Replace Tailwind classes with new semantic classes. For example:
-- `class="min-h-screen bg-gradient-to-br from-stone-100..."` → `class="page"` (define in layout.css)
-- `class="mx-auto max-w-2xl px-6 py-16"` → `class="container"`
-- `class="font-medium text-stone-700 hover:text-stone-900"` → `.nav-link` in components.css
+### 1.4 Update base.html
 
-**Keep:** Google Fonts links (or move to self-hosted later). Meta viewport.
+**Remove:** Existing CDN stylesheet and inline theme/config script.
+
+**Add:** Pico CSS link, then `site.css` link. Google Fonts (Outfit, JetBrains Mono).
+
+**Update markup:** Use semantic HTML (`<header>`, `<nav>`, `<main>`, `<footer>`, `<section>`) so Pico applies. Add `container` class for centred content if using Pico’s class. Status cards use `data-status` and custom classes from `site.css`.
 
 ---
 
 ## Phase 2: Health – HTMX Polling + Jinja Macro
 
-### 2.1 Refactor health service – `get_services_list()`
+**Current state:** Route at `/health/dashboard`. `get_health_context()` (from `utils.health.run_checks`) returns `{"health_results": [{component_name, status, description}, ...]}`. Status is `pass`, `warn`, or `fail`. Template iterates `health_results`; `health-poll.js` polls `/mw2/v1/status` and updates DOM.
 
-**File:** `app/services/health.py`
-
-**Add function:**
-
-```python
-def get_services_list() -> list[dict]:
-    """Return list of service items for templates. Keys: service, enabled, value_text."""
-```
-
-**Logic:** Call `get_health_context()` (or internal helpers). Build list:
-
-```python
-[
-    {"service": "redis", "enabled": redis_connected, "value_text": f"{redis_key_count} keys"},
-    {"service": "postgres", "enabled": postgres_enabled, "value_text": f"{postgres_table_count} tables"},
-    {"service": "pgvector", "enabled": postgres_vector_available, "value_text": "available" if postgres_vector_available else "not loaded"},
-    {"service": "rq", "enabled": rq_worker_count > 0, "value_text": f"{rq_worker_count} running"},
-    {"service": "ai", "enabled": ai_success, "value_text": f"{ai_model_count} models"},
-]
-```
-
-**Update `get_health_context()`:** Add `"services": get_services_list()` and keep existing flat keys for API compatibility (or deprecate flat keys if API is updated).
-
-### 2.2 Create Jinja macro
+### 2.1 Create Jinja macro
 
 **File:** `app/templates/health/_macros.html` (create)
 
 ```jinja2
-{% macro service_card(service, enabled, value_text) %}
+{% macro service_card(item) %}
 <li>
-  <div class="card" data-service="{{ service }}" data-status="{{ 'on' if enabled else 'off' }}">
+  <div class="card" data-service="{{ item.component_name }}" data-status="{{ item.status }}">
     <span class="status-dot"></span>
-    <span class="card-label">{{ service }}</span>
-    <span class="card-value">{{ value_text }}</span>
+    <span class="card-label">{{ item.component_name }}</span>
+    <span class="card-value">{{ item.description }}</span>
   </div>
 </li>
 {% endmacro %}
 ```
 
-(Adjust class names to match `components.css`.)
-
-### 2.3 Create services partial
+### 2.2 Create services partial
 
 **File:** `app/templates/health/_services.html` (create)
 
 ```jinja2
 {% from "health/_macros.html" import service_card %}
 <ul class="service-list">
-  {% for item in services %}
-  {{ service_card(item.service, item.enabled, item.value_text) }}
+  {% for item in health_results %}
+  {{ service_card(item) }}
   {% endfor %}
 </ul>
 ```
 
-Requires `services` in context.
+Requires `health_results` in context (from `get_health_context()`).
 
-### 2.4 Add fragment route
+### 2.3 Add fragment route
 
 **File:** `app/routes/health.py`
 
@@ -117,23 +93,21 @@ Add route:
 @health_bp.route("/fragments/services")
 def services_fragment():
     """Return services HTML fragment for HTMX polling."""
-    services = get_services_list()
-    return render_template("health/_services.html", services=services)
+    return render_template("health/_services.html", **get_health_context())
 ```
 
-### 2.5 Update health index template
+### 2.4 Update health index template
 
 **File:** `app/templates/health/index.html`
 
-- Replace five hard-coded `<li>` blocks with `{% from "health/_macros.html" import service_card %}` and `{% for item in services %}{{ service_card(...) }}{% endfor %}`.
+- Replace `{% for item in health_results %}` loop body with macro: `{% from "health/_macros.html" import service_card %}` and `{{ service_card(item) }}`.
 - Wrap the `<ul>` in a div with HTMX attributes:
   - `hx-get="{{ url_for('health.services_fragment') }}"`
   - `hx-trigger="every 10s"`
   - `hx-swap="innerHTML"`
-- Update k8s badge to use CSS class for visibility (e.g. `.hidden` when `not running_on_kubernetes`).
 - **Remove** `{% block scripts %}` block that loads `health-poll.js`.
 
-### 2.6 Add HTMX to base.html
+### 2.5 Add HTMX to base.html
 
 **File:** `app/templates/base.html`
 
@@ -145,7 +119,7 @@ Add before `</body>` (or in `{% block scripts %}` for pages that need it):
 
 Or use a local copy in `static/js/htmx.min.js` and `url_for`.
 
-### 2.7 Delete health-poll.js
+### 2.6 Delete health-poll.js
 
 **File:** `app/static/js/health-poll.js` – **Delete**. Replaced by HTMX.
 
@@ -247,10 +221,8 @@ Ensure `rq` is a dependency. Flask app uses `utils.redis.get_redis_connection()`
 
 | Action | Path |
 |--------|------|
-| Create | `app/static/css/variables.css` |
-| Create | `app/static/css/layout.css` |
-| Create | `app/static/css/components.css` |
-| Create | `app/static/css/utilities.css` |
+| Add | Pico CSS (CDN or `static/css/pico.min.css`) |
+| Modify | `app/static/css/site.css` (overrides, status components, refinements) |
 | Create | `app/templates/health/_macros.html` |
 | Create | `app/templates/health/_services.html` |
 | Create | `app/services/translation.py` |
@@ -258,14 +230,12 @@ Ensure `rq` is a dependency. Flask app uses `utils.redis.get_redis_connection()`
 | Create | `app/templates/t7e/_job_poll.html` (Use Case 2) |
 | Create | `app/templates/t7e/_job_result.html` (Use Case 2) |
 | Create | `app/templates/t7e/_job_stream.html` (Use Case 3, if needed) |
-| Modify | `app/static/css/site.css` |
 | Modify | `app/templates/base.html` |
 | Modify | `app/templates/health/index.html` |
-| Modify | `app/templates/root/index.html` (replace Tailwind classes) |
+| Modify | `app/templates/root/index.html` (semantic HTML) |
 | Modify | `app/templates/t7e/index.html` |
-| Modify | `app/routes/health.py` |
+| Modify | `app/routes/health.py` (add services_fragment) |
 | Modify | `app/routes/t7e.py` |
-| Modify | `app/services/health.py` |
 | Modify | `app/__init__.py` (if new blueprint or routes) |
 | Delete | `app/static/js/health-poll.js` |
 
@@ -273,8 +243,8 @@ Ensure `rq` is a dependency. Flask app uses `utils.redis.get_redis_connection()`
 
 ## Order of Implementation
 
-1. **Phase 1** – CSS: Create modular files, update base.html, migrate templates from Tailwind to semantic classes. Test layout on desktop and mobile.
-2. **Phase 2** – Health: Add `get_services_list()`, macro, partial, fragment route, HTMX in base, update health template, remove health-poll.js.
+1. **Phase 1** – CSS: Add Pico CSS, update site.css (overrides, status components, refinements), update base.html and templates with semantic HTML. Mobile-first; test on touch and desktop.
+2. **Phase 2** – Health: Macro, partial, fragment route, HTMX in base, update health template, remove health-poll.js.
 3. **Phase 3 (Use Case 2)** – Translation poll: Job function, translation service, POST/GET routes, templates.
 4. **Phase 3 (Use Case 3)** – Translation stream: Streaming in AI client/worker, Redis pub/sub, SSE route, HTMX SSE.
 
