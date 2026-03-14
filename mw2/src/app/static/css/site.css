@@ -269,3 +269,7 @@ h1 sup {
 .prose {
   margin-top: 0;
 }
+
+.home-intro {
+  text-align: center;
+}
