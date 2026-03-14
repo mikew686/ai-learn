@@ -197,4 +197,4 @@ Across sessions, the message was clear: **software engineering is being redefine
 
 Code samples are licensed under the [MIT License](LICENSE).
 
-Documentation, notes, and written content are licensed under [CC BY 4.0](docs/LICENSE).
+Additional project licensing details are described in [../docs/license.md](../docs/license.md).

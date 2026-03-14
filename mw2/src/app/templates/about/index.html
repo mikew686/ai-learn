@@ -10,6 +10,24 @@
 {% block content %}
   <section class="prose">
     <p class="text-muted">about this project</p>
-    <p>Coming soon.</p>
+    <p>
+      This site is part of ai-learn, a personal learning project about modern AI development,
+      including how LLMs work, how they are used in software, and the engineering patterns that
+      support building useful systems with them.
+    </p>
+    <p>
+      The repository includes learning notes, experiments, and a small web application that brings
+      some of that material together in a public-facing format.
+    </p>
+    <p>
+      The repository overview lives in
+      <a href="{{ repo_readme_url }}" rel="noopener noreferrer" target="_blank">README.md</a>.
+      The top-level license is the
+      <a href="{{ repo_license_url }}" rel="noopener noreferrer" target="_blank">MIT License</a>.
+      Additional licensing details for AI-assisted content, AI-generated material, and reuse are in
+      <a href="{{ repo_docs_license_url }}" rel="noopener noreferrer" target="_blank">docs/license.md</a>.
+      Current third-party asset notices are listed in
+      <a href="{{ repo_external_assets_url }}" rel="noopener noreferrer" target="_blank">docs/external-assets.md</a>.
+    </p>
   </section>
 {% endblock %}

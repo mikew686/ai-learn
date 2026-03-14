@@ -33,6 +33,6 @@ export OPENAI_API_KEY="your-openai-key"
 
 ## License
 
-Code samples are licensed under the [MIT License](LICENSE).
+The top-level license for this repository is the [MIT License](LICENSE).
 
-Documentation, notes, and written content are licensed under [CC BY 4.0](docs/LICENSE).
+Additional licensing details for AI-assisted content, AI-generated material, and pulled-in third-party content are described in [docs/license.md](docs/license.md).
