@@ -1,6 +1,6 @@
 # CSS Documentation Guide
 
-**Approach:** [Pico CSS](https://picocss.com/) as base. `site.css` for overrides and custom components.
+**Approach:** [Pico CSS](https://picocss.com/) as base. `main.css` for overrides and custom components.
 
 ---
 
@@ -19,9 +19,9 @@ CSS implements the visual design in [design.md](design.md) § Look and Feel Requ
 
 ---
 
-## site.css structure
+## main.css structure
 
-Pico provides base styles for semantic HTML. See [Pico’s documentation](https://picocss.com/docs/) for defaults. `site.css` contains:
+Pico provides base styles for semantic HTML. See [Pico’s documentation](https://picocss.com/docs/) for defaults. `main.css` contains:
 
 - **Overrides:** Focus styles, heading superscript, typography, and list styles where Pico’s defaults conflict.
 - **Custom components:** Status cards (`.card[data-status]`), `.status-dot`, `.badge`.
@@ -69,7 +69,7 @@ Pico CSS styles `ul` inside `main` with list markers (bullets). When we use a se
 
 ## File header and section comments
 
-`site.css` begins with a block comment: purpose and relationship to Pico.
+`main.css` begins with a block comment: purpose and relationship to Pico.
 
 Group related rules under short headings using `---` delimiters.
 

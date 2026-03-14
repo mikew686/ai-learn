@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "main/base.html" %}
 
 {% block title %}Health – (mw)²{% endblock %}
 {% block header_page_name %} – health{% endblock %}
 
 {% block index %}
-  {% include "_sidebar.html" %}
+  {% include "main/_sidebar.html" %}
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
       hx-trigger="every 10s"
       hx-swap="innerHTML"
     >
-      {% from "health/_macros.html" import service_card %}
+      {% from "main/health/_macros.html" import service_card %}
       <ul class="service-list">
         {% for item in health_results %}
         {{ service_card(item) }}

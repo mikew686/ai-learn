@@ -10,7 +10,7 @@ This document maps the target design ([design.md](design.md)) to concrete code c
 
 - **Implementation base:** [Pico CSS](https://picocss.com/) – minimal CSS for semantic HTML, responsive by default, light/dark via `prefers-color-scheme`, no JavaScript.
 - **Visual reference:** [Modern Digital Portfolio – No JS](https://github.com/Sohail7739/web-design-portfolio-no-js) – gradients, glassmorphism, hover motion, mobile-first.
-- **Customization:** `site.css` for overrides, status components, and refinements.
+- **Customization:** `main.css` for overrides, status components, and refinements.
 
 ### 1.2 Look and feel requirements
 
@@ -28,7 +28,7 @@ Implement the visual design in [design.md](design.md) § Look and Feel Requireme
 - Option A: CDN `<link href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" rel="stylesheet">`
 - Option B: npm `@picocss/pico`, copy to `static/css/pico.min.css`, link via `url_for`
 
-**Add `site.css` after Pico:**
+**Add `main.css` after Pico:**
 - Focus styles (`a:focus-visible`, `button:focus-visible`)
 - Heading superscript (mw)²
 - Status components: `.card[data-status="pass"|"warn"|"fail"]`, `.status-dot`, `.badge`
@@ -36,15 +36,15 @@ Implement the visual design in [design.md](design.md) § Look and Feel Requireme
 - Optional: glassmorphism, hover transitions
 - Override Pico variables for typography (Outfit, JetBrains Mono) and colours if needed
 
-**base.html:** Link Pico first, then `site.css`. Use semantic HTML; Pico styles elements by default. Add custom classes only where needed (status cards, badge).
+**base.html:** Link Pico first, then `main.css`. Use semantic HTML; Pico styles elements by default. Add custom classes only where needed (status cards, badge).
 
 ### 1.4 Update base.html
 
 **Remove:** Existing CDN stylesheet and inline theme/config script.
 
-**Add:** Pico CSS link, then `site.css` link. Google Fonts (Outfit, JetBrains Mono).
+**Add:** Pico CSS link, then `main.css` link. Google Fonts (Outfit, JetBrains Mono).
 
-**Update markup:** Use semantic HTML (`<header>`, `<nav>`, `<main>`, `<footer>`, `<section>`) so Pico applies. Add `container` class for centred content if using Pico’s class. Status cards use `data-status` and custom classes from `site.css`.
+**Update markup:** Use semantic HTML (`<header>`, `<nav>`, `<main>`, `<footer>`, `<section>`) so Pico applies. Add `container` class for centred content if using Pico’s class. Status cards use `data-status` and custom classes from `main.css`.
 
 ---
 
@@ -222,7 +222,7 @@ Ensure `rq` is a dependency. Flask app uses `utils.redis.get_redis_connection()`
 | Action | Path |
 |--------|------|
 | Add | Pico CSS (CDN or `static/css/pico.min.css`) |
-| Modify | `app/static/css/site.css` (overrides, status components, refinements) |
+| Modify | `app/static/css/main.css` (overrides, status components, refinements) |
 | Create | `app/templates/health/_macros.html` |
 | Create | `app/templates/health/_services.html` |
 | Create | `app/services/translation.py` |
@@ -243,7 +243,7 @@ Ensure `rq` is a dependency. Flask app uses `utils.redis.get_redis_connection()`
 
 ## Order of Implementation
 
-1. **Phase 1** – CSS: Add Pico CSS, update site.css (overrides, status components, refinements), update base.html and templates with semantic HTML. Mobile-first; test on touch and desktop.
+1. **Phase 1** – CSS: Add Pico CSS, update main.css (overrides, status components, refinements), update base.html and templates with semantic HTML. Mobile-first; test on touch and desktop.
 2. **Phase 2** – Health: Macro, partial, fragment route, HTMX in base, update health template, remove health-poll.js.
 3. **Phase 3 (Use Case 2)** – Translation poll: Job function, translation service, POST/GET routes, templates.
 4. **Phase 3 (Use Case 3)** – Translation stream: Streaming in AI client/worker, Redis pub/sub, SSE route, HTMX SSE.

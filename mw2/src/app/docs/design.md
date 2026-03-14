@@ -65,7 +65,7 @@ flowchart TB
 - Built with HTML + CSS only; CSS Grid, Flexbox, CSS custom properties.
 - Mobile-first, responsive, touch-optimized.
 
-**Approach:** Pico CSS as base. `site.css` for overrides, status components (`.card[data-status="pass"|"warn"|"fail"]`, `.status-dot`, `.badge`), and visual refinements (gradients, glassmorphism, transitions) inspired by the portfolio reference.
+**Approach:** Pico CSS as base. `main.css` for overrides, status components (`.card[data-status="pass"|"warn"|"fail"]`, `.status-dot`, `.badge`), and visual refinements (gradients, glassmorphism, transitions) inspired by the portfolio reference.
 
 **Look and feel:** See [Look and Feel Requirements](#look-and-feel-requirements) below.
 

@@ -11,7 +11,7 @@ REPO_BASE_URL = "https://github.com/mikew686/ai-learn/blob/main"
 def index():
     """About page: project information."""
     return render_template(
-        "about/index.html",
+        "main/about/index.html",
         repo_readme_url=f"{REPO_BASE_URL}/README.md",
         repo_license_url=f"{REPO_BASE_URL}/LICENSE",
         repo_docs_license_url=f"{REPO_BASE_URL}/docs/license.md",

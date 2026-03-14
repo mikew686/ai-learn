@@ -8,4 +8,4 @@ root_bp = Blueprint("root", __name__)
 @root_bp.route("/")
 def index():
     """Main landing page: mwsquared AI engineering learning site."""
-    return render_template("root/index.html")
+    return render_template("main/root/index.html")
