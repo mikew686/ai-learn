@@ -8,7 +8,7 @@ from utils.redis.redis import get_redis_connection
 def redis_health_check() -> HealthResult:
     """Return HealthResult with pass/fail and key count description."""
     try:
-        conn = get_redis_connection(timeout=10.0)
+        conn = get_redis_connection()
         conn.ping()
         key_count = conn.dbsize()
         return HealthResult(

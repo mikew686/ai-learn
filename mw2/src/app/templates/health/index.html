@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}Health – (mw)²{% endblock %}
+{% block header_page_name %} – health{% endblock %}
 
-{% block page_subheading %}
-  <p class="text-muted">service status</p>
+{% block index %}
+  {% include "_sidebar.html" %}
 {% endblock %}
 
 {% block content %}
+  <p class="text-muted">service status</p>
   <section id="services">
     <h2 class="section-heading">Services</h2>
     <div

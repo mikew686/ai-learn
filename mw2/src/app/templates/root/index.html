@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}Home – (mw)²{% endblock %}
+{% block header_page_name %} – home{% endblock %}
 
-{% block page_subheading %}
-  <p class="text-muted">learning and examples main page</p>
+{% block index %}
+  {% include "_sidebar.html" %}
 {% endblock %}
 
 {% block content %}
+  <img src="{{ url_for('static', filename='images/Bust_Athena_Velletri_Glyptothek_Munich_213_small.jpeg') }}" alt="Bust of Athena, the Greek goddess of wisdom and strategy, symbolizing knowledge and the disciplined craft behind understanding intelligent systems." title="Bust of Athena, the Greek goddess of wisdom and strategy, symbolizing knowledge and the disciplined craft behind understanding intelligent systems." class="main-page-image">
   <section class="prose">
     <p>Coming soon.</p>
   </section>

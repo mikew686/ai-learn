@@ -1,73 +1,125 @@
 /**
  * site.css
- * Overrides and custom components. Pico CSS base. See docs/css-documentation.md.
+ * Information-heavy canonical layout. Desktop-first. See docs/css-documentation.md.
  */
 
-/* --- Typography --- */
+/* --- Typography (small, information-dense) --- */
 
 :root {
   --font-family: "Outfit", system-ui, sans-serif;
   --font-family-mono: "JetBrains Mono", monospace;
+  --text-size: 0.8125rem;
+  --text-size-sm: 0.75rem;
+  --text-size-xs: 0.6875rem;
 }
 
 body {
   font-family: var(--font-family);
+  font-size: var(--text-size);
+  line-height: 1.4;
 }
 
 p, li, .font-mono,
 .text-muted,
-.card-value {
+.card-value,
+table {
   font-family: var(--font-family-mono);
+  font-size: var(--text-size-sm);
 }
 
 .text-muted {
-  font-size: 0.75rem;
+  font-size: var(--text-size-xs);
   opacity: 0.8;
 }
 
-/* --- Page layout --- */
+/* --- Page layout (sticky footer) --- */
 
 .page {
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #f5f5f4, #ffffff 50%, rgba(255, 251, 235, 0.4));
+  min-width: 960px;
+  background: #fafaf9;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
-  max-width: 42rem;
+  max-width: 54rem;
+  min-width: 40rem;
   margin: 0 auto;
-  padding: 1rem 1.5rem 4rem;
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding: 2rem 1.5rem 4rem;
-  }
-}
-
-/* --- Header --- */
-
-header nav ul {
+  padding: 1.25rem 1.5rem 2rem;
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* --- Layout: left panel + main --- */
+
+.layout-body {
+  display: flex;
+  gap: 1.5rem;
+  flex: 1;
+  margin-top: 1rem;
+  min-height: 0;
+}
+
+.side-panel {
+  flex-shrink: 0;
+  width: 5rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid #d6d3d1;
+  margin-top: 1px;
+  margin-bottom: 0;
+}
+
+.side-panel-index {
+  font-size: var(--text-size-xs);
+}
+
+.side-panel-index ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-header nav a {
-  font-weight: 500;
-  transition: color 0.2s;
+.side-panel-index li {
+  margin-bottom: 0.25rem;
 }
 
-header nav a:hover {
-  color: var(--pico-color-hover, #1c1917);
+.side-panel-index a {
+  color: #57534e;
+  text-decoration: none;
 }
 
-header h1 {
-  margin-top: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+.side-panel-index a:hover {
+  color: #44403c;
+}
+
+/* --- Header: icon + title, line below --- */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid #d6d3d1;
+}
+
+.site-header-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: cover;
+  border-radius: 0.2rem;
+  flex-shrink: 0;
+}
+
+.site-title {
+  font-size: var(--text-size);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: #44403c;
 }
 
 /* --- Focus (accessibility) --- */
@@ -78,17 +130,22 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* --- Heading superscript (mw)² --- */
-
 h1 sup {
   font-size: 0.55em;
   vertical-align: super;
   line-height: 0;
 }
 
+/* --- Main: grows to fill, pushes footer down --- */
+
+.layout-body main {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
 /* --- Status card --- */
 
-/* Override Pico's main ul list-style: use #services for specificity. See docs/css-documentation.md. */
 #services .service-list,
 #services .service-list li {
   list-style: none;
@@ -157,16 +214,12 @@ h1 sup {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* --- Status dot --- */
-
 .status-dot {
   width: 0.75rem;
   height: 0.75rem;
   flex-shrink: 0;
   border-radius: 9999px;
 }
-
-/* --- Section heading --- */
 
 .section-heading {
   font-size: 0.75rem;
@@ -177,19 +230,25 @@ h1 sup {
   margin-bottom: 1rem;
 }
 
-/* --- Footer --- */
+/* --- Footer (small), line above --- */
 
-footer {
-  margin-top: 4rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e7e5e4;
+.site-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d6d3d1;
 }
 
-footer a {
+.site-footer p {
+  font-size: var(--text-size-xs);
+  color: #78716c;
+  margin: 0;
+}
+
+.site-footer a {
   transition: color 0.2s;
 }
 
-footer a:hover {
+.site-footer a:hover {
   color: #44403c;
 }
 
@@ -197,4 +256,16 @@ footer a:hover {
 
 .prose p {
   color: #57534e;
+}
+
+/* --- Main page hero image --- */
+
+.main-page-image {
+  display: block;
+  margin-inline: auto;
+  margin-bottom: 2rem;
+}
+
+.prose {
+  margin-top: 0;
 }

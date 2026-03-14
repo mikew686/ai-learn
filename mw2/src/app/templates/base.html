@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=960">
   <title>{% block title %}(mw)²{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/Bust_Athena_Velletri_Glyptothek_Munich_213_icon.jpeg') }}" type="image/jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
@@ -13,26 +14,24 @@
 </head>
 <body class="page">
   <div class="container">
-    <header>
-      <nav>
-        <ul>
-          <li><a href="{{ url_for('root.index') }}">home</a></li>
-          <li><a href="{{ url_for('health.dashboard') }}">health</a></li>
-          <li><a href="{{ url_for('t7e.index') }}">t7e</a></li>
-        </ul>
-      </nav>
-      <h1>{% block page_heading %}(mw)<sup>2</sup>{% endblock %}</h1>
-      {% block page_subheading %}{% endblock %}
+    <header class="site-header">
+      <img src="{{ url_for('static', filename='images/Bust_Athena_Velletri_Glyptothek_Munich_213_icon.jpeg') }}" alt="Bust of Athena, Glyptothek Munich" title="Bust of Athena, Glyptothek Munich" class="site-header-icon">
+      <span class="site-title">(mw)²{% block header_page_name %}{% endblock %}</span>
     </header>
 
-    <main>
-      {% block content %}{% endblock %}
-    </main>
+    <div class="layout-body">
+      <aside class="side-panel">
+        <nav class="side-panel-index">
+          {% block index %}{% endblock %}
+        </nav>
+      </aside>
+      <main>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
 
-    <footer>
-      <p class="text-muted">
-        (mw)² – <a href="https://github.com/mikew686/ai-learn" rel="noopener noreferrer" target="_blank">https://github.com/mikew686/ai-learn</a>
-      </p>
+    <footer class="site-footer">
+      <p>(mw)² – <a href="{{ url_for('about.index') }}">about</a> – <a href="https://github.com/mikew686/ai-learn" rel="noopener noreferrer" target="_blank">github.com/mikew686/ai-learn</a></p>
     </footer>
   </div>
   <script src="https://unpkg.com/htmx.org@2.0.0"></script>
