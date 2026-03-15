@@ -1,0 +1,9 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}mobile example – (mw)²{% endblock %}
+{% block mobile_title %}mobile view{% endblock %}
+
+{% block content %}
+  <p class="mobile-description">This example shows the mobile viewport: a separate layout and styles for narrow screens. The banner has a home icon and, on deeper pages, a back arrow. Layout and typography adapt by level (entry, basic, flagship) based on viewport width.</p>
+  <p><a href="{{ url_for('mobile_example.subpage') }}" class="mobile-link">subpage</a></p>
+{% endblock %}

@@ -6,7 +6,7 @@ from flask import Flask
 
 from config import load_config
 from .apis import health_api_bp
-from .routes import about_bp, examples_bp, health_bp, root_bp
+from .routes import about_bp, examples_bp, health_bp, mobile_example_bp, root_bp
 
 
 def _parse_bool(val: str | None) -> bool | None:
@@ -54,5 +54,6 @@ def create_app(config_overrides=None):
     app.register_blueprint(health_bp)
     app.register_blueprint(examples_bp)
     app.register_blueprint(about_bp)
+    app.register_blueprint(mobile_example_bp)
 
     return app

@@ -1,0 +1,14 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}subpage / subpage – mobile example – (mw)²{% endblock %}
+{% block mobile_title %}mobile view / nested subpage{% endblock %}
+{% block mobile_back_url %}
+    <a href="{{ url_for('mobile_example.subpage') }}" class="mobile-banner-back" aria-label="Back to subpage">
+      <span class="mobile-banner-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span>
+    </a>
+{% endblock %}
+
+{% block content %}
+  <p class="mobile-description">Nested subpage with no in-content links. This page is only for testing banner navigation: use the back arrow to go to the previous page or the home icon to return to the start.</p>
+  <p>You are on the nested subpage. Use the banner back arrow to go up.</p>
+{% endblock %}

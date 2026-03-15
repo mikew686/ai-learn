@@ -1,0 +1,14 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}subpage – mobile example – (mw)²{% endblock %}
+{% block mobile_title %}mobile view / subpage{% endblock %}
+{% block mobile_back_url %}
+    <a href="{{ url_for('mobile_example.index') }}" class="mobile-banner-back" aria-label="Back to home">
+      <span class="mobile-banner-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span>
+    </a>
+{% endblock %}
+
+{% block content %}
+  <p class="mobile-description">One level down from the mobile home. The banner title reflects the path (mobile view / subpage), and the back arrow returns you to the previous page in the stack.</p>
+  <p><a href="{{ url_for('mobile_example.subpage_subpage') }}" class="mobile-link">subpage</a></p>
+{% endblock %}

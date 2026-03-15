@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}mobile example{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+  <script src="{{ url_for('static', filename='js/mobile-level.js') }}"></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="mobile-page">
+  <div class="mobile-viewport">
+    <header class="mobile-banner">
+      {% block mobile_banner_home %}
+      <a href="{{ url_for('mobile_example.index') }}" class="mobile-banner-home" aria-label="Home">
+        <span class="mobile-banner-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      </a>
+      {% endblock %}
+      {% block mobile_back_url %}{% endblock %}
+      <span class="mobile-banner-title">{% block mobile_title %}mobile view{% endblock %}</span>
+    </header>
+    <div class="mobile-container">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,232 @@
+/**
+ * mobile.css
+ * Mobile view: level-based aspect (entry / basic / flagship), viewport, banner.
+ * Self-contained; no dependency on main.css.
+ */
+
+/* --- Media-query fallback (when JS has not set level class) --- */
+:root {
+  --mobile-container-max: 100%;
+  --mobile-font-base: 16px;
+  --mobile-font-heading: 1.0625rem;
+  --mobile-spacing: 1rem;
+}
+
+@media (max-width: 375px) {
+  :root {
+    --mobile-container-max: 100%;
+    --mobile-font-base: 15px;
+    --mobile-font-heading: 1rem;
+    --mobile-spacing: 0.75rem;
+  }
+}
+
+@media (min-width: 376px) and (max-width: 412px) {
+  :root {
+    --mobile-container-max: 100%;
+    --mobile-font-base: 16px;
+    --mobile-font-heading: 1.0625rem;
+    --mobile-spacing: 1rem;
+  }
+}
+
+@media (min-width: 413px) {
+  :root {
+    --mobile-container-max: 428px;
+    --mobile-font-base: 17px;
+    --mobile-font-heading: 1.125rem;
+    --mobile-spacing: 1.125rem;
+  }
+}
+
+/* --- Level classes (set by mobile-level.js) --- */
+html.level-entry {
+  --mobile-container-max: 100%;
+  --mobile-font-base: 15px;
+  --mobile-font-heading: 1rem;
+  --mobile-spacing: 0.75rem;
+}
+
+html.level-basic {
+  --mobile-container-max: 100%;
+  --mobile-font-base: 16px;
+  --mobile-font-heading: 1.0625rem;
+  --mobile-spacing: 1rem;
+}
+
+html.level-flagship {
+  --mobile-container-max: 428px;
+  --mobile-font-base: 17px;
+  --mobile-font-heading: 1.125rem;
+  --mobile-spacing: 1.125rem;
+}
+
+/* --- Base: viewport padding and typography --- */
+.mobile-page {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: var(--mobile-font-base);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: #1c1917;
+  background: #fafaf9;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  box-sizing: border-box;
+}
+
+.mobile-page *,
+.mobile-page *::before,
+.mobile-page *::after {
+  box-sizing: border-box;
+}
+
+/* --- Viewport wrapper: in desktop (browser) mode, constrain to same width as main content --- */
+.mobile-viewport {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+html.env-browser .mobile-viewport {
+  max-width: var(--mobile-container-max);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* --- Banner: icons + title, full viewport padding --- */
+.mobile-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 var(--mobile-spacing);
+  padding-left: calc(var(--mobile-spacing) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--mobile-spacing) + env(safe-area-inset-right, 0px));
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+  padding-bottom: 0.5rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid #d6d3d1;
+  background: #fff;
+  user-select: none;
+}
+
+.mobile-banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.mobile-banner-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mobile-banner-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -0.25rem 0;
+  padding: 0.25rem;
+  color: #57534e;
+  text-decoration: none;
+}
+
+.mobile-banner-home:hover,
+.mobile-banner-home:focus-visible {
+  color: #1c1917;
+}
+
+.mobile-banner-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -0.25rem 0;
+  padding: 0.25rem;
+  color: #57534e;
+  text-decoration: none;
+}
+
+.mobile-banner-back:hover,
+.mobile-banner-back:focus-visible {
+  color: #1c1917;
+}
+
+.mobile-banner-title {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: var(--mobile-font-heading, 1rem);
+  color: #44403c;
+}
+
+/* --- Container: viewport padding for all content --- */
+.mobile-container {
+  flex: 1;
+  min-width: 0;
+  max-width: var(--mobile-container-max);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--mobile-spacing);
+  padding-left: calc(var(--mobile-spacing) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--mobile-spacing) + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(var(--mobile-spacing) + env(safe-area-inset-bottom, 0px));
+}
+
+/* --- Content: typography optimized for window size (level-based) --- */
+.mobile-container p {
+  margin: 0 0 0.75rem 0;
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+.mobile-container p:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-description {
+  color: #57534e;
+  font-size: 0.9375em;
+}
+
+.mobile-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  margin: 0 -0.25rem;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 1em;
+}
+
+.mobile-link:hover {
+  text-decoration: underline;
+}
+
+.mobile-container h1 {
+  font-size: var(--mobile-font-heading, 1.25em);
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
